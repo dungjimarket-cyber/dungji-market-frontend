@@ -13,10 +13,18 @@ import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { convertLinksToRedirect, getRedirectUrl } from '@/lib/utils/linkRedirect';
 
+interface LinkPreview {
+  url: string;
+  title: string;
+  image: string;
+  description: string;
+}
+
 interface CustomDeal {
   id: number;
   title: string;
   description: string;
+  description_link_previews?: LinkPreview[];
   deal_type?: 'participant_based' | 'time_based';
   deal_type_display?: string;
   type: 'online' | 'offline';
@@ -1335,6 +1343,56 @@ export default function CustomDealDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Link Previews - 온라인/오프라인 구분 없이 표시 */}
+          {deal.description_link_previews && deal.description_link_previews.length > 0 && (
+            <div className="space-y-3 max-w-4xl mx-auto">
+              {deal.description_link_previews.map((preview, index) => (
+                <a
+                  key={index}
+                  href={preview.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <Card className="border-slate-200 hover:border-slate-300 transition-colors cursor-pointer">
+                    <CardContent className="p-0">
+                      <div className="flex gap-4">
+                        {/* 이미지 */}
+                        {preview.image && (
+                          <div className="relative w-32 h-32 flex-shrink-0">
+                            <img
+                              src={preview.image}
+                              alt={preview.title}
+                              className="w-full h-full object-cover rounded-l-lg"
+                              onError={(e) => {
+                                // 이미지 로드 실패 시 숨김
+                                (e.target as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                        {/* 텍스트 정보 */}
+                        <div className="flex-1 p-4 min-w-0">
+                          <h3 className="font-semibold text-slate-900 text-sm mb-1 line-clamp-2">
+                            {preview.title}
+                          </h3>
+                          {preview.description && (
+                            <p className="text-xs text-slate-600 line-clamp-2 mb-2">
+                              {preview.description}
+                            </p>
+                          )}
+                          <p className="text-xs text-slate-400 truncate">
+                            {new URL(preview.url).hostname}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </a>
+              ))}
+            </div>
+          )}
 
           {/* Usage Guide */}
           {deal.usage_guide && (
