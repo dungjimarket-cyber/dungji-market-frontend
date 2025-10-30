@@ -38,6 +38,9 @@ interface CustomDeal {
   online_discount_type?: 'link_only' | 'code_only' | 'both';
   discount_valid_until?: string;
   pricing_type?: 'single_product' | 'all_products' | 'coupon_only';
+  phone_number?: string;
+  location?: string;
+  location_detail?: string;
 }
 
 export default function ParticipantsManagePage() {
@@ -755,6 +758,54 @@ export default function ParticipantsManagePage() {
                                 </>
                               )}
                             </>
+                          )}
+
+                          {/* 판매처 정보 - 컴팩트한 디자인 */}
+                          {(deal.phone_number || deal.location) && (
+                            <div className="mt-2 pt-2 border-t border-slate-200">
+                              {/* 온라인: 판매처 연락처 */}
+                              {deal.type === 'online' && deal.phone_number && (
+                                <div className="flex items-center gap-2 text-xs">
+                                  <span className="text-slate-500 font-medium">판매처:</span>
+                                  <a
+                                    href={`tel:${deal.phone_number}`}
+                                    className="text-blue-600 font-semibold hover:underline"
+                                  >
+                                    {deal.phone_number}
+                                  </a>
+                                </div>
+                              )}
+
+                              {/* 오프라인: 매장 주소 */}
+                              {deal.type === 'offline' && deal.location && (
+                                <div className="space-y-1">
+                                  <div className="flex items-start gap-2 text-xs">
+                                    <span className="text-slate-500 font-medium flex-shrink-0">매장:</span>
+                                    <div className="flex-1">
+                                      <p className="text-slate-900 font-semibold leading-tight">
+                                        {deal.location}
+                                      </p>
+                                      {deal.location_detail && (
+                                        <p className="text-slate-600 mt-0.5 leading-tight">
+                                          {deal.location_detail}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {deal.phone_number && (
+                                    <div className="flex items-center gap-2 text-xs pl-1">
+                                      <span className="text-slate-500">연락처:</span>
+                                      <a
+                                        href={`tel:${deal.phone_number}`}
+                                        className="text-blue-600 font-semibold hover:underline"
+                                      >
+                                        {deal.phone_number}
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </>
                       );
