@@ -743,93 +743,16 @@ export default function CustomDealDetailPage() {
   // 할인 링크도 리다이렉트 페이지를 거치도록 변환
   const redirectDiscountUrl = deal?.discount_url ? getRedirectUrl(deal.discount_url) : null;
 
-  // description을 URL과 텍스트로 분리하여 렌더링
-  const renderDescriptionWithPreviews = () => {
-    if (!deal?.description) return null;
+  // description에서 URL을 제거한 버전 생성 (HTML 유지)
+  const getDescriptionWithoutUrls = () => {
+    if (!deal?.description) return '';
 
     const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]()]+)/gi;
-    const parts = deal.description.split(urlRegex);
+    // URL을 빈 문자열로 교체
+    const descWithoutUrls = deal.description.replace(urlRegex, '').trim();
 
-    // URL을 linkPreviews에서 찾기 위한 Map
-    const previewsMap: Record<string, LinkPreview> = {};
-    linkPreviews.forEach(preview => {
-      previewsMap[preview.url] = preview;
-    });
-
-    return parts.map((part, index) => {
-      // URL인지 확인
-      if (part.match(urlRegex)) {
-        // linkPreviews에 있는지 확인
-        const preview = previewsMap[part];
-
-        if (preview) {
-          // 링크 미리보기 카드 렌더링
-          return (
-            <a
-              key={index}
-              href={preview.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block my-4"
-            >
-              <Card className="border-slate-200 hover:border-slate-300 transition-colors cursor-pointer">
-                <CardContent className="p-0">
-                  <div className="flex gap-4 min-h-[100px]">
-                    {preview.image ? (
-                      <div className="relative w-32 h-32 flex-shrink-0">
-                        <img
-                          src={preview.image}
-                          alt={preview.title}
-                          className="w-full h-full object-cover rounded-l-lg"
-                          onError={(e) => {
-                            const parent = (e.target as HTMLElement).parentElement;
-                            if (parent) {
-                              parent.innerHTML = '<div class="w-full h-full bg-slate-100 rounded-l-lg flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg></div>';
-                            }
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="relative w-32 flex-shrink-0 bg-slate-100 rounded-l-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className="flex-1 p-4 min-w-0">
-                      <h3 className="font-semibold text-slate-900 text-base mb-2">
-                        {preview.title}
-                      </h3>
-                      {preview.description ? (
-                        <p className="text-sm text-slate-600 line-clamp-2 mb-2">
-                          {preview.description}
-                        </p>
-                      ) : (
-                        <p className="text-sm text-slate-500 mb-2">
-                          클릭하여 링크로 이동
-                        </p>
-                      )}
-                      <p className="text-xs text-slate-400 truncate flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                        {new URL(preview.url).hostname}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </a>
-          );
-        } else {
-          // 미리보기가 없으면 URL 그대로 표시 (로딩 중이거나 실패한 경우)
-          return <span key={index}>{part}</span>;
-        }
-      } else {
-        // 일반 텍스트
-        return <span key={index}>{part}</span>;
-      }
-    });
+    // HTML 링크 변환은 기존 함수 사용
+    return convertLinksToRedirect(descWithoutUrls);
   };
 
   return (
@@ -1487,20 +1410,85 @@ export default function CustomDealDetailPage() {
 
         {/* Description & Details */}
         <div className="mt-6 space-y-4">
-          {/* Description with inline link previews */}
+          {/* Description */}
           <Card className="border-slate-200 max-w-4xl mx-auto">
             <CardContent className="p-5">
-              {linkPreviewsLoading ? (
-                <div className="flex items-center gap-2 text-slate-500">
+              <div
+                className="text-slate-700 text-sm leading-relaxed break-words overflow-wrap-anywhere"
+                style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+              >
+                <div
+                  className="[&>p]:mb-3 [&>p]:mt-0 [&>ul]:mb-3 [&>ul]:pl-6 [&>ul]:list-disc [&>ol]:mb-3 [&>ol]:pl-6 [&>ol]:list-decimal [&>h1]:mb-3 [&>h2]:mb-3 [&>h3]:mb-3"
+                  dangerouslySetInnerHTML={{ __html: getDescriptionWithoutUrls() }}
+                />
+              </div>
+
+              {/* Link Previews - description 안에 바로 표시 */}
+              {linkPreviewsLoading && (
+                <div className="mt-4 flex items-center gap-2 text-slate-500">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-500"></div>
                   <span className="text-sm">링크 정보를 불러오는 중...</span>
                 </div>
-              ) : (
-                <div
-                  className="text-slate-700 text-sm leading-relaxed break-words overflow-wrap-anywhere"
-                  style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
-                >
-                  {renderDescriptionWithPreviews()}
+              )}
+              {!linkPreviewsLoading && linkPreviews.length > 0 && (
+                <div className="mt-4 space-y-3">
+                  {linkPreviews.map((preview, index) => (
+                    <a
+                      key={index}
+                      href={preview.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <Card className="border-slate-200 hover:border-slate-300 transition-colors cursor-pointer">
+                        <CardContent className="p-0">
+                          <div className="flex gap-4 min-h-[100px]">
+                            {preview.image ? (
+                              <div className="relative w-32 h-32 flex-shrink-0">
+                                <img
+                                  src={preview.image}
+                                  alt={preview.title}
+                                  className="w-full h-full object-cover rounded-l-lg"
+                                  onError={(e) => {
+                                    const parent = (e.target as HTMLElement).parentElement;
+                                    if (parent) {
+                                      parent.innerHTML = '<div class="w-full h-full bg-slate-100 rounded-l-lg flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg></div>';
+                                    }
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <div className="relative w-32 flex-shrink-0 bg-slate-100 rounded-l-lg flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                </svg>
+                              </div>
+                            )}
+                            <div className="flex-1 p-4 min-w-0">
+                              <h3 className="font-semibold text-slate-900 text-base mb-2">
+                                {preview.title}
+                              </h3>
+                              {preview.description ? (
+                                <p className="text-sm text-slate-600 line-clamp-2 mb-2">
+                                  {preview.description}
+                                </p>
+                              ) : (
+                                <p className="text-sm text-slate-500 mb-2">
+                                  클릭하여 링크로 이동
+                                </p>
+                              )}
+                              <p className="text-xs text-slate-400 truncate flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                                {new URL(preview.url).hostname}
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </a>
+                  ))}
                 </div>
               )}
             </CardContent>
