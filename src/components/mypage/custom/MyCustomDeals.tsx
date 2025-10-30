@@ -17,6 +17,7 @@ interface CustomDeal {
   title: string;
   type: 'online' | 'offline';
   type_display: string;
+  deal_type?: 'participant_based' | 'time_based';
   categories: string[];
   regions?: Array<{
     code: string;
@@ -483,14 +484,16 @@ export default function MyCustomDeals() {
                     {/* Progress or Validity */}
                     <div className="mb-2">
                       {deal.status === 'completed' && deal.discount_valid_until ? (
-                        // 마감된 경우: 참여자 + 유효기간
+                        // 마감된 경우: 기간특가는 유효기간만, 인원모집은 참여자 + 유효기간
                         <div className="flex items-center gap-4 text-xs">
-                          <div className="flex items-center gap-1 text-slate-600">
-                            <Users className="w-3 h-3 flex-shrink-0" />
-                            <span className="font-semibold text-slate-900">
-                              {deal.current_participants}명 참여
-                            </span>
-                          </div>
+                          {deal.deal_type !== 'time_based' && (
+                            <div className="flex items-center gap-1 text-slate-600">
+                              <Users className="w-3 h-3 flex-shrink-0" />
+                              <span className="font-semibold text-slate-900">
+                                {deal.current_participants}명 참여
+                              </span>
+                            </div>
+                          )}
                           {(() => {
                             const validity = getValidityDisplay(deal.discount_valid_until);
                             if (validity) {
@@ -507,14 +510,16 @@ export default function MyCustomDeals() {
                           })()}
                         </div>
                       ) : (
-                        // 모집 중: 인원/시간
+                        // 모집 중: 기간특가는 시간만, 인원모집은 인원/시간
                         <div className="flex items-center gap-4 text-xs">
-                          <div className="flex items-center gap-1 text-slate-600">
-                            <Users className="w-3 h-3 flex-shrink-0" />
-                            <span className="font-semibold text-slate-900">
-                              {deal.current_participants}/{deal.target_participants}명
-                            </span>
-                          </div>
+                          {deal.deal_type !== 'time_based' && (
+                            <div className="flex items-center gap-1 text-slate-600">
+                              <Users className="w-3 h-3 flex-shrink-0" />
+                              <span className="font-semibold text-slate-900">
+                                {deal.current_participants}/{deal.target_participants}명
+                              </span>
+                            </div>
+                          )}
                           <div className="flex items-center gap-1 text-slate-500">
                             <Clock className="w-3 h-3 flex-shrink-0" />
                             <span className="font-medium">
