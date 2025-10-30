@@ -230,9 +230,12 @@ export default function CustomDealDetailPage() {
       return;
     }
 
-    // URL 추출 정규표현식
-    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g;
+    // URL 추출 정규표현식 (더 정확하게)
+    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]()]+)/gi;
     const urls = deal.description.match(urlRegex);
+
+    console.log('[LinkPreview] Description:', deal.description);
+    console.log('[LinkPreview] 추출된 URLs:', urls);
 
     if (!urls || urls.length === 0) {
       setLinkPreviews([]);
@@ -241,6 +244,7 @@ export default function CustomDealDetailPage() {
 
     // 중복 제거
     const uniqueUrls = Array.from(new Set(urls));
+    console.log('[LinkPreview] 중복 제거 후 URLs:', uniqueUrls);
 
     // 메타정보 가져오기
     const fetchLinkPreviews = async () => {
@@ -249,27 +253,37 @@ export default function CustomDealDetailPage() {
 
       for (const url of uniqueUrls) {
         try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/link-preview/?url=${encodeURIComponent(url)}`
-          );
+          const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/link-preview/?url=${encodeURIComponent(url)}`;
+          console.log('[LinkPreview] API 호출:', apiUrl);
+
+          const response = await fetch(apiUrl);
+          console.log('[LinkPreview] API 응답 상태:', response.status);
 
           if (response.ok) {
             const data = await response.json();
-            // title이 있는 경우만 추가 (메타정보가 있는 경우)
-            if (data.title) {
+            console.log('[LinkPreview] API 응답 데이터:', data);
+
+            // title이 있거나 warning이 없는 경우 추가
+            if (data.title || data.url) {
               previews.push({
                 url: data.url || url,
-                title: data.title,
+                title: data.title || '링크',
                 description: data.description || '',
                 image: data.image || '',
               });
+              console.log('[LinkPreview] 미리보기 추가됨:', data.title || url);
+            } else {
+              console.log('[LinkPreview] title 없어서 스킵:', url);
             }
+          } else {
+            console.error('[LinkPreview] API 응답 실패:', response.status);
           }
         } catch (error) {
-          console.error('링크 미리보기 가져오기 실패:', url, error);
+          console.error('[LinkPreview] 링크 미리보기 가져오기 실패:', url, error);
         }
       }
 
+      console.log('[LinkPreview] 최종 previews:', previews);
       setLinkPreviews(previews);
       setLinkPreviewsLoading(false);
     };
