@@ -583,8 +583,8 @@ export default function CustomDealsPage() {
                     {/* Location (offline only) - 제목 위에 표시 */}
                     <div className="h-5 mb-1">
                       {deal.type === 'offline' && deal.location && (
-                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                        <div className="flex items-center gap-1 text-sm text-slate-900 font-bold">
+                          <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                           <span className="truncate">
                             {deal.location}
                           </span>
