@@ -263,15 +263,35 @@ export default function CustomDealDetailPage() {
             const data = await response.json();
             console.log('[LinkPreview] API 응답 데이터:', data);
 
-            // title이 있거나 warning이 없는 경우 추가
+            // title이 있거나 url이 있으면 추가
             if (data.title || data.url) {
+              // title이 없으면 URL 호스트명 사용
+              let displayTitle = data.title;
+              if (!displayTitle || displayTitle.trim() === '') {
+                try {
+                  const urlObj = new URL(url);
+                  displayTitle = urlObj.hostname.replace('www.', '');
+
+                  // 네이버 플레이스면 특별히 표시
+                  if (urlObj.hostname.includes('place.naver.com')) {
+                    displayTitle = '네이버 플레이스';
+                  } else if (urlObj.hostname.includes('naver.me')) {
+                    displayTitle = '네이버 링크';
+                  } else if (urlObj.hostname.includes('instagram.com')) {
+                    displayTitle = '인스타그램';
+                  }
+                } catch (e) {
+                  displayTitle = '링크';
+                }
+              }
+
               previews.push({
                 url: data.url || url,
-                title: data.title || '링크',
+                title: displayTitle,
                 description: data.description || '',
                 image: data.image || '',
               });
-              console.log('[LinkPreview] 미리보기 추가됨:', data.title || url);
+              console.log('[LinkPreview] 미리보기 추가됨:', displayTitle);
             } else {
               console.log('[LinkPreview] title 없어서 스킵:', url);
             }
@@ -1439,32 +1459,48 @@ export default function CustomDealDetailPage() {
                 >
                   <Card className="border-slate-200 hover:border-slate-300 transition-colors cursor-pointer">
                     <CardContent className="p-0">
-                      <div className="flex gap-4">
-                        {/* 이미지 */}
-                        {preview.image && (
+                      <div className="flex gap-4 min-h-[100px]">
+                        {/* 이미지 또는 아이콘 */}
+                        {preview.image ? (
                           <div className="relative w-32 h-32 flex-shrink-0">
                             <img
                               src={preview.image}
                               alt={preview.title}
                               className="w-full h-full object-cover rounded-l-lg"
                               onError={(e) => {
-                                // 이미지 로드 실패 시 숨김
-                                (e.target as HTMLElement).style.display = 'none';
+                                // 이미지 로드 실패 시 기본 아이콘으로 대체
+                                const parent = (e.target as HTMLElement).parentElement;
+                                if (parent) {
+                                  parent.innerHTML = '<div class="w-full h-full bg-slate-100 rounded-l-lg flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg></div>';
+                                }
                               }}
                             />
+                          </div>
+                        ) : (
+                          <div className="relative w-32 flex-shrink-0 bg-slate-100 rounded-l-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
                           </div>
                         )}
                         {/* 텍스트 정보 */}
                         <div className="flex-1 p-4 min-w-0">
-                          <h3 className="font-semibold text-slate-900 text-sm mb-1 line-clamp-2">
+                          <h3 className="font-semibold text-slate-900 text-base mb-2">
                             {preview.title}
                           </h3>
-                          {preview.description && (
-                            <p className="text-xs text-slate-600 line-clamp-2 mb-2">
+                          {preview.description ? (
+                            <p className="text-sm text-slate-600 line-clamp-2 mb-2">
                               {preview.description}
                             </p>
+                          ) : (
+                            <p className="text-sm text-slate-500 mb-2">
+                              클릭하여 링크로 이동
+                            </p>
                           )}
-                          <p className="text-xs text-slate-400 truncate">
+                          <p className="text-xs text-slate-400 truncate flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
                             {new URL(preview.url).hostname}
                           </p>
                         </div>
