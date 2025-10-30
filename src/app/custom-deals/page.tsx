@@ -719,23 +719,27 @@ export default function CustomDealsPage() {
 
                     {/* Progress or Validity - 고정 높이 */}
                     <div className="mb-2">
-                      {deal.deal_type === 'time_based' ? (
-                        // 기간특가: 판매기간 표시 (인원 바 위치)
-                        <>
-                          <div className="flex items-center justify-between text-xs mt-2 mb-3">
-                            <span className="text-orange-700 font-semibold flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full">
-                              <Clock className="w-3 h-3 flex-shrink-0" />
-                              판매기간
-                            </span>
-                            <span className="text-slate-500 font-semibold whitespace-nowrap">
-                              {getRemainingTime(deal.expired_at)}
-                            </span>
-                          </div>
-                        </>
-                      ) : deal.status === 'completed' && deal.discount_valid_until ? (
-                        // 마감된 경우: 유효기간/판매기간만 표시 (참여자 수 숨김)
-                        <>
-                          {(() => {
+                      {(() => {
+                        const isClosed = deal.status === 'completed' || deal.status === 'cancelled' || deal.status === 'expired';
+
+                        if (deal.deal_type === 'time_based') {
+                          // 기간특가: 판매기간 표시 (인원 바 위치)
+                          return (
+                            <>
+                              <div className="flex items-center justify-between text-xs mt-2 mb-3">
+                                <span className="text-orange-700 font-semibold flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-full">
+                                  <Clock className="w-3 h-3 flex-shrink-0" />
+                                  판매기간
+                                </span>
+                                <span className="text-slate-500 font-semibold whitespace-nowrap">
+                                  {getRemainingTime(deal.expired_at)}
+                                </span>
+                              </div>
+                            </>
+                          );
+                        } else if (isClosed) {
+                          // 마감된 경우 (completed/cancelled/expired): 유효기간만 표시, 참여자 수 숨김
+                          if (deal.discount_valid_until) {
                             const validity = getValidityDisplay(
                               deal.discount_valid_until,
                               deal.type,
@@ -751,45 +755,47 @@ export default function CustomDealsPage() {
                                 </div>
                               );
                             }
-                            return null;
-                          })()}
-                        </>
-                      ) : (
-                        // 모집 중: 눈에 띄는 인원/시간 + 프로그레스 바
-                        <>
-                          <div className="flex items-center justify-between text-xs mb-2">
-                            <div className="flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded-full">
-                              <div className="bg-blue-600 rounded-full p-0.5">
-                                <Users className="w-2.5 h-2.5 text-white flex-shrink-0" />
+                          }
+                          return null;
+                        } else {
+                          // 모집 중: 눈에 띄는 인원/시간 + 프로그레스 바
+                          return (
+                            <>
+                              <div className="flex items-center justify-between text-xs mb-2">
+                                <div className="flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded-full">
+                                  <div className="bg-blue-600 rounded-full p-0.5">
+                                    <Users className="w-2.5 h-2.5 text-white flex-shrink-0" />
+                                  </div>
+                                  <span className="text-blue-600 font-semibold whitespace-nowrap">
+                                    {deal.current_participants}/{deal.target_participants}명
+                                  </span>
+                                </div>
+                                <span className="text-slate-500 flex items-center gap-1 whitespace-nowrap">
+                                  <Clock className="w-3 h-3 flex-shrink-0" />
+                                  {getRemainingTime(deal.expired_at)}
+                                </span>
                               </div>
-                              <span className="text-blue-600 font-semibold whitespace-nowrap">
-                                {deal.current_participants}/{deal.target_participants}명
-                              </span>
-                            </div>
-                            <span className="text-slate-500 flex items-center gap-1 whitespace-nowrap">
-                              <Clock className="w-3 h-3 flex-shrink-0" />
-                              {getRemainingTime(deal.expired_at)}
-                            </span>
-                          </div>
-                          <div className="w-full bg-slate-200 rounded-full h-2 shadow-inner">
-                            <div
-                              className={`h-2 rounded-full transition-all duration-300 ${
-                                (deal.current_participants / deal.target_participants) * 100 >= 100
-                                  ? 'bg-gradient-to-r from-green-500 to-emerald-500'
-                                  : (deal.current_participants / deal.target_participants) * 100 >= 80
-                                  ? 'bg-gradient-to-r from-orange-500 to-red-500'
-                                  : 'bg-gradient-to-r from-blue-500 to-blue-600'
-                              }`}
-                              style={{
-                                width: `${Math.min(
-                                  (deal.current_participants / deal.target_participants) * 100,
-                                  100
-                                )}%`,
-                              }}
-                            />
-                          </div>
-                        </>
-                      )}
+                              <div className="w-full bg-slate-200 rounded-full h-2 shadow-inner">
+                                <div
+                                  className={`h-2 rounded-full transition-all duration-300 ${
+                                    (deal.current_participants / deal.target_participants) * 100 >= 100
+                                      ? 'bg-gradient-to-r from-green-500 to-emerald-500'
+                                      : (deal.current_participants / deal.target_participants) * 100 >= 80
+                                      ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                      : 'bg-gradient-to-r from-blue-500 to-blue-600'
+                                  }`}
+                                  style={{
+                                    width: `${Math.min(
+                                      (deal.current_participants / deal.target_participants) * 100,
+                                      100
+                                    )}%`,
+                                  }}
+                                />
+                              </div>
+                            </>
+                          );
+                        }
+                      })()}
                     </div>
 
                     {/* Footer - 하단 고정 */}
