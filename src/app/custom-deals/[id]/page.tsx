@@ -105,6 +105,8 @@ export default function CustomDealDetailPage() {
     reason?: string;
     next_bump_available_at?: string;
   } | null>(null);
+  const [linkPreviews, setLinkPreviews] = useState<LinkPreview[]>([]);
+  const [linkPreviewsLoading, setLinkPreviewsLoading] = useState(false);
 
   const {
     checkProfile,
@@ -220,6 +222,60 @@ export default function CustomDealDetailPage() {
       toast.error('찜하기에 실패했습니다');
     }
   };
+
+  // description에서 URL 추출 및 메타정보 가져오기
+  useEffect(() => {
+    if (!deal || !deal.description) {
+      setLinkPreviews([]);
+      return;
+    }
+
+    // URL 추출 정규표현식
+    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g;
+    const urls = deal.description.match(urlRegex);
+
+    if (!urls || urls.length === 0) {
+      setLinkPreviews([]);
+      return;
+    }
+
+    // 중복 제거
+    const uniqueUrls = Array.from(new Set(urls));
+
+    // 메타정보 가져오기
+    const fetchLinkPreviews = async () => {
+      setLinkPreviewsLoading(true);
+      const previews: LinkPreview[] = [];
+
+      for (const url of uniqueUrls) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/link-preview/?url=${encodeURIComponent(url)}`
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            // title이 있는 경우만 추가 (메타정보가 있는 경우)
+            if (data.title) {
+              previews.push({
+                url: data.url || url,
+                title: data.title,
+                description: data.description || '',
+                image: data.image || '',
+              });
+            }
+          }
+        } catch (error) {
+          console.error('링크 미리보기 가져오기 실패:', url, error);
+        }
+      }
+
+      setLinkPreviews(previews);
+      setLinkPreviewsLoading(false);
+    };
+
+    fetchLinkPreviews();
+  }, [deal?.description]);
 
   const handleParticipate = async () => {
     if (!deal) return;
@@ -1345,9 +1401,21 @@ export default function CustomDealDetailPage() {
           </Card>
 
           {/* Link Previews - 온라인/오프라인 구분 없이 표시 */}
-          {deal.description_link_previews && deal.description_link_previews.length > 0 && (
+          {linkPreviewsLoading && (
+            <div className="max-w-4xl mx-auto">
+              <Card className="border-slate-200">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-500"></div>
+                    <span className="text-sm">링크 정보를 불러오는 중...</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          {!linkPreviewsLoading && linkPreviews.length > 0 && (
             <div className="space-y-3 max-w-4xl mx-auto">
-              {deal.description_link_previews.map((preview, index) => (
+              {linkPreviews.map((preview, index) => (
                 <a
                   key={index}
                   href={preview.url}
