@@ -802,7 +802,14 @@ export default function CustomDealsPage() {
                     </div>
 
                     {/* Footer - 하단 고정 */}
-                    <div className="flex items-center justify-end pt-2 border-t border-slate-100 mt-auto">
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-auto">
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <span>조회 {deal.view_count}</span>
+                        <span>•</span>
+                        <span>찜 {deal.favorite_count}</span>
+                        <span>•</span>
+                        <span>{new Date(deal.created_at).toLocaleDateString()}</span>
+                      </div>
                       <div className="flex items-center gap-2 text-xs text-slate-500">
                         <span className="flex items-center gap-0.5 whitespace-nowrap">
                           <Heart className="w-3 h-3 flex-shrink-0" />
