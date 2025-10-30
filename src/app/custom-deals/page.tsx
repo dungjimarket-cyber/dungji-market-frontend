@@ -733,17 +733,8 @@ export default function CustomDealsPage() {
                           </div>
                         </>
                       ) : deal.status === 'completed' && deal.discount_valid_until ? (
-                        // 마감된 경우: 참여자 인원 (위) + 유효기간/판매기간 (아래)
+                        // 마감된 경우: 유효기간/판매기간만 표시 (참여자 수 숨김)
                         <>
-                          <div className="flex items-center justify-between text-xs mb-1.5">
-                            <span className="text-slate-600 flex items-center gap-1 whitespace-nowrap">
-                              <Users className="w-3 h-3 flex-shrink-0" />
-                              참여자
-                            </span>
-                            <span className="font-semibold text-slate-900">
-                              {deal.current_participants}명
-                            </span>
-                          </div>
                           {(() => {
                             const validity = getValidityDisplay(
                               deal.discount_valid_until,

@@ -1071,8 +1071,8 @@ export default function CustomDealDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Progress - 눈에 띄는 디자인 (인원 모집 특가만) */}
-            {deal.deal_type !== 'time_based' && (
+            {/* Progress - 눈에 띄는 디자인 (인원 모집 특가만, 마감 제외) */}
+            {deal.deal_type !== 'time_based' && !isClosed && (
               <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white shadow-md">
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-3">
