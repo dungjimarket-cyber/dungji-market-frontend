@@ -227,9 +227,11 @@ export default function MyCustomDeals() {
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     if (days > 0) return `${days}일 남음`;
-    return `${hours}시간 남음`;
+    if (hours > 0) return `${hours}시간 남음`;
+    return `${minutes}분 남음`;
   };
 
   const getValidityDisplay = (validUntil: string | null) => {
@@ -293,20 +295,35 @@ export default function MyCustomDeals() {
     return <Badge variant="secondary">{deal.status_display}</Badge>;
   };
 
+  // 기간특가 유효기간 만료 체크
+  const isValidityExpired = (deal: CustomDeal) => {
+    return deal.deal_type === 'time_based' && deal.discount_valid_until
+      ? new Date(deal.discount_valid_until).getTime() <= currentTime.getTime()
+      : false;
+  };
+
+  const isDealClosed = (deal: CustomDeal) => {
+    return deal.status === 'completed' || deal.status === 'pending_seller' || isValidityExpired(deal);
+  };
+
+  const isDealCancelled = (deal: CustomDeal) => {
+    return deal.status === 'cancelled' || deal.status === 'expired';
+  };
+
   // 표시할 deals 필터링
   const displayDeals = filter === 'completed'
-    ? deals.filter(d => d.status === 'completed' || d.status === 'pending_seller')
+    ? deals.filter(d => isDealClosed(d))
     : filter === 'cancelled'
-    ? deals.filter(d => d.status === 'cancelled' || d.status === 'expired')
+    ? deals.filter(d => isDealCancelled(d))
     : filter === 'recruiting'
-    ? deals.filter(d => d.status === 'recruiting')
-    : deals.filter(d => d.status !== 'cancelled' && d.status !== 'expired'); // 'all': 취소/만료 제외
+    ? deals.filter(d => !isDealClosed(d) && !isDealCancelled(d))
+    : deals.filter(d => !isDealCancelled(d)); // 'all': 취소/만료만 제외
 
   const filterCounts = {
-    all: deals.filter(d => d.status !== 'cancelled' && d.status !== 'expired').length, // 취소/만료 제외
-    recruiting: deals.filter(d => d.status === 'recruiting').length,
-    completed: deals.filter(d => d.status === 'completed' || d.status === 'pending_seller').length,
-    cancelled: deals.filter(d => d.status === 'cancelled' || d.status === 'expired').length,
+    all: deals.filter(d => !isDealCancelled(d)).length, // 취소/만료만 제외
+    recruiting: deals.filter(d => !isDealClosed(d) && !isDealCancelled(d)).length,
+    completed: deals.filter(d => isDealClosed(d)).length,
+    cancelled: deals.filter(d => isDealCancelled(d)).length,
   };
 
   // 데이터가 없으면 간단한 메시지만 표시
