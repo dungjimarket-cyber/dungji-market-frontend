@@ -1118,6 +1118,27 @@ export default function CustomDealDetailPage() {
               </Card>
             )}
 
+            {/* 기간특가: 남은 시간 표시 (마감 제외) */}
+            {deal.deal_type === 'time_based' && !isClosed && (
+              <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white shadow-md">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-orange-600 rounded-full p-1.5">
+                        <Clock className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-600 mb-0.5">판매 기간</p>
+                        <span className="text-lg font-bold text-orange-600">
+                          {getRemainingTime(deal.expired_at)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Categories */}
             <Card className="border-slate-200">
               <CardContent className="p-4">

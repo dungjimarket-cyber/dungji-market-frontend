@@ -490,17 +490,23 @@ export default function CustomDealsPage() {
                 // 취소된 공구는 항상 제외
                 if (deal.status === 'cancelled') return false;
 
+                // 기간특가의 경우 유효기간 만료 체크
+                const isValidityExpired = deal.deal_type === 'time_based' && deal.discount_valid_until
+                  ? new Date(deal.discount_valid_until).getTime() <= currentTime.getTime()
+                  : false;
+                const isDealClosed = deal.status === 'completed' || deal.status === 'expired' || isValidityExpired;
+
                 // 기간특가 탭: deal_type이 time_based인 것만
                 if (selectedType === 'time_based') {
                   if (deal.deal_type !== 'time_based') return false;
-                  return showClosedDeals || deal.status === 'recruiting';
+                  return showClosedDeals || !isDealClosed;
                 }
 
                 // 쿠폰/이벤트 탭: pricing_type이 coupon_only이면서 time_based가 아닌 것만
                 if (selectedType === 'coupon_only') {
                   if (deal.pricing_type !== 'coupon_only') return false;
                   if (deal.deal_type === 'time_based') return false; // 기간특가 제외
-                  return showClosedDeals || deal.status === 'recruiting';
+                  return showClosedDeals || !isDealClosed;
                 }
 
                 // 온라인/오프라인 탭: 해당 타입이면서 coupon_only와 time_based 제외
@@ -512,7 +518,7 @@ export default function CustomDealsPage() {
                 // 전체 탭: 모든 타입 표시 (쿠폰전용 포함)
 
                 // showClosedDeals에 따라 마감된 공구 표시 여부 결정
-                return showClosedDeals || deal.status === 'recruiting';
+                return showClosedDeals || !isDealClosed;
               })
               .sort((a, b) => {
                 // 1차 정렬: 마감된 공구(completed, expired, 기간특가 만료)를 뒤로
