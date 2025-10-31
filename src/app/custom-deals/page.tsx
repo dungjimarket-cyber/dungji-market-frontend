@@ -211,9 +211,11 @@ export default function CustomDealsPage() {
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     if (days > 0) return `${days}일 남음`;
-    return `${hours}시간 남음`;
+    if (hours > 0) return `${hours}시간 남음`;
+    return `${minutes}분 남음`;
   };
 
   const getValidityDisplay = (
@@ -513,9 +515,15 @@ export default function CustomDealsPage() {
                 return showClosedDeals || deal.status === 'recruiting';
               })
               .sort((a, b) => {
-                // 1차 정렬: 마감된 공구(completed, expired)를 뒤로
-                const aIsClosed = a.status === 'completed' || a.status === 'expired';
-                const bIsClosed = b.status === 'completed' || b.status === 'expired';
+                // 1차 정렬: 마감된 공구(completed, expired, 기간특가 만료)를 뒤로
+                const aValidityExpired = a.deal_type === 'time_based' && a.discount_valid_until
+                  ? new Date(a.discount_valid_until).getTime() <= currentTime.getTime()
+                  : false;
+                const bValidityExpired = b.deal_type === 'time_based' && b.discount_valid_until
+                  ? new Date(b.discount_valid_until).getTime() <= currentTime.getTime()
+                  : false;
+                const aIsClosed = a.status === 'completed' || a.status === 'expired' || aValidityExpired;
+                const bIsClosed = b.status === 'completed' || b.status === 'expired' || bValidityExpired;
 
                 if (aIsClosed && !bIsClosed) return 1;  // a가 마감이면 뒤로
                 if (!aIsClosed && bIsClosed) return -1; // b가 마감이면 뒤로
@@ -530,7 +538,11 @@ export default function CustomDealsPage() {
                 return 0; // 최신순이거나 같은 상태면 순서 유지
               })
               .map((deal) => {
-                const isClosed = deal.status === 'completed' || deal.status === 'expired';
+                // 기간특가의 경우 discount_valid_until 만료도 체크
+                const isValidityExpired = deal.deal_type === 'time_based' && deal.discount_valid_until
+                  ? new Date(deal.discount_valid_until).getTime() <= currentTime.getTime()
+                  : false;
+                const isClosed = deal.status === 'completed' || deal.status === 'expired' || isValidityExpired;
                 return (
               <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
                 <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-slate-200 overflow-hidden flex flex-col">
