@@ -496,6 +496,11 @@ export default function CustomDealsPage() {
                   : false;
                 const isDealClosed = deal.status === 'completed' || deal.status === 'expired' || isValidityExpired;
 
+                // 디버깅: 기간특가 마감 체크
+                if (deal.deal_type === 'time_based') {
+                  console.log(`[기간특가 ${deal.id}] status: ${deal.status}, discount_valid_until: ${deal.discount_valid_until}, isValidityExpired: ${isValidityExpired}, isDealClosed: ${isDealClosed}, showClosedDeals: ${showClosedDeals}`);
+                }
+
                 // 기간특가 탭: deal_type이 time_based인 것만
                 if (selectedType === 'time_based') {
                   if (deal.deal_type !== 'time_based') return false;

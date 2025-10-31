@@ -998,10 +998,21 @@ export default function CustomDealDetailPage() {
                         </span>
                       </div>
                     )}
-                    <div className="text-3xl font-bold text-slate-900">
-                      {typeof deal.final_price === 'object' && deal.final_price !== null
-                        ? ((deal.final_price as any).min || 0).toLocaleString()
-                        : deal.final_price.toLocaleString()}원
+                    <div className="flex items-center justify-between">
+                      <div className="text-3xl font-bold text-slate-900">
+                        {typeof deal.final_price === 'object' && deal.final_price !== null
+                          ? ((deal.final_price as any).min || 0).toLocaleString()
+                          : deal.final_price.toLocaleString()}원
+                      </div>
+                      {/* 기간특가: 남은시간 표시 */}
+                      {deal.deal_type === 'time_based' && !isClosed && (
+                        <div className="flex items-center gap-1.5 text-orange-600">
+                          <Clock className="w-4 h-4" />
+                          <span className="text-sm font-semibold">
+                            {getRemainingTime(deal.expired_at)}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     {/* 오프라인 커공특가 안내 */}
                     {deal.deal_type !== 'time_based' && deal.type === 'offline' && (
@@ -1114,27 +1125,6 @@ export default function CustomDealDetailPage() {
                     {progress >= 100 && ' 🎉'}
                     {progress >= 80 && progress < 100 && ' 🔥'}
                   </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* 기간특가: 남은 시간 표시 (마감 제외) */}
-            {deal.deal_type === 'time_based' && !isClosed && (
-              <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white shadow-md">
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-orange-600 rounded-full p-1.5">
-                        <Clock className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-600 mb-0.5">판매 기간</p>
-                        <span className="text-lg font-bold text-orange-600">
-                          {getRemainingTime(deal.expired_at)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             )}
