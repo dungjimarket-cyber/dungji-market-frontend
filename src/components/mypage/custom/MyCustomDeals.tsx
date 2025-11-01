@@ -295,13 +295,16 @@ export default function MyCustomDeals() {
     return <Badge variant="secondary">{deal.status_display}</Badge>;
   };
 
-  // 마감 체크 (expired_at 기준)
-  const isExpired = (deal: CustomDeal) => {
-    return new Date(deal.expired_at).getTime() <= currentTime.getTime();
-  };
-
+  // 마감 체크
   const isDealClosed = (deal: CustomDeal) => {
-    return deal.status === 'completed' || deal.status === 'pending_seller' || isExpired(deal);
+    if (deal.deal_type === 'time_based') {
+      // 기간특가: expired_at(모집기간) 종료 시 마감
+      return deal.expired_at ? new Date(deal.expired_at).getTime() <= currentTime.getTime() : false;
+    } else {
+      // 일반 공구: status 또는 expired_at 체크
+      const isExpired = deal.expired_at ? new Date(deal.expired_at).getTime() <= currentTime.getTime() : false;
+      return deal.status === 'completed' || deal.status === 'pending_seller' || isExpired;
+    }
   };
 
   const isDealCancelled = (deal: CustomDeal) => {
