@@ -1261,42 +1261,51 @@ export default function CustomDealDetailPage() {
               </div>
             )}
 
-            {/* 매장 정보 - location이 있으면 표시 */}
+            {/* 매장 위치 - location이 있으면 표시 */}
             {deal.location && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-orange-900 mb-3 flex items-center gap-2">
+              <div className="bg-white border border-slate-200 rounded-lg p-4">
+                <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  매장 정보
+                  매장 위치
                 </h3>
-                <div className="space-y-3 text-sm">
+
+                {/* 카카오맵 */}
+                <div className="mb-3">
+                  <KakaoMap
+                    address={deal.location}
+                    placeName={deal.title}
+                  />
+                </div>
+
+                {/* 주소 및 연락처 */}
+                <div className="space-y-2 text-sm">
                   <div>
                     <p className="text-gray-600 text-xs mb-1">주소</p>
                     <p className="text-gray-900 font-medium">{deal.location}</p>
                     {deal.location_detail && (
                       <p className="text-gray-600 text-xs mt-0.5">{deal.location_detail}</p>
                     )}
-
-                    {/* 카카오맵 */}
-                    <div className="mt-3">
-                      <KakaoMap
-                        address={deal.location}
-                        placeName={deal.title}
-                      />
-                    </div>
                   </div>
                   {deal.phone_number && (
                     <div>
                       <p className="text-gray-600 text-xs mb-1">연락처</p>
-                      <a href={`tel:${deal.phone_number}`} className="text-orange-600 font-medium hover:underline">
+                      <a href={`tel:${deal.phone_number}`} className="text-blue-600 font-medium hover:underline">
                         {deal.phone_number}
                       </a>
                     </div>
                   )}
-                </div>
-                <div className="mt-3 pt-3 border-t border-orange-200">
-                  <p className="text-xs text-orange-700">
-                    💡 매장 방문 시 이 페이지를 보여주세요
-                  </p>
+                  {deal.discount_valid_until && (
+                    <div className="pt-2 border-t border-slate-200">
+                      <p className="text-gray-600 text-xs mb-1">할인 유효기간</p>
+                      <p className="text-gray-900 font-medium">
+                        {new Date(deal.discount_valid_until).toLocaleDateString('ko-KR', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}까지
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
