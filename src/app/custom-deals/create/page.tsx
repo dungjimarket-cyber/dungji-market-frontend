@@ -226,6 +226,11 @@ export default function CreateCustomDealPage() {
 
       const data = await response.json();
 
+      // seller10 계정은 5개 제한 예외 처리
+      if (user?.username === 'seller10') {
+        return true;
+      }
+
       // 모집중 또는 판매자 확정 대기 상태의 공구 개수 확인 (최대 5개)
       if (data.results && data.results.length > 0) {
         const activeDealCount = data.results.filter(
