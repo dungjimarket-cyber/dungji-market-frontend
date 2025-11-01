@@ -686,7 +686,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       // 부분 판매 옵션 (항상 수정 가능)
       submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
 
-      // 기간특가: 등록 기간 수정 가능
+      // 기간행사: 등록 기간 수정 가능
       if (originalData?.deal_type === 'time_based' && formData.deadline_date && formData.deadline_time) {
         const deadlineDateTime = new Date(`${formData.deadline_date}T${formData.deadline_time}`);
         submitFormData.append('expired_at', deadlineDateTime.toISOString());
@@ -1022,7 +1022,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           </CardContent>
         </Card>
 
-        {/* 부분 판매 허용 옵션 (항상 표시, 기간특가는 비활성화) */}
+        {/* 부분 판매 허용 옵션 (항상 표시, 기간행사는 비활성화) */}
         <Card className="mb-6 border-slate-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -1036,7 +1036,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 <p className="font-medium text-slate-900">부분 판매 허용</p>
                 <p className="text-sm text-slate-500">인원 미달 시 24시간 내 판매 여부 선택 가능</p>
                 {originalData?.deal_type === 'time_based' && (
-                  <p className="text-xs text-orange-600 mt-1">기간특가는 부분 판매 옵션을 사용할 수 없습니다</p>
+                  <p className="text-xs text-orange-600 mt-1">기간행사는 부분 판매 옵션을 사용할 수 없습니다</p>
                 )}
               </div>
               <Switch
@@ -1048,7 +1048,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           </CardContent>
         </Card>
 
-        {/* 등록기간 수정 (기간특가만) */}
+        {/* 등록기간 수정 (기간행사만) */}
         {originalData?.deal_type === 'time_based' && (
           <Card className="mb-6 border-orange-200 bg-orange-50/30">
             <CardHeader>
@@ -1060,7 +1060,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             <CardContent className="space-y-4">
               <div className="bg-orange-100 border border-orange-200 p-3 rounded-lg">
                 <p className="text-sm text-orange-900 font-medium">
-                  기간특가는 등록 기간을 수정할 수 있습니다
+                  기간행사는 등록 기간을 수정할 수 있습니다
                 </p>
               </div>
 
@@ -1150,7 +1150,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       <RadioGroupItem value="all_products" id="edit-all" />
                       <Label htmlFor="edit-all" className="cursor-pointer">전품목 할인</Label>
                     </div>
-                    {/* 기간특가에서는 쿠폰전용 숨김 */}
+                    {/* 기간행사에서는 쿠폰전용 숨김 */}
                     {originalData?.deal_type !== 'time_based' && (
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="coupon_only" id="edit-coupon" />
@@ -1255,7 +1255,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             </Card>
             )}
 
-            {/* 모집 설정 (기간특가 제외) */}
+            {/* 모집 설정 (기간행사 제외) */}
             {originalData?.deal_type !== 'time_based' && (
               <Card className="mb-6 border-slate-200">
                 <CardHeader>
@@ -1285,7 +1285,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
               </Card>
             )}
 
-            {/* 기간특가 - 할인 링크 */}
+            {/* 기간행사 - 할인 링크 */}
             {originalData?.deal_type === 'time_based' && (
               <Card className="mb-6 border-orange-200 bg-orange-50/30">
                 <CardHeader>
@@ -1327,7 +1327,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
               </Card>
             )}
 
-            {/* 온라인 전용 필드 - 할인 제공 방식 통합 (기간특가 제외) */}
+            {/* 온라인 전용 필드 - 할인 제공 방식 통합 (기간행사 제외) */}
             {formData.type === 'online' && originalData?.deal_type !== 'time_based' && (
               <Card className="mb-6 border-slate-200">
                 <CardHeader>

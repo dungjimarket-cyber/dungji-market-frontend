@@ -313,13 +313,13 @@ function HomeContent() {
                                       <span className="text-lg sm:text-xl font-bold text-red-600">
                                         {deal.discount_rate}%
                                       </span>
-                                      {/* 기간특가 vs 커공특가 배지 구분 */}
+                                      {/* 기간행사 vs 커공특가 배지 구분 */}
                                       <span className={`text-xs font-black tracking-tighter text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
                                         deal.deal_type === 'time_based'
                                           ? 'bg-gradient-to-r from-orange-500 to-red-500'
                                           : 'bg-gradient-to-r from-emerald-500 to-green-500'
                                       }`}>
-                                        {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                                        {deal.deal_type === 'time_based' ? '기간행사' : '커공특가'}
                                       </span>
                                     </div>
                                     <div className="text-xs text-slate-500 line-through mb-1">
@@ -334,7 +334,7 @@ function HomeContent() {
                                         ? 'bg-gradient-to-r from-orange-500 to-red-500'
                                         : 'bg-gradient-to-r from-emerald-500 to-green-500'
                                     }`}>
-                                      {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                                      {deal.deal_type === 'time_based' ? '기간행사' : '커공특가'}
                                     </span>
                                   </div>
                                 )}
@@ -351,13 +351,13 @@ function HomeContent() {
                                     <span className="text-lg font-bold text-blue-600">
                                       {deal.discount_rate}% 할인
                                     </span>
-                                    {/* 기간특가 vs 커공특가 배지 구분 */}
+                                    {/* 기간행사 vs 커공특가 배지 구분 */}
                                     <span className={`text-xs font-black tracking-tighter text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
                                       deal.deal_type === 'time_based'
                                         ? 'bg-gradient-to-r from-orange-500 to-red-500'
                                         : 'bg-gradient-to-r from-emerald-500 to-green-500'
                                     }`}>
-                                      {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                                      {deal.deal_type === 'time_based' ? '기간행사' : '커공특가'}
                                     </span>
                                   </div>
                                 ) : (
@@ -368,7 +368,7 @@ function HomeContent() {
                                         ? 'bg-gradient-to-r from-orange-500 to-red-500'
                                         : 'bg-gradient-to-r from-emerald-500 to-green-500'
                                     }`}>
-                                      {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                                      {deal.deal_type === 'time_based' ? '기간행사' : '커공특가'}
                                     </span>
                                   </div>
                                 )}
@@ -383,7 +383,7 @@ function HomeContent() {
                           {deal.title}
                         </h3>
 
-                        {/* 기간특가: 판매기간 표시 */}
+                        {/* 기간행사: 판매기간 표시 */}
                         {deal.deal_type === 'time_based' && deal.expired_at && (
                           <div className="flex items-center gap-2 text-sm text-orange-600 mt-3">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

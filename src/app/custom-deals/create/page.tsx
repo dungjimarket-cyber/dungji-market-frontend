@@ -544,7 +544,7 @@ export default function CreateCustomDealPage() {
 
   // 마감시간 계산
   const calculateDeadline = () => {
-    // 기간특가: deadline_date + deadline_time 사용
+    // 기간행사: deadline_date + deadline_time 사용
     if (formData.deal_type === 'time_based') {
       return `${formData.deadline_date}T${formData.deadline_time}:00`;
     }
@@ -611,9 +611,9 @@ export default function CreateCustomDealPage() {
       if (!firstErrorRef) firstErrorRef = imageRefDiv;
     }
 
-    // 인원 모집 특가 vs 기간특가 공통/차이점
+    // 인원 모집 특가 vs 기간행사 공통/차이점
 
-    // 기간특가 전용 검증
+    // 기간행사 전용 검증
     if (formData.deal_type === 'time_based') {
       // 등록 기간 필수
       if (!formData.deadline_date) {
@@ -660,7 +660,7 @@ export default function CreateCustomDealPage() {
         }
         return false;
       }
-      // 기간특가도 가격 정보 검증 계속 진행
+      // 기간행사도 가격 정보 검증 계속 진행
     }
 
     // 인원 모집 특가 전용 검증
@@ -905,9 +905,9 @@ export default function CreateCustomDealPage() {
       submitFormData.append('categories', JSON.stringify([selectedCategory]));
       submitFormData.append('expired_at', calculateDeadline());
 
-      // 기간특가 vs 인원 모집 특가
+      // 기간행사 vs 인원 모집 특가
       if (formData.deal_type === 'time_based') {
-        // 기간특가: 할인 링크 + 가격 정보
+        // 기간행사: 할인 링크 + 가격 정보
         if (formData.type === 'online' && formData.discount_url) {
           submitFormData.append('discount_url', formData.discount_url);
         }
@@ -1321,17 +1321,17 @@ export default function CreateCustomDealPage() {
             <CardTitle>가격 정보</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* 기간특가 체크박스 */}
+            {/* 기간행사 체크박스 */}
             <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
               <div>
-                <p className="font-medium text-orange-900">기간특가로 등록</p>
+                <p className="font-medium text-orange-900">기간행사로 등록</p>
                 <p className="text-sm text-orange-700">인원제한 없이 정해진 기간동안 제공되는 할인 혜택</p>
               </div>
               <Switch
                 checked={formData.deal_type === 'time_based'}
                 onCheckedChange={(checked) => {
                   handleInputChange('deal_type', checked ? 'time_based' : 'participant_based');
-                  // 기간특가 활성화 시 쿠폰전용이면 단일상품으로 변경
+                  // 기간행사 활성화 시 쿠폰전용이면 단일상품으로 변경
                   if (checked && formData.pricing_type === 'coupon_only') {
                     handleInputChange('pricing_type', 'single_product');
                   }
@@ -1463,7 +1463,7 @@ export default function CreateCustomDealPage() {
             {/* 가격 입력 안내 */}
             {formData.pricing_type !== 'coupon_only' && (
               <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                💡 {formData.deal_type === 'time_based' ? '기간특가 할인가로 입력해주세요' : '공구 전용 할인가로 입력해주세요'}
+                💡 {formData.deal_type === 'time_based' ? '기간행사 할인가로 입력해주세요' : '공구 전용 할인가로 입력해주세요'}
               </div>
             )}
 
@@ -1476,7 +1476,7 @@ export default function CreateCustomDealPage() {
           </CardContent>
         </Card>
 
-        {/* 기간특가: 할인 링크 */}
+        {/* 기간행사: 할인 링크 */}
         {formData.deal_type === 'time_based' && (
           <Card className="mb-6 border-orange-200 bg-orange-50/30">
             <CardHeader>
@@ -1525,7 +1525,7 @@ export default function CreateCustomDealPage() {
           </Card>
         )}
 
-        {/* 기간특가: 등록 기간 */}
+        {/* 기간행사: 등록 기간 */}
         {formData.deal_type === 'time_based' && (
           <Card className="mb-6 border-orange-200 bg-orange-50/30">
             <CardHeader>
@@ -1535,7 +1535,7 @@ export default function CreateCustomDealPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-orange-700">기간특가 진행 기간을 설정해주세요</p>
+              <p className="text-sm text-orange-700">기간행사 진행 기간을 설정해주세요</p>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1562,7 +1562,7 @@ export default function CreateCustomDealPage() {
               </div>
 
               <p className="text-xs text-slate-600">
-                💡 설정한 날짜/시간까지 기간특가가 진행됩니다
+                💡 설정한 날짜/시간까지 기간행사가 진행됩니다
               </p>
             </CardContent>
           </Card>

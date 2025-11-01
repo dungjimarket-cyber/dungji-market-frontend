@@ -380,7 +380,7 @@ export default function CustomDealDetailPage() {
     let shareText = '';
 
     if (deal.deal_type === 'time_based') {
-      shareText = `${deal.title} - 기간특가`;
+      shareText = `${deal.title} - 기간행사`;
     } else if (deal.pricing_type === 'coupon_only') {
       shareText = `${deal.title} - 선착순 쿠폰증정`;
     } else if (deal.final_price) {
@@ -939,7 +939,7 @@ export default function CustomDealDetailPage() {
                   </div>
                 ) : deal.original_price && deal.final_price ? (
                   <>
-                    {/* 기간특가가 아닐 때만 "모이면 할인!" 표시 */}
+                    {/* 기간행사가 아닐 때만 "모이면 할인!" 표시 */}
                     {deal.deal_type !== 'time_based' && (
                       <span
                         className="text-[10px] font-black inline-block mb-2 whitespace-nowrap"
@@ -975,26 +975,26 @@ export default function CustomDealDetailPage() {
                             <Badge className="bg-red-500 text-white text-sm px-2 py-0.5">
                               {deal.discount_rate}%
                             </Badge>
-                            {/* 기간특가 vs 커공특가 배지 구분 */}
+                            {/* 기간행사 vs 커공특가 배지 구분 */}
                             <span className={`text-xs font-bold text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
                               deal.deal_type === 'time_based'
                                 ? 'bg-gradient-to-r from-orange-500 to-red-500'
                                 : 'bg-gradient-to-r from-emerald-500 to-green-500'
                             }`}>
-                              {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                              {deal.deal_type === 'time_based' ? '기간행사' : '커공특가'}
                             </span>
                           </div>
                         </div>
                       </>
                     ) : (
                       <div className="flex items-center justify-end mb-2">
-                        {/* 기간특가 vs 커공특가 배지 구분 */}
+                        {/* 기간행사 vs 커공특가 배지 구분 */}
                         <span className={`text-xs font-bold text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
                           deal.deal_type === 'time_based'
                             ? 'bg-gradient-to-r from-orange-500 to-red-500'
                             : 'bg-gradient-to-r from-emerald-500 to-green-500'
                         }`}>
-                          {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                          {deal.deal_type === 'time_based' ? '기간행사' : '커공특가'}
                         </span>
                       </div>
                     )}
@@ -1004,7 +1004,7 @@ export default function CustomDealDetailPage() {
                           ? ((deal.final_price as any).min || 0).toLocaleString()
                           : deal.final_price.toLocaleString()}원
                       </div>
-                      {/* 기간특가: 남은시간 표시 */}
+                      {/* 기간행사: 남은시간 표시 */}
                       {deal.deal_type === 'time_based' && !isClosed && (
                         <div className="flex items-center gap-1.5 text-orange-600">
                           <Clock className="w-4 h-4" />
@@ -1023,7 +1023,7 @@ export default function CustomDealDetailPage() {
                   <div className="text-center">
                     {deal.discount_rate > 0 ? (
                       <>
-                        {/* 기간특가가 아닐 때만 "모이면 할인!" 표시 */}
+                        {/* 기간행사가 아닐 때만 "모이면 할인!" 표시 */}
                         {deal.deal_type !== 'time_based' && (
                           <span
                             className="text-[10px] font-black inline-block mb-2 whitespace-nowrap"
@@ -1042,13 +1042,13 @@ export default function CustomDealDetailPage() {
                           <span className="text-2xl font-bold text-blue-600">
                             전품목 {deal.discount_rate}% 할인
                           </span>
-                          {/* 기간특가 vs 커공특가 배지 구분 */}
+                          {/* 기간행사 vs 커공특가 배지 구분 */}
                           <span className={`text-xs font-bold text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
                             deal.deal_type === 'time_based'
                               ? 'bg-gradient-to-r from-orange-500 to-red-500'
                               : 'bg-gradient-to-r from-emerald-500 to-green-500'
                           }`}>
-                            {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                            {deal.deal_type === 'time_based' ? '기간행사' : '커공특가'}
                           </span>
                         </div>
                         {/* 오프라인 커공특가 안내 */}
@@ -1058,20 +1058,20 @@ export default function CustomDealDetailPage() {
                       </>
                     ) : (
                       <div className="flex items-center justify-end mb-2">
-                        {/* 기간특가 vs 커공특가 배지 구분 */}
+                        {/* 기간행사 vs 커공특가 배지 구분 */}
                         <span className={`text-xs font-bold text-white px-2 py-1 rounded-md whitespace-nowrap shadow-sm ${
                           deal.deal_type === 'time_based'
                             ? 'bg-gradient-to-r from-orange-500 to-red-500'
                             : 'bg-gradient-to-r from-emerald-500 to-green-500'
                         }`}>
-                          {deal.deal_type === 'time_based' ? '기간특가' : '커공특가'}
+                          {deal.deal_type === 'time_based' ? '기간행사' : '커공특가'}
                         </span>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* 안내 문구 (쿠폰전용 제외, 기간특가 제외) */}
+                {/* 안내 문구 (쿠폰전용 제외, 기간행사 제외) */}
                 {deal.pricing_type !== 'coupon_only' && deal.deal_type !== 'time_based' && (
                   <div className="mt-3 pt-3 border-t border-slate-200">
                     <p className="text-xs text-slate-500 text-center">
@@ -1201,7 +1201,7 @@ export default function CustomDealDetailPage() {
               </div>
             )}
 
-            {/* 기간특가: 할인 링크 또는 매장 정보 */}
+            {/* 기간행사: 할인 링크 또는 매장 정보 */}
             {deal.deal_type === 'time_based' && !isExpired && (
               <div className="space-y-3">
                 {/* discount_url이 있을 때만 버튼 표시 */}

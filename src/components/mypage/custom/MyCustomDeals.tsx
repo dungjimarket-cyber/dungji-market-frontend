@@ -298,7 +298,7 @@ export default function MyCustomDeals() {
   // 마감 체크
   const isDealClosed = (deal: CustomDeal) => {
     if (deal.deal_type === 'time_based') {
-      // 기간특가: expired_at(모집기간) 종료 시 마감
+      // 기간행사: expired_at(모집기간) 종료 시 마감
       return deal.expired_at ? new Date(deal.expired_at).getTime() <= currentTime.getTime() : false;
     } else {
       // 일반 공구: status 또는 expired_at 체크
@@ -502,7 +502,7 @@ export default function MyCustomDeals() {
                     {/* Progress or Validity */}
                     <div className="mb-2">
                       {deal.status === 'completed' && deal.discount_valid_until ? (
-                        // 마감된 경우: 기간특가는 유효기간만, 인원모집은 참여자 + 유효기간
+                        // 마감된 경우: 기간행사는 유효기간만, 인원모집은 참여자 + 유효기간
                         <div className="flex items-center gap-4 text-xs">
                           {deal.deal_type !== 'time_based' && (
                             <div className="flex items-center gap-1 text-slate-600">
@@ -528,7 +528,7 @@ export default function MyCustomDeals() {
                           })()}
                         </div>
                       ) : (
-                        // 모집 중: 기간특가는 시간만, 인원모집은 인원/시간
+                        // 모집 중: 기간행사는 시간만, 인원모집은 인원/시간
                         <div className="flex items-center gap-4 text-xs">
                           {deal.deal_type !== 'time_based' && (
                             <div className="flex items-center gap-1 text-slate-600">

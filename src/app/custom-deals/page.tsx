@@ -53,7 +53,7 @@ interface CustomDeal {
   created_at: string;
   discount_valid_until?: string;
   online_discount_type?: 'link_only' | 'code_only' | 'both';
-  discount_url?: string; // 기간특가 링크
+  discount_url?: string; // 기간행사 링크
   description_link_previews?: Array<{
     url: string;
     title?: string;
@@ -122,7 +122,7 @@ export default function CustomDealsPage() {
       let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/`;
       const params = new URLSearchParams();
 
-      // 기간특가 필터
+      // 기간행사 필터
       if (selectedType === 'time_based') {
         params.append('deal_type', 'time_based');
       }
@@ -418,7 +418,7 @@ export default function CustomDealsPage() {
                     : 'bg-white text-gray-700 border border-orange-300 hover:bg-orange-50'
                 }`}
               >
-                기간특가
+                기간행사
               </button>
 
               {/* Sort Type Filter */}
@@ -445,7 +445,7 @@ export default function CustomDealsPage() {
                 ))}
               </select>
 
-              {/* Location Filter (오프라인 공구용, 쿠폰/이벤트/기간특가 탭에서는 숨김) */}
+              {/* Location Filter (오프라인 공구용, 쿠폰/이벤트/기간행사 탭에서는 숨김) */}
               {selectedType !== 'online' && selectedType !== 'coupon_only' && selectedType !== 'time_based' && (
                 <input
                   type="text"
@@ -494,7 +494,7 @@ export default function CustomDealsPage() {
                 let isDealClosed = false;
 
                 if (deal.deal_type === 'time_based') {
-                  // 기간특가: expired_at(모집기간) 종료 시 마감
+                  // 기간행사: expired_at(모집기간) 종료 시 마감
                   isDealClosed = deal.expired_at
                     ? new Date(deal.expired_at).getTime() <= currentTime.getTime()
                     : false;
@@ -506,12 +506,12 @@ export default function CustomDealsPage() {
                   isDealClosed = deal.status === 'completed' || deal.status === 'expired' || isExpired;
                 }
 
-                // 기간특가 탭: deal_type이 time_based인 것만
+                // 기간행사 탭: deal_type이 time_based인 것만
                 if (selectedType === 'time_based') {
                   if (deal.deal_type !== 'time_based') return false;
 
-                  // 디버깅: 모든 기간특가 출력
-                  console.log(`[기간특가 ${deal.id}]`, {
+                  // 디버깅: 모든 기간행사 출력
+                  console.log(`[기간행사 ${deal.id}]`, {
                     title: deal.title.substring(0, 30),
                     status: deal.status,
                     expired_at: deal.expired_at,
@@ -526,7 +526,7 @@ export default function CustomDealsPage() {
                 // 쿠폰/이벤트 탭: pricing_type이 coupon_only이면서 time_based가 아닌 것만
                 if (selectedType === 'coupon_only') {
                   if (deal.pricing_type !== 'coupon_only') return false;
-                  if (deal.deal_type === 'time_based') return false; // 기간특가 제외
+                  if (deal.deal_type === 'time_based') return false; // 기간행사 제외
                   return showClosedDeals || !isDealClosed;
                 }
 
@@ -546,7 +546,7 @@ export default function CustomDealsPage() {
                 let aIsClosed = false;
                 let bIsClosed = false;
 
-                // 기간특가: expired_at만 체크
+                // 기간행사: expired_at만 체크
                 if (a.deal_type === 'time_based') {
                   aIsClosed = a.expired_at ? new Date(a.expired_at).getTime() <= currentTime.getTime() : false;
                 } else {
@@ -577,7 +577,7 @@ export default function CustomDealsPage() {
                 // 마감 체크
                 let isClosed = false;
                 if (deal.deal_type === 'time_based') {
-                  // 기간특가: expired_at(모집기간) 종료 시 마감
+                  // 기간행사: expired_at(모집기간) 종료 시 마감
                   isClosed = deal.expired_at ? new Date(deal.expired_at).getTime() <= currentTime.getTime() : false;
                 } else {
                   // 일반 공구: status 또는 expired_at 체크
@@ -652,7 +652,7 @@ export default function CustomDealsPage() {
 
                     {/* Price - 고정 높이 */}
                     <div className="mb-2 h-16">
-                      {/* 기간특가 구분: deal_type이 명시적으로 'time_based'인 경우만 */}
+                      {/* 기간행사 구분: deal_type이 명시적으로 'time_based'인 경우만 */}
                       {deal.deal_type === 'time_based' ? (
                         <div className="flex flex-col gap-1">
                           {deal.original_price && deal.final_price ? (
@@ -679,7 +679,7 @@ export default function CustomDealsPage() {
                                         {deal.discount_rate}%
                                       </span>
                                       <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
-                                        기간특가
+                                        기간행사
                                       </span>
                                     </div>
                                   </div>
@@ -687,7 +687,7 @@ export default function CustomDealsPage() {
                               ) : (
                                 <div className="flex items-center justify-end mb-1">
                                   <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
-                                    기간특가
+                                    기간행사
                                   </span>
                                 </div>
                               )}
@@ -697,7 +697,7 @@ export default function CustomDealsPage() {
                             </>
                           ) : (
                             <span className="text-lg font-bold text-orange-600">
-                              기간특가
+                              기간행사
                             </span>
                           )}
                         </div>
@@ -776,7 +776,7 @@ export default function CustomDealsPage() {
                         const isClosed = deal.status === 'completed' || deal.status === 'cancelled' || deal.status === 'expired';
 
                         if (deal.deal_type === 'time_based') {
-                          // 기간특가: 판매기간 표시 (인원 바 위치)
+                          // 기간행사: 판매기간 표시 (인원 바 위치)
                           return (
                             <>
                               <div className="flex items-center justify-between text-xs mt-2 mb-3">

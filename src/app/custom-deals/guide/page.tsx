@@ -100,7 +100,7 @@ export default function CustomDealsGuidePage() {
           <div className="bg-gradient-to-r from-orange-50 to-red-50 p-3.5 rounded-lg border-2 border-orange-200">
             <h4 className="text-sm font-bold text-orange-900 mb-2 flex items-center gap-1.5">
               <Clock className="w-4 h-4" />
-              기간특가 방식 (NEW)
+              기간행사 방식 (NEW)
             </h4>
             <div className="space-y-2">
               <div className="bg-white p-2.5 rounded-md">
