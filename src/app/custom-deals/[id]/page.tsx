@@ -133,6 +133,18 @@ export default function CustomDealDetailPage() {
     }
   }, [deal, user]);
 
+  // deal 상태 변경 감지
+  useEffect(() => {
+    if (deal) {
+      console.log('[상세페이지] deal 상태 업데이트됨:', {
+        id: deal.id,
+        type: deal.type,
+        location: deal.location,
+        hasKakaoMapComponent: !!KakaoMap
+      });
+    }
+  }, [deal]);
+
   const fetchCategories = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom/categories/`);
@@ -177,6 +189,7 @@ export default function CustomDealDetailPage() {
         location: data.location
       });
       setDeal(data);
+      console.log('[상세페이지] setDeal 호출 완료');
     } catch (error) {
       console.error('로드 실패:', error);
       toast.error('공구 정보를 불러오는데 실패했습니다');
@@ -1252,16 +1265,13 @@ export default function CustomDealDetailPage() {
                 )}
 
                 {/* 오프라인: 매장 정보 */}
-                {(() => {
-                  console.log('[상세페이지] 매장 정보 체크:', {
+                {deal.type === 'offline' && ((() => {
+                  console.log('[상세페이지] 오프라인 매장 정보 렌더링:', {
                     type: deal.type,
-                    isOffline: deal.type === 'offline',
                     location: deal.location,
                     title: deal.title
                   });
-                  return null;
-                })()}
-                {deal.type === 'offline' && (
+                  return (
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                     <h3 className="text-sm font-semibold text-orange-900 mb-3 flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
@@ -1277,14 +1287,15 @@ export default function CustomDealDetailPage() {
                           )}
 
                           {/* 카카오맵 */}
-                          {(() => {
-                            console.log('[상세페이지] 카카오맵 렌더링 시작:', {
-                              address: deal.location,
-                              placeName: deal.title
-                            });
-                            return null;
-                          })()}
                           <div className="mt-3">
+                            {(() => {
+                              console.log('[상세페이지] KakaoMap 컴포넌트 렌더링:', {
+                                address: deal.location,
+                                placeName: deal.title,
+                                componentExists: !!KakaoMap
+                              });
+                              return null;
+                            })()}
                             <KakaoMap
                               address={deal.location}
                               placeName={deal.title}
@@ -1307,7 +1318,8 @@ export default function CustomDealDetailPage() {
                       </p>
                     </div>
                   </div>
-                )}
+                  );
+                })())}
               </div>
             )}
 
