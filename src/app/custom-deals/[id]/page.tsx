@@ -1222,104 +1222,82 @@ export default function CustomDealDetailPage() {
               </div>
             )}
 
-            {/* 기간행사: 할인 링크 또는 매장 정보 */}
-            {deal.deal_type === 'time_based' && !isExpired && (
+            {/* 기간행사: 할인 링크 */}
+            {deal.deal_type === 'time_based' && !isExpired && deal.discount_url && (
               <div className="space-y-3">
-                {/* discount_url이 있을 때만 버튼 표시 */}
-                {deal.discount_url && (
-                  <>
-                    <a
-                      href={getRedirectUrl(deal.discount_url)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block"
-                      onClick={async () => {
-                        // 클릭수 증가 API 호출
-                        try {
-                          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/track_click/`, {
-                            method: 'POST',
-                          });
-                          // 실시간 UI 업데이트
-                          setDeal(prev => prev ? {
-                            ...prev,
-                            discount_url_clicks: (prev.discount_url_clicks || 0) + 1
-                          } : null);
-                        } catch (error) {
-                          console.error('클릭수 증가 실패:', error);
-                        }
-                      }}
-                    >
-                      <Button
-                        size="lg"
-                        className="w-full font-semibold py-6 bg-orange-600 hover:bg-orange-700 text-white"
-                      >
-                        {deal.type === 'online' ? '할인 링크로 이동' : '이벤트/행사 안내 링크로 이동'}
-                      </Button>
-                    </a>
-                    {/* 클릭수 표시 - 데이터 축적 후 활성화 예정
-                    <p className="text-sm text-gray-500 text-center mt-2">
-                      {(deal.discount_url_clicks || 0).toLocaleString()}명이 링크를 방문했어요
-                    </p>
-                    */}
-                  </>
-                )}
+                <a
+                  href={getRedirectUrl(deal.discount_url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                  onClick={async () => {
+                    // 클릭수 증가 API 호출
+                    try {
+                      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${deal.id}/track_click/`, {
+                        method: 'POST',
+                      });
+                      // 실시간 UI 업데이트
+                      setDeal(prev => prev ? {
+                        ...prev,
+                        discount_url_clicks: (prev.discount_url_clicks || 0) + 1
+                      } : null);
+                    } catch (error) {
+                      console.error('클릭수 증가 실패:', error);
+                    }
+                  }}
+                >
+                  <Button
+                    size="lg"
+                    className="w-full font-semibold py-6 bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    {deal.type === 'online' ? '할인 링크로 이동' : '이벤트/행사 안내 링크로 이동'}
+                  </Button>
+                </a>
+                {/* 클릭수 표시 - 데이터 축적 후 활성화 예정
+                <p className="text-sm text-gray-500 text-center mt-2">
+                  {(deal.discount_url_clicks || 0).toLocaleString()}명이 링크를 방문했어요
+                </p>
+                */}
+              </div>
+            )}
 
-                {/* 오프라인: 매장 정보 */}
-                {deal.type === 'offline' && ((() => {
-                  console.log('[상세페이지] 오프라인 매장 정보 렌더링:', {
-                    type: deal.type,
-                    location: deal.location,
-                    title: deal.title
-                  });
-                  return (
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-orange-900 mb-3 flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      매장 정보
-                    </h3>
-                    <div className="space-y-3 text-sm">
-                      {deal.location && (
-                        <div>
-                          <p className="text-gray-600 text-xs mb-1">주소</p>
-                          <p className="text-gray-900 font-medium">{deal.location}</p>
-                          {deal.location_detail && (
-                            <p className="text-gray-600 text-xs mt-0.5">{deal.location_detail}</p>
-                          )}
+            {/* 매장 정보 - location이 있으면 표시 */}
+            {deal.location && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h3 className="text-sm font-semibold text-orange-900 mb-3 flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  매장 정보
+                </h3>
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <p className="text-gray-600 text-xs mb-1">주소</p>
+                    <p className="text-gray-900 font-medium">{deal.location}</p>
+                    {deal.location_detail && (
+                      <p className="text-gray-600 text-xs mt-0.5">{deal.location_detail}</p>
+                    )}
 
-                          {/* 카카오맵 */}
-                          <div className="mt-3">
-                            {(() => {
-                              console.log('[상세페이지] KakaoMap 컴포넌트 렌더링:', {
-                                address: deal.location,
-                                placeName: deal.title,
-                                componentExists: !!KakaoMap
-                              });
-                              return null;
-                            })()}
-                            <KakaoMap
-                              address={deal.location}
-                              placeName={deal.title}
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {deal.phone_number && (
-                        <div>
-                          <p className="text-gray-600 text-xs mb-1">연락처</p>
-                          <a href={`tel:${deal.phone_number}`} className="text-orange-600 font-medium hover:underline">
-                            {deal.phone_number}
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-orange-200">
-                      <p className="text-xs text-orange-700">
-                        💡 매장 방문 시 이 페이지를 보여주세요
-                      </p>
+                    {/* 카카오맵 */}
+                    <div className="mt-3">
+                      <KakaoMap
+                        address={deal.location}
+                        placeName={deal.title}
+                      />
                     </div>
                   </div>
-                  );
-                })())}
+                  {deal.phone_number && (
+                    <div>
+                      <p className="text-gray-600 text-xs mb-1">연락처</p>
+                      <a href={`tel:${deal.phone_number}`} className="text-orange-600 font-medium hover:underline">
+                        {deal.phone_number}
+                      </a>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-3 pt-3 border-t border-orange-200">
+                  <p className="text-xs text-orange-700">
+                    💡 매장 방문 시 이 페이지를 보여주세요
+                  </p>
+                </div>
               </div>
             )}
 
