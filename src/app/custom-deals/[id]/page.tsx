@@ -1245,6 +1245,15 @@ export default function CustomDealDetailPage() {
                 )}
 
                 {/* 오프라인: 매장 정보 */}
+                {(() => {
+                  console.log('[상세페이지] 매장 정보 체크:', {
+                    type: deal.type,
+                    isOffline: deal.type === 'offline',
+                    location: deal.location,
+                    title: deal.title
+                  });
+                  return null;
+                })()}
                 {deal.type === 'offline' && (
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                     <h3 className="text-sm font-semibold text-orange-900 mb-3 flex items-center gap-2">
@@ -1261,6 +1270,13 @@ export default function CustomDealDetailPage() {
                           )}
 
                           {/* 카카오맵 */}
+                          {(() => {
+                            console.log('[상세페이지] 카카오맵 렌더링 시작:', {
+                              address: deal.location,
+                              placeName: deal.title
+                            });
+                            return null;
+                          })()}
                           <div className="mt-3">
                             <KakaoMap
                               address={deal.location}
