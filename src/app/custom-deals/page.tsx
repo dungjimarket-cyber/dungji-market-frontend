@@ -510,17 +510,15 @@ export default function CustomDealsPage() {
                 if (selectedType === 'time_based') {
                   if (deal.deal_type !== 'time_based') return false;
 
-                  // 디버깅
-                  if (deal.title.includes('기간특가')) {
-                    console.log(`[기간특가 ${deal.id}]`, {
-                      title: deal.title,
-                      status: deal.status,
-                      expired_at: deal.expired_at,
-                      isDealClosed,
-                      showClosedDeals,
-                      willShow: showClosedDeals || !isDealClosed
-                    });
-                  }
+                  // 디버깅: 모든 기간특가 출력
+                  console.log(`[기간특가 ${deal.id}]`, {
+                    title: deal.title.substring(0, 30),
+                    status: deal.status,
+                    expired_at: deal.expired_at,
+                    isDealClosed,
+                    showClosedDeals,
+                    willShow: showClosedDeals || !isDealClosed
+                  });
 
                   return showClosedDeals || !isDealClosed;
                 }
