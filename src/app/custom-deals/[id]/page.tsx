@@ -144,6 +144,7 @@ export default function CustomDealDetailPage() {
   };
 
   const fetchDeal = async () => {
+    console.log('[상세페이지] fetchDeal 호출됨, ID:', params.id);
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
@@ -169,6 +170,12 @@ export default function CustomDealDetailPage() {
       }
 
       const data = await response.json();
+      console.log('[상세페이지] API 응답 데이터:', {
+        id: data.id,
+        title: data.title,
+        type: data.type,
+        location: data.location
+      });
       setDeal(data);
     } catch (error) {
       console.error('로드 실패:', error);
