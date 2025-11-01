@@ -1240,16 +1240,6 @@ export default function CustomDealDetailPage() {
                       {(deal.discount_url_clicks || 0).toLocaleString()}명이 링크를 방문했어요
                     </p>
                     */}
-                    {deal.type === 'online' && (
-                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                        <div className="flex items-start gap-2">
-                          <CheckCircle className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
-                          <p className="text-xs text-orange-700 font-medium">
-                            기간 내 바로 구매 가능한 특가 상품 입니다
-                          </p>
-                        </div>
-                      </div>
-                    )}
                   </>
                 )}
 
