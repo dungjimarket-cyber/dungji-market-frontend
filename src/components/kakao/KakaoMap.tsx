@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Script from 'next/script';
 
 declare global {
   interface Window {
@@ -15,13 +16,15 @@ interface KakaoMapProps {
 
 export default function KakaoMap({ address, placeName }: KakaoMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
   useEffect(() => {
-    const loadKakaoMap = () => {
-      if (!window.kakao || !window.kakao.maps) {
-        console.error('카카오맵 로드 실패');
-        return;
-      }
+    if (!isScriptLoaded || !window.kakao || !window.kakao.maps) {
+      return;
+    }
+
+    const loadMap = () => {
+      if (!mapRef.current) return;
 
       const geocoder = new window.kakao.maps.services.Geocoder();
 
@@ -33,7 +36,7 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
           // 지도 생성
           const map = new window.kakao.maps.Map(mapRef.current, {
             center: coords,
-            level: 3, // 확대 레벨
+            level: 3,
           });
 
           // 마커 생성
@@ -42,37 +45,38 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
             position: coords,
           });
 
-          // 인포윈도우 생성 (장소명이 있으면)
+          // 인포윈도우 생성
           if (placeName) {
             const infowindow = new window.kakao.maps.InfoWindow({
-              content: `<div style="padding:5px;font-size:12px;text-align:center;">${placeName}</div>`,
+              content: `<div style="padding:5px;font-size:12px;text-align:center;white-space:nowrap;">${placeName}</div>`,
             });
             infowindow.open(map, marker);
           }
         } else {
-          console.error('주소 검색 실패:', status);
+          console.error('주소 검색 실패:', status, address);
         }
       });
     };
 
-    // 카카오맵 스크립트 로드 확인
-    if (window.kakao && window.kakao.maps) {
-      loadKakaoMap();
+    // kakao.maps.load 사용
+    if (window.kakao.maps.load) {
+      window.kakao.maps.load(loadMap);
     } else {
-      const script = document.createElement('script');
-      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`;
-      script.async = true;
-      script.onload = () => {
-        window.kakao.maps.load(loadKakaoMap);
-      };
-      document.head.appendChild(script);
+      loadMap();
     }
-  }, [address, placeName]);
+  }, [address, placeName, isScriptLoaded]);
 
   return (
-    <div
-      ref={mapRef}
-      className="w-full h-64 rounded-lg border border-slate-200"
-    />
+    <>
+      <Script
+        src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`}
+        strategy="afterInteractive"
+        onLoad={() => setIsScriptLoaded(true)}
+      />
+      <div
+        ref={mapRef}
+        className="w-full h-64 rounded-lg border border-slate-200 bg-slate-100"
+      />
+    </>
   );
 }
