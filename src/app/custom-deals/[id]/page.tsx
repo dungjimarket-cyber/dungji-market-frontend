@@ -1491,18 +1491,14 @@ export default function CustomDealDetailPage() {
           )}
 
           {/* 할인 유효기간 */}
-          {deal.discount_valid_until && (
+          {deal.discount_valid_days && (
             <Card className="border-slate-200 max-w-4xl mx-auto">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="w-4 h-4 text-slate-500" />
                   <span className="text-slate-600">할인 유효기간:</span>
                   <span className="text-slate-900 font-semibold">
-                    {new Date(deal.discount_valid_until).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}까지
+                    공구 마감 후 {deal.discount_valid_days}일
                   </span>
                 </div>
               </CardContent>
