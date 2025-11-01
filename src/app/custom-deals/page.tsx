@@ -490,16 +490,9 @@ export default function CustomDealsPage() {
                 // 취소된 공구는 항상 제외
                 if (deal.status === 'cancelled') return false;
 
-                // 기간특가의 경우 유효기간 만료 체크
-                const isValidityExpired = deal.deal_type === 'time_based' && deal.discount_valid_until
-                  ? new Date(deal.discount_valid_until).getTime() <= currentTime.getTime()
-                  : false;
-                const isDealClosed = deal.status === 'completed' || deal.status === 'expired' || isValidityExpired;
-
-                // 디버깅: 기간특가 마감 체크
-                if (deal.deal_type === 'time_based') {
-                  console.log(`[기간특가 ${deal.id}] status: ${deal.status}, discount_valid_until: ${deal.discount_valid_until}, isValidityExpired: ${isValidityExpired}, isDealClosed: ${isDealClosed}, showClosedDeals: ${showClosedDeals}`);
-                }
+                // 기간특가의 경우 expired_at(판매기간)으로 마감 체크
+                const isExpired = new Date(deal.expired_at).getTime() <= currentTime.getTime();
+                const isDealClosed = deal.status === 'completed' || deal.status === 'expired' || isExpired;
 
                 // 기간특가 탭: deal_type이 time_based인 것만
                 if (selectedType === 'time_based') {
@@ -526,15 +519,11 @@ export default function CustomDealsPage() {
                 return showClosedDeals || !isDealClosed;
               })
               .sort((a, b) => {
-                // 1차 정렬: 마감된 공구(completed, expired, 기간특가 만료)를 뒤로
-                const aValidityExpired = a.deal_type === 'time_based' && a.discount_valid_until
-                  ? new Date(a.discount_valid_until).getTime() <= currentTime.getTime()
-                  : false;
-                const bValidityExpired = b.deal_type === 'time_based' && b.discount_valid_until
-                  ? new Date(b.discount_valid_until).getTime() <= currentTime.getTime()
-                  : false;
-                const aIsClosed = a.status === 'completed' || a.status === 'expired' || aValidityExpired;
-                const bIsClosed = b.status === 'completed' || b.status === 'expired' || bValidityExpired;
+                // 1차 정렬: 마감된 공구(completed, expired, 기간 만료)를 뒤로
+                const aExpired = new Date(a.expired_at).getTime() <= currentTime.getTime();
+                const bExpired = new Date(b.expired_at).getTime() <= currentTime.getTime();
+                const aIsClosed = a.status === 'completed' || a.status === 'expired' || aExpired;
+                const bIsClosed = b.status === 'completed' || b.status === 'expired' || bExpired;
 
                 if (aIsClosed && !bIsClosed) return 1;  // a가 마감이면 뒤로
                 if (!aIsClosed && bIsClosed) return -1; // b가 마감이면 뒤로
@@ -549,11 +538,9 @@ export default function CustomDealsPage() {
                 return 0; // 최신순이거나 같은 상태면 순서 유지
               })
               .map((deal) => {
-                // 기간특가의 경우 discount_valid_until 만료도 체크
-                const isValidityExpired = deal.deal_type === 'time_based' && deal.discount_valid_until
-                  ? new Date(deal.discount_valid_until).getTime() <= currentTime.getTime()
-                  : false;
-                const isClosed = deal.status === 'completed' || deal.status === 'expired' || isValidityExpired;
+                // expired_at으로 마감 체크
+                const isExpired = new Date(deal.expired_at).getTime() <= currentTime.getTime();
+                const isClosed = deal.status === 'completed' || deal.status === 'expired' || isExpired;
                 return (
               <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
                 <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-slate-200 overflow-hidden flex flex-col">

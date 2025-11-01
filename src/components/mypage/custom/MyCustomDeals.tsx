@@ -295,15 +295,13 @@ export default function MyCustomDeals() {
     return <Badge variant="secondary">{deal.status_display}</Badge>;
   };
 
-  // 기간특가 유효기간 만료 체크
-  const isValidityExpired = (deal: CustomDeal) => {
-    return deal.deal_type === 'time_based' && deal.discount_valid_until
-      ? new Date(deal.discount_valid_until).getTime() <= currentTime.getTime()
-      : false;
+  // 마감 체크 (expired_at 기준)
+  const isExpired = (deal: CustomDeal) => {
+    return new Date(deal.expired_at).getTime() <= currentTime.getTime();
   };
 
   const isDealClosed = (deal: CustomDeal) => {
-    return deal.status === 'completed' || deal.status === 'pending_seller' || isValidityExpired(deal);
+    return deal.status === 'completed' || deal.status === 'pending_seller' || isExpired(deal);
   };
 
   const isDealCancelled = (deal: CustomDeal) => {
