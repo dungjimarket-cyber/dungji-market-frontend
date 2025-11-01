@@ -1261,54 +1261,6 @@ export default function CustomDealDetailPage() {
               </div>
             )}
 
-            {/* 매장 위치 - location이 있으면 표시 */}
-            {deal.location && (
-              <div className="bg-white border border-slate-200 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  매장 위치
-                </h3>
-
-                {/* 카카오맵 */}
-                <div className="mb-3">
-                  <KakaoMap
-                    address={deal.location}
-                    placeName={deal.title}
-                  />
-                </div>
-
-                {/* 주소 및 연락처 */}
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <p className="text-gray-600 text-xs mb-1">주소</p>
-                    <p className="text-gray-900 font-medium">{deal.location}</p>
-                    {deal.location_detail && (
-                      <p className="text-gray-600 text-xs mt-0.5">{deal.location_detail}</p>
-                    )}
-                  </div>
-                  {deal.phone_number && (
-                    <div>
-                      <p className="text-gray-600 text-xs mb-1">연락처</p>
-                      <a href={`tel:${deal.phone_number}`} className="text-blue-600 font-medium hover:underline">
-                        {deal.phone_number}
-                      </a>
-                    </div>
-                  )}
-                  {deal.discount_valid_until && (
-                    <div className="pt-2 border-t border-slate-200">
-                      <p className="text-gray-600 text-xs mb-1">할인 유효기간</p>
-                      <p className="text-gray-900 font-medium">
-                        {new Date(deal.discount_valid_until).toLocaleDateString('ko-KR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}까지
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* 인원 모집 특가: 참여 가능 상태 - 모집 중이고 참여하지 않은 경우 */}
             {deal.deal_type !== 'time_based' &&
@@ -1534,50 +1486,27 @@ export default function CustomDealDetailPage() {
                 <div className="prose prose-slate prose-sm max-w-none">
                   <p className="whitespace-pre-wrap text-slate-700 text-sm leading-relaxed">{deal.usage_guide}</p>
                 </div>
+
+                {/* 할인 유효기간 */}
+                {deal.discount_valid_until && (
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="w-4 h-4 text-slate-500" />
+                      <span className="text-slate-600">할인 유효기간:</span>
+                      <span className="text-slate-900 font-semibold">
+                        {new Date(deal.discount_valid_until).toLocaleDateString('ko-KR', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}까지
+                      </span>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
 
-          {/* Offline - 매장 정보 */}
-          {deal.type === 'offline' && (
-            <Card className="border-slate-200 max-w-4xl mx-auto">
-              <CardContent className="p-5">
-                <h2 className="text-lg font-bold text-slate-900 mb-3">매장 정보</h2>
-                <div className="space-y-2.5">
-                  {deal.location && (
-                    <div className="flex items-start gap-2.5">
-                      <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-bold text-slate-900 text-base">{deal.location}</p>
-                        {deal.location_detail && (
-                          <p className="text-sm text-slate-600 font-medium">{deal.location_detail}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {deal.phone_number && (
-                    <div className="flex items-center gap-2.5 text-sm">
-                      <span className="text-slate-400">📞</span>
-                      <a
-                        href={`tel:${deal.phone_number}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {deal.phone_number}
-                      </a>
-                    </div>
-                  )}
-                  {deal.discount_valid_days && (
-                    <div className="flex items-center gap-2.5 text-sm">
-                      <Calendar className="w-4 h-4 text-slate-400" />
-                      <span className="text-slate-700">
-                        할인 유효기간: {deal.discount_valid_days}일
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Online - 할인 정보 (공구 완료 후 참여자만 표시) */}
           {deal.type === 'online' && redirectDiscountUrl && deal.status === 'completed' && deal.is_participated && (
@@ -1627,6 +1556,47 @@ export default function CustomDealDetailPage() {
                   >
                     {deal.phone_number}
                   </a>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 매장 위치 - location이 있으면 표시 */}
+          {deal.location && (
+            <Card className="border-slate-200 max-w-4xl mx-auto">
+              <CardContent className="p-5">
+                <h2 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  매장 위치
+                </h2>
+
+                {/* 카카오맵 */}
+                <div className="mb-4">
+                  <KakaoMap
+                    address={deal.location}
+                    placeName={deal.title}
+                  />
+                </div>
+
+                {/* 주소 및 연락처 */}
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex items-start gap-2.5">
+                    <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-slate-900">{deal.location}</p>
+                      {deal.location_detail && (
+                        <p className="text-slate-600 mt-0.5">{deal.location_detail}</p>
+                      )}
+                    </div>
+                  </div>
+                  {deal.phone_number && (
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-slate-400">📞</span>
+                      <a href={`tel:${deal.phone_number}`} className="text-blue-600 hover:underline font-medium">
+                        {deal.phone_number}
+                      </a>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
