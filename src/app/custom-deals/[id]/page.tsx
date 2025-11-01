@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle, Edit, Trash2, TrendingUp, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
+import KakaoMap from '@/components/kakao/KakaoMap';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -1250,7 +1251,7 @@ export default function CustomDealDetailPage() {
                       <MapPin className="w-4 h-4" />
                       매장 정보
                     </h3>
-                    <div className="space-y-2 text-sm">
+                    <div className="space-y-3 text-sm">
                       {deal.location && (
                         <div>
                           <p className="text-gray-600 text-xs mb-1">주소</p>
@@ -1258,6 +1259,14 @@ export default function CustomDealDetailPage() {
                           {deal.location_detail && (
                             <p className="text-gray-600 text-xs mt-0.5">{deal.location_detail}</p>
                           )}
+
+                          {/* 카카오맵 */}
+                          <div className="mt-3">
+                            <KakaoMap
+                              address={deal.location}
+                              placeName={deal.title}
+                            />
+                          </div>
                         </div>
                       )}
                       {deal.phone_number && (
