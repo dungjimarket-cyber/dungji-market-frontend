@@ -673,13 +673,13 @@ export default function CreateCustomDealPage() {
         const deadline = new Date(`${formData.deadline_date}T${formData.deadline_time}`);
         const now = new Date();
         const minDeadline = new Date(now.getTime() + 60 * 60 * 1000); // 1시간 후
-        const maxDeadline = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7일 후
+        const maxDeadline = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14일 후
 
         if (deadline < minDeadline) {
           newErrors.deadline_time = '마감시간은 최소 1시간 이후로 설정해주세요';
         }
         if (deadline > maxDeadline) {
-          newErrors.deadline_date = '마감시간은 최대 7일 이내로 설정해주세요';
+          newErrors.deadline_date = '마감시간은 최대 14일 이내로 설정해주세요';
         }
       }
     }
@@ -1680,7 +1680,7 @@ export default function CreateCustomDealPage() {
                   {/* 직접 선택 */}
                   {formData.deadline_type === 'manual' && (
                 <>
-                  <p className="text-sm text-blue-600 mb-2">최소 1시간 이후 ~ 최대 7일 이내로 설정해주세요</p>
+                  <p className="text-sm text-blue-600 mb-2">최소 1시간 이후 ~ 최대 14일 이내로 설정해주세요</p>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-sm text-slate-600">날짜</Label>
@@ -1689,7 +1689,7 @@ export default function CreateCustomDealPage() {
                         value={formData.deadline_date}
                         onChange={(e) => handleInputChange('deadline_date', e.target.value)}
                         min={new Date().toISOString().split('T')[0]}
-                        max={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                        max={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                         className={errors.deadline_date ? 'border-red-300' : ''}
                       />
                       {errors.deadline_date && <p className="text-sm text-red-600 mt-1">{errors.deadline_date}</p>}
