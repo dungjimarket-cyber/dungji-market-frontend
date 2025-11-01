@@ -619,16 +619,11 @@ export default function CustomDealsPage() {
                         {getStatusBadge(deal)}
                       </div>
                     )}
-                    {/* Type & Deal Type Badges */}
+                    {/* Type Badge */}
                     <div className="absolute top-2 left-2 flex gap-1">
                       <Badge className="bg-white/90 text-slate-700 border-0 whitespace-nowrap text-xs">
                         {deal.type_display}
                       </Badge>
-                      {deal.deal_type === 'time_based' && (
-                        <Badge className="bg-orange-500 text-white border-0 whitespace-nowrap text-xs">
-                          기간한정특가
-                        </Badge>
-                      )}
                     </div>
                   </div>
 
