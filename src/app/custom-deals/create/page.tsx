@@ -1655,15 +1655,15 @@ export default function CreateCustomDealPage() {
                   {/* 자동 선택 */}
                   {formData.deadline_type === 'auto' && (
                 <>
-                  <p className="text-sm text-blue-600 mb-2">등록 시간 기준으로 자동 계산됩니다</p>
-                  <div className="grid grid-cols-7 gap-2">
-                    {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                  <p className="text-xs text-blue-600 mb-2">등록 시간 기준으로 자동 계산됩니다</p>
+                  <div className="grid grid-cols-7 gap-1.5">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map((day) => (
                       <button
                         key={day}
                         type="button"
                         onClick={() => handleInputChange('deadline_days', day.toString())}
                         className={`
-                          py-3 px-2 rounded-lg border-2 font-medium transition-all text-center
+                          py-2 px-1.5 rounded-md border text-xs font-medium transition-all text-center
                           ${formData.deadline_days === day.toString()
                             ? 'border-blue-600 bg-blue-50 text-blue-700'
                             : 'border-blue-200 bg-white text-blue-600 hover:border-blue-300 hover:bg-blue-50'

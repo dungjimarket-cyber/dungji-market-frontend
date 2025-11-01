@@ -1486,23 +1486,25 @@ export default function CustomDealDetailPage() {
                 <div className="prose prose-slate prose-sm max-w-none">
                   <p className="whitespace-pre-wrap text-slate-700 text-sm leading-relaxed">{deal.usage_guide}</p>
                 </div>
+              </CardContent>
+            </Card>
+          )}
 
-                {/* 할인 유효기간 */}
-                {deal.discount_valid_until && (
-                  <div className="mt-4 pt-4 border-t border-slate-200">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="w-4 h-4 text-slate-500" />
-                      <span className="text-slate-600">할인 유효기간:</span>
-                      <span className="text-slate-900 font-semibold">
-                        {new Date(deal.discount_valid_until).toLocaleDateString('ko-KR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}까지
-                      </span>
-                    </div>
-                  </div>
-                )}
+          {/* 할인 유효기간 */}
+          {deal.discount_valid_until && (
+            <Card className="border-slate-200 max-w-4xl mx-auto">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="w-4 h-4 text-slate-500" />
+                  <span className="text-slate-600">할인 유효기간:</span>
+                  <span className="text-slate-900 font-semibold">
+                    {new Date(deal.discount_valid_until).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}까지
+                  </span>
+                </div>
               </CardContent>
             </Card>
           )}
