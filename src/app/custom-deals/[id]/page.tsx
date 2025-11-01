@@ -133,17 +133,6 @@ export default function CustomDealDetailPage() {
     }
   }, [deal, user]);
 
-  // deal 상태 변경 감지
-  useEffect(() => {
-    if (deal) {
-      console.log('[상세페이지] deal 상태 업데이트됨:', {
-        id: deal.id,
-        type: deal.type,
-        location: deal.location,
-        hasKakaoMapComponent: !!KakaoMap
-      });
-    }
-  }, [deal]);
 
   const fetchCategories = async () => {
     try {
@@ -182,14 +171,7 @@ export default function CustomDealDetailPage() {
       }
 
       const data = await response.json();
-      console.log('[상세페이지] API 응답 데이터:', {
-        id: data.id,
-        title: data.title,
-        type: data.type,
-        location: data.location
-      });
       setDeal(data);
-      console.log('[상세페이지] setDeal 호출 완료');
     } catch (error) {
       console.error('로드 실패:', error);
       toast.error('공구 정보를 불러오는데 실패했습니다');
