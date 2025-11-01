@@ -2192,7 +2192,7 @@ export default function CreateCustomDealPage() {
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-300 disabled:cursor-not-allowed"
               disabled={loading || (user?.penalty_info?.is_active || user?.penaltyInfo?.isActive)}
             >
-              {loading ? '등록 중...' : '등록하기'}
+              {loading ? '등록 중...' : '공구/행사 등록'}
             </Button>
           </div>
 

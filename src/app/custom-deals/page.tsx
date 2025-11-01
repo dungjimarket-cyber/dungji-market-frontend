@@ -333,8 +333,8 @@ export default function CustomDealsPage() {
                 onClick={handleCreateDeal}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                <Plus className="w-4 h-4 mr-1.5" />
-                공구 등록
+                <Plus className="w-4 h-4 mr-1" />
+                공구/행사 등록
               </Button>
             </div>
           </div>
