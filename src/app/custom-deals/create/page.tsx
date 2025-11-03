@@ -800,11 +800,14 @@ export default function CreateCustomDealPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log('[DEBUG] handleSubmit 시작');
     if (loading) return;
 
     // 1. 패널티, 중복, 프로필 체크 (통합)
     try {
+      console.log('[DEBUG] 패널티 체크 시작');
       const result = await checkCanCreateCustomDeal(user);
+      console.log('[DEBUG] 패널티 체크 결과:', result);
 
       if (!result.canProceed) {
         // 패널티가 있는 경우
@@ -834,17 +837,33 @@ export default function CreateCustomDealPage() {
     }
 
     // 2. 개인회원의 오프라인 공구 등록 방지
+    console.log('[DEBUG] 오프라인 체크:', formData.type, isBusinessUser);
     if (formData.type === 'offline' && !isBusinessUser) {
       toast.error('오프라인매장은 사업자 회원만 등록할 수 있습니다');
       return;
     }
 
     // 3. 폼 유효성 검증
-    if (!validateForm()) {
+    console.log('[DEBUG] validateForm 시작');
+    console.log('[DEBUG] formData:', {
+      deal_type: formData.deal_type,
+      pricing_type: formData.pricing_type,
+      deadline_date: formData.deadline_date,
+      deadline_time: formData.deadline_time
+    });
+
+    const isValid = validateForm();
+    console.log('[DEBUG] validateForm 결과:', isValid);
+    console.log('[DEBUG] errors:', errors);
+
+    if (!isValid) {
       const firstErrorField = Object.keys(errors)[0];
+      console.log('[DEBUG] 첫 번째 에러 필드:', firstErrorField, errors[firstErrorField]);
       toast.error(errors[firstErrorField] || '입력 내용을 확인해주세요');
       return;
     }
+
+    console.log('[DEBUG] validation 통과, 등록 시작');
 
     try {
       setLoading(true);
