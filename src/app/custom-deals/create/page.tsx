@@ -728,8 +728,8 @@ export default function CreateCustomDealPage() {
       }
     }
 
-    // 온라인 공구
-    if (formData.type === 'online') {
+    // 인원 모집 특가 전용: 온라인 할인 제공 방식 검증
+    if (formData.deal_type === 'participant_based' && formData.type === 'online') {
       if (formData.online_discount_type === 'link_only' || formData.online_discount_type === 'both') {
         if (!formData.discount_url.trim()) {
           newErrors.discount_url = '판매링크/참여방법을 입력해주세요';
@@ -750,7 +750,7 @@ export default function CreateCustomDealPage() {
       }
     }
 
-    // 오프라인 공구
+    // 오프라인: 매장 위치 및 연락처 검증 (기간행사 포함)
     if (formData.type === 'offline') {
       if (!formData.location.trim()) {
         newErrors.location = '매장 위치를 입력해주세요';
