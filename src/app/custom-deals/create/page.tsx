@@ -623,8 +623,8 @@ export default function CreateCustomDealPage() {
         newErrors.deadline_time = '마감 시간을 선택해주세요';
       }
 
-      // 온라인: 할인 링크 필수
-      if (formData.type === 'online') {
+      // 온라인: 할인 링크 필수 (쿠폰증정 제외)
+      if (formData.type === 'online' && formData.pricing_type !== 'coupon_only') {
         if (!formData.discount_url.trim()) {
           newErrors.discount_url = '판매링크/참여방법을 입력해주세요';
           if (!firstErrorRef) firstErrorRef = discountUrlRef;
@@ -1331,10 +1331,6 @@ export default function CreateCustomDealPage() {
                 checked={formData.deal_type === 'time_based'}
                 onCheckedChange={(checked) => {
                   handleInputChange('deal_type', checked ? 'time_based' : 'participant_based');
-                  // 기간행사 활성화 시 쿠폰전용이면 단일상품으로 변경
-                  if (checked && formData.pricing_type === 'coupon_only') {
-                    handleInputChange('pricing_type', 'single_product');
-                  }
                 }}
               />
             </div>
@@ -1357,12 +1353,10 @@ export default function CreateCustomDealPage() {
                   <RadioGroupItem value="all_products" id="all" />
                   <Label htmlFor="all" className="cursor-pointer">전품목 할인</Label>
                 </div>
-                {formData.deal_type !== 'time_based' && (
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="coupon_only" id="coupon" />
-                    <Label htmlFor="coupon" className="cursor-pointer">쿠폰전용</Label>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="coupon_only" id="coupon" />
+                  <Label htmlFor="coupon" className="cursor-pointer">쿠폰증정</Label>
+                </div>
               </RadioGroup>
             </div>
 
@@ -1467,30 +1461,42 @@ export default function CreateCustomDealPage() {
               </div>
             )}
 
-            {/* 쿠폰전용 안내 */}
+            {/* 쿠폰증정 안내 */}
             {formData.pricing_type === 'coupon_only' && (
               <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                💡 쿠폰전용은 구매과정없이 이벤트나 할인혜택을 코드, 링크 또는 텍스트 형태로 자유롭게 배포할 수 있습니다
+                💡 쿠폰증정은 가격 정보 없이 이벤트나 할인혜택을 코드, 링크 또는 텍스트 형태로 자유롭게 배포할 수 있습니다
+                {formData.deal_type === 'time_based' && (
+                  <div className="mt-2">
+                    • 기간행사: 기간 내 조건 없이 누구나 쿠폰 요청 가능<br/>
+                    • 인원 모집: 목표 인원 달성 시 참여자에게만 쿠폰 제공
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* 기간행사: 할인 링크 */}
+        {/* 기간행사: 할인 링크 / 쿠폰증정+기간행사: 행사 안내 링크 */}
         {formData.deal_type === 'time_based' && (
           <Card className="mb-6 border-orange-200 bg-orange-50/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-orange-700">
                 <LinkIcon className="w-5 h-5" />
-                {formData.type === 'online' ? '할인 링크 *' : '이벤트/행사 안내 링크'}
+                {formData.pricing_type === 'coupon_only'
+                  ? '이벤트/행사 안내 링크'
+                  : formData.type === 'online'
+                    ? '할인 링크 *'
+                    : '이벤트/행사 안내 링크'}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div>
                 <Label>
-                  {formData.type === 'online'
-                    ? '할인이 적용된 구매 링크 *'
-                    : '이벤트/행사 안내 링크 (선택사항)'}
+                  {formData.pricing_type === 'coupon_only'
+                    ? '이벤트/행사 안내 링크 (선택사항)'
+                    : formData.type === 'online'
+                      ? '할인이 적용된 구매 링크 *'
+                      : '이벤트/행사 안내 링크 (선택사항)'}
                 </Label>
                 <Input
                   value={formData.discount_url}
@@ -1728,13 +1734,13 @@ export default function CreateCustomDealPage() {
           </Card>
         )}
 
-        {/* 인원 모집 특가: 온라인 전용 필드 */}
-        {formData.deal_type === 'participant_based' && formData.type === 'online' && (
+        {/* 할인 제공 방식: 인원 모집 특가 또는 쿠폰증정 */}
+        {((formData.deal_type === 'participant_based' && formData.type === 'online') || formData.pricing_type === 'coupon_only') && (
           <Card className="mb-6 border-slate-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <LinkIcon className="w-5 h-5" />
-                할인 제공 방식
+                {formData.pricing_type === 'coupon_only' ? '쿠폰 제공 방식' : '할인 제공 방식'}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1760,7 +1766,9 @@ export default function CreateCustomDealPage() {
 
               <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                  💡 공구마감 후 참여자에게 제공됩니다
+                  💡 {formData.pricing_type === 'coupon_only'
+                    ? '기간 내 쿠폰을 요청한 사용자에게 제공됩니다'
+                    : '공구마감 후 참여자에게 제공됩니다'}
                 </p>
 
                 <div className="space-y-3">
