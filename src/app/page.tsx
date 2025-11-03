@@ -302,7 +302,7 @@ function HomeContent() {
                               // 쿠폰전용: 기간행사는 "쿠폰증정", 인원모집은 "선착순 이벤트"
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-xs font-black tracking-tighter text-white bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5 rounded-md whitespace-nowrap shadow-sm">
-                                  {deal.deal_type === 'time_based' ? '쿠폰증정' : '선착순 이벤트'}
+                                  {deal.deal_type === 'time_based' ? '서비스제공' : '선착순 이벤트'}
                                 </span>
                               </div>
                             ) : deal.original_price && deal.final_price ? (

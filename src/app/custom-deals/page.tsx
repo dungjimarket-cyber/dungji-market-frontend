@@ -698,7 +698,7 @@ export default function CustomDealsPage() {
                                 </span>
                               </div>
                               <div className="text-lg font-bold text-orange-600">
-                                쿠폰증정
+                                서비스제공
                               </div>
                             </div>
                           )}

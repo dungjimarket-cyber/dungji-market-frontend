@@ -384,7 +384,7 @@ export default function CustomDealDetailPage() {
 
     if (deal.deal_type === 'time_based') {
       if (deal.pricing_type === 'coupon_only') {
-        shareText = `${deal.title} - 쿠폰증정 이벤트`;
+        shareText = `${deal.title} - 서비스제공`;
       } else {
         shareText = `${deal.title} - 기간행사`;
       }
@@ -940,7 +940,7 @@ export default function CustomDealDetailPage() {
                 {deal.pricing_type === 'coupon_only' ? (
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 mb-1">
-                      {deal.deal_type === 'time_based' ? '쿠폰증정 이벤트' : '선착순 쿠폰증정'}
+                      {deal.deal_type === 'time_based' ? '서비스제공' : '선착순 쿠폰증정'}
                     </div>
                     {deal.deal_type !== 'time_based' && (
                       <p className="text-xs text-slate-600">인원 마감시 쿠폰수령정보를 참여내역으로 전송해드립니다</p>
