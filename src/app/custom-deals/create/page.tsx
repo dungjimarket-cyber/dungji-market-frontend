@@ -803,34 +803,39 @@ export default function CreateCustomDealPage() {
     if (loading) return;
 
     // 1. 패널티, 중복, 프로필 체크 (통합)
-    const result = await checkCanCreateCustomDeal(user);
+    try {
+      const result = await checkCanCreateCustomDeal(user);
 
-    if (!result.canProceed) {
-      // 패널티가 있는 경우
-      if (result.penaltyInfo) {
-        setPenaltyInfo(result.penaltyInfo);
-        setShowPenaltyModal(true);
-        return;
-      }
+      if (!result.canProceed) {
+        // 패널티가 있는 경우
+        if (result.penaltyInfo) {
+          setPenaltyInfo(result.penaltyInfo);
+          setShowPenaltyModal(true);
+          return;
+        }
 
-      // 중복 등록인 경우
-      if (result.duplicateMessage) {
-        setDuplicateDialogMessage(result.duplicateMessage);
-        setShowDuplicateDialog(true);
-        return;
-      }
+        // 중복 등록인 경우
+        if (result.duplicateMessage) {
+          setDuplicateDialogMessage(result.duplicateMessage);
+          setShowDuplicateDialog(true);
+          return;
+        }
 
-      // 프로필 정보 부족한 경우
-      if (result.missingFields) {
-        setProfileMissingFields(result.missingFields);
-        setShowProfileModal(true);
-        return;
+        // 프로필 정보 부족한 경우
+        if (result.missingFields) {
+          setProfileMissingFields(result.missingFields);
+          setShowProfileModal(true);
+          return;
+        }
       }
+    } catch (error) {
+      console.error('등록 전 체크 실패:', error);
+      // 체크 실패 시에도 계속 진행
     }
 
     // 2. 개인회원의 오프라인 공구 등록 방지
     if (formData.type === 'offline' && !isBusinessUser) {
-      toast.error('오프라인판매는 사업자 회원만 등록할 수 있습니다');
+      toast.error('오프라인매장은 사업자 회원만 등록할 수 있습니다');
       return;
     }
 
@@ -1059,7 +1064,7 @@ export default function CreateCustomDealPage() {
               <div>
                 <h3 className="font-medium text-slate-900 mb-1">등록 전 확인사항</h3>
                 <p className="text-sm text-slate-700 mb-1">
-                  오프라인판매는 사업자 회원만 등록 가능합니다
+                  오프라인매장은 사업자 회원만 등록 가능합니다
                 </p>
                 <p className="text-sm font-bold text-slate-900">
                   등록 불가: 할부/약정 상품, 금융상품, 사행성, 방문 서비스, 청소년 유해상품
@@ -1256,27 +1261,27 @@ export default function CreateCustomDealPage() {
 
             {/* 타입 선택 (온라인/오프라인) */}
             <div>
-              <Label>공구 유형 *</Label>
+              <Label className="text-base font-semibold">판매 유형 *</Label>
               <RadioGroup
                 value={formData.type}
                 onValueChange={(value) => handleInputChange('type', value as 'online' | 'offline')}
-                className="flex gap-4 mt-2"
+                className="flex gap-6 mt-3"
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="online" id="online" />
-                  <Label htmlFor="online" className="font-normal cursor-pointer">온라인판매</Label>
+                  <RadioGroupItem value="online" id="online" className="w-5 h-5" />
+                  <Label htmlFor="online" className="text-base cursor-pointer">온라인판매</Label>
                 </div>
                 {isBusinessUser && (
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="offline" id="offline" />
-                    <Label htmlFor="offline" className="font-normal cursor-pointer">오프라인판매</Label>
+                    <RadioGroupItem value="offline" id="offline" className="w-5 h-5" />
+                    <Label htmlFor="offline" className="text-base cursor-pointer">오프라인매장</Label>
                   </div>
                 )}
               </RadioGroup>
               {!isBusinessUser && (
                 <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-700">
-                    💡 오프라인판매는 사업자 회원만 이용 가능합니다
+                    💡 오프라인매장은 사업자 회원만 이용 가능합니다
                   </p>
                 </div>
               )}
