@@ -1464,12 +1464,21 @@ export default function CreateCustomDealPage() {
             {/* 쿠폰증정 안내 */}
             {formData.pricing_type === 'coupon_only' && (
               <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                💡 쿠폰증정은 가격 정보 없이 이벤트나 할인혜택을 코드, 링크 또는 텍스트 형태로 자유롭게 배포할 수 있습니다
-                {formData.deal_type === 'time_based' && (
-                  <div className="mt-2">
-                    • 기간행사: 기간 내 조건 없이 누구나 쿠폰 요청 가능<br/>
-                    • 인원 모집: 목표 인원 달성 시 참여자에게만 쿠폰 제공
-                  </div>
+                {formData.deal_type === 'time_based' ? (
+                  <>
+                    💡 기간행사 쿠폰증정: 가격 정보 없이 기간 내 조건 없이 이벤트나 쿠폰을 배포합니다
+                    <div className="mt-2">
+                      • 오프라인: 매장 위치와 연락처만 입력<br/>
+                      • 온라인: 행사 안내 링크 입력 (선택사항)
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    💡 인원 모집 쿠폰증정: 목표 인원 달성 시 참여자에게만 쿠폰을 제공합니다
+                    <div className="mt-2">
+                      • 할인 코드, 링크 또는 텍스트 형태로 제공 가능
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -1734,8 +1743,8 @@ export default function CreateCustomDealPage() {
           </Card>
         )}
 
-        {/* 할인 제공 방식: 인원 모집 특가 또는 쿠폰증정 */}
-        {((formData.deal_type === 'participant_based' && formData.type === 'online') || formData.pricing_type === 'coupon_only') && (
+        {/* 할인 제공 방식: 인원 모집 특가의 온라인만 */}
+        {formData.deal_type === 'participant_based' && formData.type === 'online' && (
           <Card className="mb-6 border-slate-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
