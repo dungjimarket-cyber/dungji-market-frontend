@@ -1400,7 +1400,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     </div>
                   )}
 
-                  {(formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') && (
+                  {/* 할인코드 입력 (기간행사 쿠폰증정은 숨김) */}
+                  {!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only') && (formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') && (
                     <div>
                       <Label className="flex items-center gap-2">
                         <Ticket className="w-4 h-4" />
@@ -1600,16 +1601,19 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 mb-4">
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        💡 오프라인 매장 할인코드 활용 방법<br />
-                        • 참여자가 할인코드를 매장에서 제시 (휴대폰 화면)<br />
-                        • 마감 후 관리페이지 QR코드 스캔 기능 사용 또는 할인코드 수동 확인<br />
-                        • 할인코드는 공구 마감 후 참여자에게 자동 발송됩니다
-                      </p>
-                    </div>
+                    {/* 할인코드 입력 (기간행사 쿠폰증정은 숨김) */}
+                    {!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only') && (
+                      <>
+                        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 mb-4">
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            💡 오프라인 매장 할인코드 활용 방법<br />
+                            • 참여자가 할인코드를 매장에서 제시 (휴대폰 화면)<br />
+                            • 마감 후 관리페이지 QR코드 스캔 기능 사용 또는 할인코드 수동 확인<br />
+                            • 할인코드는 공구 마감 후 참여자에게 자동 발송됩니다
+                          </p>
+                        </div>
 
-                    <div>
+                        <div>
                       <Label>할인 코드 또는 링크 *</Label>
                       <div className="space-y-2 mt-2">
                         {discountCodes.map((code, index) => (
@@ -1663,7 +1667,9 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           ⚠️ 요식업의 경우 포장 및 매장 이용 시에만 사용 가능함을 표기합니다.
                         </p>
                       )}
-                    </div>
+                        </div>
+                      </>
+                    )}
 
                     {/* 할인 유효기간 (기간행사 쿠폰증정은 숨김) */}
                     {!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only') && (

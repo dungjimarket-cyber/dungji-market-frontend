@@ -691,9 +691,16 @@ export default function CustomDealsPage() {
                               </div>
                             </>
                           ) : (
-                            <span className="text-lg font-bold text-orange-600">
-                              기간행사
-                            </span>
+                            <div className="flex flex-col gap-2">
+                              <div>
+                                <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
+                                  기간행사
+                                </span>
+                              </div>
+                              <div className="text-lg font-bold text-orange-600">
+                                쿠폰증정
+                              </div>
+                            </div>
                           )}
                         </div>
                       ) : deal.original_price && deal.final_price ? (
