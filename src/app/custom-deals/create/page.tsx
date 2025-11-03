@@ -660,7 +660,7 @@ export default function CreateCustomDealPage() {
           firstErrorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
           firstErrorRef.current.focus?.();
         }
-        return false;
+        return { isValid: false, errors: newErrors, firstErrorRef };
       }
       // 기간행사도 가격 정보 검증 계속 진행
     }
