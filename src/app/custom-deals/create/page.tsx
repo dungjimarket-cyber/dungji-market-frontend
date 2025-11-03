@@ -770,15 +770,19 @@ export default function CreateCustomDealPage() {
         newErrors.phone_number = '연락처는 최대 20자까지 입력 가능합니다';
         if (!firstErrorRef) firstErrorRef = phoneNumberRef;
       }
-      const validCodes = discountCodes.filter(c => c.trim());
-      if (validCodes.length === 0) {
-        newErrors.discount_codes = '할인코드를 1개 이상 입력해주세요';
-        if (!firstErrorRef) firstErrorRef = discountCodesRef;
-      }
-      const targetCount = parseInt(formData.target_participants);
-      if (validCodes.length < targetCount) {
-        newErrors.discount_codes = `할인코드 개수가 목표 인원(${targetCount}명)보다 적습니다`;
-        if (!firstErrorRef) firstErrorRef = discountCodesRef;
+
+      // 인원 모집 특가일 때만 할인코드 검증
+      if (formData.deal_type === 'participant_based') {
+        const validCodes = discountCodes.filter(c => c.trim());
+        if (validCodes.length === 0) {
+          newErrors.discount_codes = '할인코드를 1개 이상 입력해주세요';
+          if (!firstErrorRef) firstErrorRef = discountCodesRef;
+        }
+        const targetCount = parseInt(formData.target_participants);
+        if (validCodes.length < targetCount) {
+          newErrors.discount_codes = `할인코드 개수가 목표 인원(${targetCount}명)보다 적습니다`;
+          if (!firstErrorRef) firstErrorRef = discountCodesRef;
+        }
       }
     }
 
