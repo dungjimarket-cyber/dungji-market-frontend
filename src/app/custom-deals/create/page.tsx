@@ -575,9 +575,11 @@ export default function CreateCustomDealPage() {
   };
 
   // 유효성 검증
-  const validateForm = () => {
+  const validateForm = (): { isValid: boolean; errors: Record<string, string>; firstErrorRef: React.RefObject<any> | null } => {
     const newErrors: Record<string, string> = {};
     let firstErrorRef: React.RefObject<any> | null = null;
+
+    console.log('[VALIDATE] 검증 시작');
 
     // 기본 필드
     if (!formData.title.trim()) {
@@ -780,20 +782,29 @@ export default function CreateCustomDealPage() {
       }
     }
 
-    setErrors(newErrors);
+    const isValid = Object.keys(newErrors).length === 0;
 
-    // 첫 번째 에러 필드로 포커스 및 스크롤
-    if (Object.keys(newErrors).length > 0 && firstErrorRef?.current) {
-      if ('focus' in firstErrorRef.current) {
-        firstErrorRef.current.focus();
+    console.log('[VALIDATE] 검증 완료:', {
+      isValid,
+      errorCount: Object.keys(newErrors).length,
+      errors: newErrors
+    });
+
+    if (!isValid) {
+      setErrors(newErrors);
+      // 첫 번째 에러 필드로 포커스 및 스크롤
+      if (firstErrorRef?.current) {
+        if ('focus' in firstErrorRef.current) {
+          firstErrorRef.current.focus();
+        }
+        firstErrorRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
       }
-      firstErrorRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
     }
 
-    return Object.keys(newErrors).length === 0;
+    return { isValid, errors: newErrors, firstErrorRef };
   };
 
   // 등록 처리
@@ -852,14 +863,15 @@ export default function CreateCustomDealPage() {
       deadline_time: formData.deadline_time
     });
 
-    const isValid = validateForm();
-    console.log('[DEBUG] validateForm 결과:', isValid);
-    console.log('[DEBUG] errors:', errors);
+    const validation = validateForm();
+    console.log('[DEBUG] validateForm 결과:', validation.isValid);
+    console.log('[DEBUG] validation.errors:', validation.errors);
 
-    if (!isValid) {
-      const firstErrorField = Object.keys(errors)[0];
-      console.log('[DEBUG] 첫 번째 에러 필드:', firstErrorField, errors[firstErrorField]);
-      toast.error(errors[firstErrorField] || '입력 내용을 확인해주세요');
+    if (!validation.isValid) {
+      const firstErrorField = Object.keys(validation.errors)[0];
+      const firstErrorMessage = validation.errors[firstErrorField];
+      console.log('[DEBUG] 첫 번째 에러 필드:', firstErrorField, firstErrorMessage);
+      toast.error(firstErrorMessage || '입력 내용을 확인해주세요');
       return;
     }
 
