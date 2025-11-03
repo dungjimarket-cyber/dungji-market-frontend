@@ -121,6 +121,12 @@ export default function CustomDealsGuidePage() {
                   할인링크로 이동해서 즉시 구매 가능
                 </p>
               </div>
+              <div className="bg-white p-2.5 rounded-md border-t border-orange-200 mt-2 pt-2">
+                <p className="text-xs text-gray-800 font-medium mb-1">🎁 서비스제공 옵션</p>
+                <p className="text-xs text-gray-600">
+                  무료 체험권, 웰컴 쿠폰 등 구매 없이 무료로 제공하는 이벤트 진행 가능
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -359,9 +365,16 @@ export default function CustomDealsGuidePage() {
               </div>
               <div className="bg-purple-50 border border-purple-200 p-2.5 rounded-lg">
                 <p className="text-xs font-medium text-purple-900 mb-1">오프라인 이벤트 참여</p>
-                <p className="text-xs text-purple-800">
+                <p className="text-xs text-purple-800 mb-1.5">
                   카페 웰컴 쿠폰, 식당 오픈 기념 무료 음료 제공 등
                 </p>
+                <div className="bg-white p-2 rounded border border-purple-300">
+                  <p className="text-xs font-semibold text-purple-900 mb-0.5">🍽️ 식당 활용 예시</p>
+                  <p className="text-[11px] text-purple-700">
+                    메인 메뉴 주문 시 무료 음료/반찬/사이드메뉴 서비스<br/>
+                    예: "삼겹살 2인분 이상 주문 시 된장찌개 무료 제공"
+                  </p>
+                </div>
               </div>
               <div className="bg-green-50 border border-green-200 p-2.5 rounded-lg">
                 <p className="text-xs font-medium text-green-900 mb-1">온라인 무료 혜택</p>
