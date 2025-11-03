@@ -136,7 +136,13 @@ export default function RichTextEditor({
           type="button"
           variant={editor.isActive({ textAlign: 'left' }) ? 'default' : 'ghost'}
           size="sm"
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          onClick={() => {
+            if (editor.isActive({ textAlign: 'left' })) {
+              editor.chain().focus().unsetTextAlign().run()
+            } else {
+              editor.chain().focus().setTextAlign('left').run()
+            }
+          }}
           className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <AlignLeft className="w-4 h-4" />
@@ -146,7 +152,13 @@ export default function RichTextEditor({
           type="button"
           variant={editor.isActive({ textAlign: 'center' }) ? 'default' : 'ghost'}
           size="sm"
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          onClick={() => {
+            if (editor.isActive({ textAlign: 'center' })) {
+              editor.chain().focus().unsetTextAlign().run()
+            } else {
+              editor.chain().focus().setTextAlign('center').run()
+            }
+          }}
           className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <AlignCenter className="w-4 h-4" />
@@ -156,7 +168,13 @@ export default function RichTextEditor({
           type="button"
           variant={editor.isActive({ textAlign: 'right' }) ? 'default' : 'ghost'}
           size="sm"
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          onClick={() => {
+            if (editor.isActive({ textAlign: 'right' })) {
+              editor.chain().focus().unsetTextAlign().run()
+            } else {
+              editor.chain().focus().setTextAlign('right').run()
+            }
+          }}
           className="h-9 w-9 sm:h-8 sm:w-8 p-0"
         >
           <AlignRight className="w-4 h-4" />
@@ -289,7 +307,7 @@ export default function RichTextEditor({
 
       {/* 에디터 */}
       <div
-        className="px-3 pb-3 pt-3 text-slate-700 text-sm leading-relaxed [&_.ProseMirror]:min-h-[400px] [&_.ProseMirror>*:first-child]:mt-0 [&_.ProseMirror>p]:mb-3 [&_.ProseMirror>ul]:mb-3 [&_.ProseMirror>ul]:pl-6 [&_.ProseMirror>ul]:list-disc [&_.ProseMirror>ol]:mb-3 [&_.ProseMirror>ol]:pl-6 [&_.ProseMirror>ol]:list-decimal [&_.ProseMirror>h1]:mb-3 [&_.ProseMirror>h2]:mb-3 [&_.ProseMirror>h3]:mb-3"
+        className="px-3 pb-3 pt-3 text-slate-700 text-sm leading-relaxed [&_.ProseMirror]:min-h-[400px] [&_.ProseMirror>*:first-child]:mt-0 [&_.ProseMirror>p]:mb-1 [&_.ProseMirror>ul]:mb-3 [&_.ProseMirror>ul]:pl-6 [&_.ProseMirror>ul]:list-disc [&_.ProseMirror>ol]:mb-3 [&_.ProseMirror>ol]:pl-6 [&_.ProseMirror>ol]:list-decimal [&_.ProseMirror>h1]:mb-3 [&_.ProseMirror>h2]:mb-3 [&_.ProseMirror>h3]:mb-3"
         style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
       >
         <EditorContent editor={editor} />
