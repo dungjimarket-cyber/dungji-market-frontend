@@ -125,16 +125,16 @@ export default function DesktopNavbar() {
             </Link>
 
             {/* 비로그인 시 */}
-            {!isAuthenticated && (
+            {/* {!isAuthenticated && (
               <>
                 <Link href="/register" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
                   견적요청
                 </Link>
               </>
-            )}
+            )} */}
 
             {/* 구매회원(buyer) 로그인 시 */}
-            {isAuthenticated && (user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && !user?.user_type)) && (
+            {/* {isAuthenticated && (user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && !user?.user_type)) && (
               <>
                 <Link
                   href="/group-purchases/create"
@@ -144,10 +144,10 @@ export default function DesktopNavbar() {
                   견적요청
                 </Link>
               </>
-            )}
+            )} */}
 
             {/* 판매회원 로그인 시 */}
-            {isAuthenticated && (user?.role === 'seller' || user?.user_type === '판매') && (
+            {/* {isAuthenticated && (user?.role === 'seller' || user?.user_type === '판매') && (
               <>
                 <Link
                   href="/mypage/seller/bids"
@@ -157,7 +157,7 @@ export default function DesktopNavbar() {
                   견적 내역
                 </Link>
               </>
-            )}
+            )} */}
 
             <Link href="/used" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
               중고거래
