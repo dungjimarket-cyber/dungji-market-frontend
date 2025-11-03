@@ -9,12 +9,18 @@ interface DuplicateCheckResult {
 
 /**
  * 진행 중인 커스텀 공구가 있는지 체크
+ * @param username - 현재 사용자 아이디 (seller10은 5개 제한 예외)
  * @returns {Promise<DuplicateCheckResult>}
  */
-export async function checkActiveCustomDeals(): Promise<DuplicateCheckResult> {
+export async function checkActiveCustomDeals(username?: string): Promise<DuplicateCheckResult> {
   try {
     const token = localStorage.getItem('accessToken');
     if (!token) {
+      return { hasActiveDeal: false };
+    }
+
+    // seller10 계정은 5개 제한 예외 처리
+    if (username === 'seller10') {
       return { hasActiveDeal: false };
     }
 

@@ -209,6 +209,11 @@ export default function CreateCustomDealPage() {
   // 진행 중인 공구 체크 함수
   const checkActiveDeals = useCallback(async () => {
     try {
+      // seller10 계정은 5개 제한 예외 처리 (API 호출 전에 먼저 체크)
+      if (user?.username === 'seller10') {
+        return true;
+      }
+
       const token = localStorage.getItem('accessToken');
       if (!token) return true;
 
@@ -225,11 +230,6 @@ export default function CreateCustomDealPage() {
       if (!response.ok) return true;
 
       const data = await response.json();
-
-      // seller10 계정은 5개 제한 예외 처리
-      if (user?.username === 'seller10') {
-        return true;
-      }
 
       // 모집중 또는 판매자 확정 대기 상태의 공구 개수 확인 (최대 5개)
       if (data.results && data.results.length > 0) {
@@ -251,7 +251,7 @@ export default function CreateCustomDealPage() {
       console.error('활성 공구 체크 실패:', error);
       return true; // 에러 시 등록 진행
     }
-  }, []);
+  }, [user]);
 
   // 페이지 진입 시 인증 체크 (로딩 완료 후에만)
   useEffect(() => {

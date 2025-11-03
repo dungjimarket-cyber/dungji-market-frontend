@@ -36,19 +36,17 @@ export async function checkCanCreateCustomDeal(user: any): Promise<CreateDealChe
   }
 
   // 2. 중복 등록 체크 (seller10 계정은 예외)
-  if (user?.username !== 'seller10') {
-    try {
-      const duplicateCheck = await checkActiveCustomDeals();
-      if (duplicateCheck.hasActiveDeal) {
-        return {
-          canProceed: false,
-          duplicateMessage: duplicateCheck.message,
-        };
-      }
-    } catch (error) {
-      console.error('중복 체크 실패:', error);
-      // 중복 체크 실패 시에도 계속 진행
+  try {
+    const duplicateCheck = await checkActiveCustomDeals(user?.username);
+    if (duplicateCheck.hasActiveDeal) {
+      return {
+        canProceed: false,
+        duplicateMessage: duplicateCheck.message,
+      };
     }
+  } catch (error) {
+    console.error('중복 체크 실패:', error);
+    // 중복 체크 실패 시에도 계속 진행
   }
 
   // 3. 프로필 체크 (연락처만)
