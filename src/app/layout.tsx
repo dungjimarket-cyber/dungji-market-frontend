@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     siteName: '둥지마켓',
     images: [
       {
-        url: '/logos/dungji_logo.jpg',
+        url: 'https://www.dungjimarket.com/logos/dungji_logo.jpg',
         width: 1200,
         height: 630,
         alt: '둥지마켓',
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "둥지마켓 - 세상에 없던 공동구매 플랫폼",
     description: "🏪 우리동네 식당·학원·카페 모이면 할인!\n✓ 지역 단체할인 공구 (수수료 무료)\n✓ 온라인 쇼핑 공동구매\n✓ 같이 견적받기 (통신·렌탈)\n✓ 지역기반 중고직거래",
-    images: ['/logos/dungji_logo.jpg'],
+    images: ['https://www.dungjimarket.com/logos/dungji_logo.jpg'],
   },
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
   icons: {
