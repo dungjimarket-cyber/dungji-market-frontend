@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ChevronDown, ChevronUp, Users, ShoppingCart, AlertCircle, CheckCircle2, XCircle, Info, Clock, FileSpreadsheet, MessageCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users, ShoppingCart, AlertCircle, CheckCircle2, XCircle, Info, Clock, FileSpreadsheet, MessageCircle, Gift } from 'lucide-react';
 
 interface Section {
   id: string;
@@ -327,6 +327,180 @@ export default function CustomDealsGuidePage() {
             <p className="text-[11px] text-purple-700 mt-2 text-center">
               📱 카카오톡 채널에서 "등록 대행 요청"을 남겨주세요
             </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'service-provision',
+      title: '기간행사 서비스제공',
+      icon: <Gift className="w-5 h-5" />,
+      content: (
+        <div className="space-y-4">
+          <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-lg p-3.5">
+            <h4 className="text-sm font-semibold text-orange-900 mb-1.5 flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              기간행사 서비스제공이란?
+            </h4>
+            <p className="text-xs text-orange-800 leading-relaxed">
+              무료 서비스나 이벤트 혜택을 특정 기간 동안 인원 제한 없이 제공하는 방식입니다.<br/>
+              구매 과정 없이 참여만으로 바로 혜택을 받을 수 있는 특별한 이벤트입니다.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">💡 언제 사용하나요?</h4>
+            <div className="space-y-2">
+              <div className="bg-blue-50 border border-blue-200 p-2.5 rounded-lg">
+                <p className="text-xs font-medium text-blue-900 mb-1">무료 체험 서비스 제공</p>
+                <p className="text-xs text-blue-800">
+                  헬스장 무료 1일 이용권, 학원 무료 체험 수업 등
+                </p>
+              </div>
+              <div className="bg-purple-50 border border-purple-200 p-2.5 rounded-lg">
+                <p className="text-xs font-medium text-purple-900 mb-1">오프라인 이벤트 참여</p>
+                <p className="text-xs text-purple-800">
+                  카페 웰컴 쿠폰, 식당 오픈 기념 무료 음료 제공 등
+                </p>
+              </div>
+              <div className="bg-green-50 border border-green-200 p-2.5 rounded-lg">
+                <p className="text-xs font-medium text-green-900 mb-1">온라인 무료 혜택</p>
+                <p className="text-xs text-green-800">
+                  온라인 강의 무료 수강권, 무료 샘플 신청 등
+                </p>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 p-2.5 rounded-lg">
+                <p className="text-xs font-medium text-amber-900 mb-1">시즌 프로모션</p>
+                <p className="text-xs text-amber-800">
+                  개업/오픈 기념 이벤트, 주년 기념 특별 혜택 등
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">📋 판매자 등록 가이드</h4>
+            <div className="space-y-2">
+              <div className="space-y-1 text-xs text-gray-700">
+                <p className="font-semibold text-gray-900 mb-1.5">1. 기본 정보 입력</p>
+                <div className="ml-3 space-y-0.5">
+                  <p>• <span className="font-medium">공구 유형</span>: 온라인 또는 오프라인 선택</p>
+                  <p>• <span className="font-medium">상품명</span>: 제공할 서비스/이벤트 이름</p>
+                  <p>• <span className="font-medium">카테고리</span>: 해당하는 카테고리 선택</p>
+                  <p>• <span className="font-medium">이미지</span>: 서비스/이벤트 설명 이미지 업로드</p>
+                </div>
+              </div>
+
+              <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg">
+                <p className="text-xs font-semibold text-orange-900 mb-1.5">2. 가격 설정 (중요!)</p>
+                <div className="space-y-1 text-xs text-orange-800">
+                  <p>• <span className="font-semibold">판매 유형</span>: "인원 모집 특가" 또는 <span className="font-bold">"기간행사"</span> 중 선택</p>
+                  <p>• <span className="font-semibold">가격 유형</span>: <span className="font-bold">"서비스제공"</span> 선택</p>
+                  <p className="text-[11px] text-orange-700 bg-orange-100 p-1.5 rounded mt-1">
+                    💡 서비스제공은 구매 과정 없이 무료로 제공하는 이벤트입니다
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-1 text-xs text-gray-700">
+                <p className="font-semibold text-gray-900 mb-1.5">3. 진행 기간 설정</p>
+                <div className="ml-3 space-y-0.5">
+                  <p>• <span className="font-medium">시작일</span>: 서비스 제공 시작 날짜</p>
+                  <p>• <span className="font-medium">종료일</span>: 서비스 제공 종료 날짜</p>
+                  <p className="text-[11px] text-gray-600 bg-gray-100 p-1.5 rounded mt-1">
+                    ⏰ 기간 내 누구나 참여 가능하며, 인원 제한이 없습니다
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                <p className="text-xs font-semibold text-blue-900 mb-1.5">4. 혜택 제공 방법</p>
+                <div className="space-y-1.5 text-xs text-blue-800">
+                  <p className="font-medium">온라인 공구:</p>
+                  <div className="ml-3 space-y-0.5">
+                    <p>• 이벤트 참여 링크나 신청 페이지 URL 입력</p>
+                    <p>• 참여자는 링크로 이동하여 즉시 혜택 신청</p>
+                  </div>
+                  <p className="font-medium mt-2">오프라인 공구:</p>
+                  <div className="ml-3 space-y-0.5">
+                    <p>• 매장 위치와 연락처 입력</p>
+                    <p>• 방문 시 참여 인증으로 혜택 제공</p>
+                    <p>• 필요시 할인코드/유효기간 설정 가능</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1 text-xs text-gray-700">
+                <p className="font-semibold text-gray-900 mb-1.5">5. 상세 설명 작성</p>
+                <div className="ml-3 space-y-0.5">
+                  <p>• 제공하는 서비스/이벤트의 상세 내용</p>
+                  <p>• 이용 방법 및 주의사항</p>
+                  <p>• 제외 사항이 있다면 명확히 기재</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">🎯 구매자 이용 가이드</h4>
+            <div className="space-y-2">
+              <div className="flex gap-2.5">
+                <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</span>
+                <div>
+                  <p className="text-xs font-medium text-gray-900">이벤트 찾기</p>
+                  <p className="text-xs text-gray-600">기간행사 필터 또는 배지로 쉽게 찾을 수 있습니다</p>
+                </div>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</span>
+                <div>
+                  <p className="text-xs font-medium text-gray-900">참여하기 클릭</p>
+                  <p className="text-xs text-gray-600">로그인 후 참여하기 버튼을 누르면 즉시 참여 완료</p>
+                </div>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</span>
+                <div>
+                  <p className="text-xs font-medium text-gray-900">혜택 받기</p>
+                  <p className="text-xs text-gray-600">마이페이지에서 참여 링크 확인 또는 매장 방문하여 혜택 이용</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-green-50 border-2 border-green-300 rounded-lg p-3">
+            <h4 className="text-sm font-semibold text-green-900 mb-1.5 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" />
+              인원 모집 특가와의 차이점
+            </h4>
+            <div className="space-y-1.5 text-xs text-green-800">
+              <div className="flex items-start gap-2">
+                <span className="font-bold">✓</span>
+                <p><span className="font-semibold">인원 제한 없음</span>: 정해진 기간 동안 누구나 참여 가능</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-bold">✓</span>
+                <p><span className="font-semibold">즉시 이용</span>: 참여와 동시에 혜택 제공, 대기 없음</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-bold">✓</span>
+                <p><span className="font-semibold">무료 서비스</span>: 구매 과정 없이 무료로 제공되는 이벤트</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="font-bold">✓</span>
+                <p><span className="font-semibold">기간 운영</span>: 특정 기간 동안만 진행되는 타임 세일 방식</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+            <h4 className="text-sm font-semibold text-purple-900 mb-1.5">💼 활용 팁</h4>
+            <div className="space-y-1 text-xs text-purple-800">
+              <p>• 신규 고객 유치를 위한 무료 체험 서비스로 활용</p>
+              <p>• 오픈/주년 기념 이벤트로 브랜드 홍보</p>
+              <p>• 비수기 시즌에 매장 방문 고객 늘리기</p>
+              <p>• SNS 공유를 통한 바이럴 마케팅 효과</p>
+            </div>
           </div>
         </div>
       )
