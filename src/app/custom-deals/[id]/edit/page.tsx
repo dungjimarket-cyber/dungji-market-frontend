@@ -675,12 +675,16 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         if (formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') {
           submitFormData.append('discount_codes', JSON.stringify(discountCodes.filter(code => code.trim())));
         }
-        if (formData.discount_valid_days) {
+        // 기간행사 쿠폰증정이 아닐 때만 할인 유효기간 전송
+        if (!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only') && formData.discount_valid_days) {
           submitFormData.append('discount_valid_days', formData.discount_valid_days);
         }
       } else if (formData.type === 'offline') {
         submitFormData.append('discount_codes', JSON.stringify(discountCodes.filter(code => code.trim())));
-        submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
+        // 기간행사 쿠폰증정이 아닐 때만 할인 유효기간 전송
+        if (!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only')) {
+          submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
+        }
       }
 
       // 부분 판매 옵션 (항상 수정 가능)
@@ -719,7 +723,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             submitFormData.append('discount_url', formData.discount_url);
           }
           // ❌ discount_codes는 수정 불가이므로 전송하지 않음
-          if (formData.discount_valid_days) {
+          // 기간행사 쿠폰증정이 아닐 때만 할인 유효기간 전송
+          if (!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only') && formData.discount_valid_days) {
             submitFormData.append('discount_valid_days', formData.discount_valid_days);
           }
           if (formData.phone_number) {
@@ -729,7 +734,10 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           submitFormData.append('location', formData.location);
           if (formData.location_detail) submitFormData.append('location_detail', formData.location_detail);
           submitFormData.append('phone_number', formData.phone_number);
-          submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
+          // 기간행사 쿠폰증정이 아닐 때만 할인 유효기간 전송
+          if (!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only')) {
+            submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
+          }
           // ❌ discount_codes는 수정 불가이므로 전송하지 않음
         }
       }
@@ -1022,31 +1030,33 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           </CardContent>
         </Card>
 
-        {/* 부분 판매 허용 옵션 (항상 표시, 기간행사는 비활성화) */}
-        <Card className="mb-6 border-slate-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              판매 옵션
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-              <div className="flex-1">
-                <p className="font-medium text-slate-900">부분 판매 허용</p>
-                <p className="text-sm text-slate-500">인원 미달 시 24시간 내 판매 여부 선택 가능</p>
-                {originalData?.deal_type === 'time_based' && (
-                  <p className="text-xs text-orange-600 mt-1">기간행사는 부분 판매 옵션을 사용할 수 없습니다</p>
-                )}
+        {/* 부분 판매 허용 옵션 (기간행사 쿠폰증정은 숨김) */}
+        {!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only') && (
+          <Card className="mb-6 border-slate-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                판매 옵션
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                <div className="flex-1">
+                  <p className="font-medium text-slate-900">부분 판매 허용</p>
+                  <p className="text-sm text-slate-500">인원 미달 시 24시간 내 판매 여부 선택 가능</p>
+                  {originalData?.deal_type === 'time_based' && (
+                    <p className="text-xs text-orange-600 mt-1">기간행사는 부분 판매 옵션을 사용할 수 없습니다</p>
+                  )}
+                </div>
+                <Switch
+                  checked={formData.allow_partial_sale}
+                  onCheckedChange={(checked) => handleInputChange('allow_partial_sale', checked)}
+                  disabled={originalData?.deal_type === 'time_based'}
+                />
               </div>
-              <Switch
-                checked={formData.allow_partial_sale}
-                onCheckedChange={(checked) => handleInputChange('allow_partial_sale', checked)}
-                disabled={originalData?.deal_type === 'time_based'}
-              />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 등록기간 수정 (기간행사만) */}
         {originalData?.deal_type === 'time_based' && (
@@ -1445,54 +1455,57 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     </div>
                   )}
 
-                  <div>
-                    <Label>{formData.online_discount_type === 'link_only' ? '할인 판매기간' : '할인 유효기간'} *</Label>
-                    <Select
-                      value={['1', '3', '7', '14', '30', '60', 'custom'].includes(formData.discount_valid_days) ? formData.discount_valid_days : 'custom'}
-                      onValueChange={(value) => {
-                        if (value === 'custom') {
-                          setFormData(prev => ({ ...prev, discount_valid_days: '' }));
-                        } else {
-                          setFormData(prev => ({ ...prev, discount_valid_days: value }));
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1일</SelectItem>
-                        <SelectItem value="3">3일</SelectItem>
-                        <SelectItem value="7">7일</SelectItem>
-                        <SelectItem value="14">14일</SelectItem>
-                        <SelectItem value="30">30일</SelectItem>
-                        <SelectItem value="60">60일</SelectItem>
-                        <SelectItem value="custom">직접입력 (1~60일)</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    {/* 직접입력 선택 시 숫자 입력 필드 표시 */}
-                    {!['1', '3', '7', '14', '30', '60'].includes(formData.discount_valid_days) && (
-                      <Input
-                        type="number"
-                        value={formData.discount_valid_days}
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value) || '';
-                          if (value === '' || (value >= 1 && value <= 60)) {
-                            setFormData(prev => ({ ...prev, discount_valid_days: e.target.value }));
+                  {/* 할인 유효기간 (기간행사 쿠폰증정은 숨김) */}
+                  {!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only') && (
+                    <div>
+                      <Label>{formData.online_discount_type === 'link_only' ? '할인 판매기간' : '할인 유효기간'} *</Label>
+                      <Select
+                        value={['1', '3', '7', '14', '30', '60', 'custom'].includes(formData.discount_valid_days) ? formData.discount_valid_days : 'custom'}
+                        onValueChange={(value) => {
+                          if (value === 'custom') {
+                            setFormData(prev => ({ ...prev, discount_valid_days: '' }));
+                          } else {
+                            setFormData(prev => ({ ...prev, discount_valid_days: value }));
                           }
                         }}
-                        placeholder="1~60 사이의 숫자 입력"
-                        min="1"
-                        max="60"
-                        className="mt-2"
-                      />
-                    )}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1일</SelectItem>
+                          <SelectItem value="3">3일</SelectItem>
+                          <SelectItem value="7">7일</SelectItem>
+                          <SelectItem value="14">14일</SelectItem>
+                          <SelectItem value="30">30일</SelectItem>
+                          <SelectItem value="60">60일</SelectItem>
+                          <SelectItem value="custom">직접입력 (1~60일)</SelectItem>
+                        </SelectContent>
+                      </Select>
 
-                    <p className="text-sm text-slate-500 mt-1">
-                      공구 마감 후부터 유효기간 적용
-                    </p>
-                  </div>
+                      {/* 직접입력 선택 시 숫자 입력 필드 표시 */}
+                      {!['1', '3', '7', '14', '30', '60'].includes(formData.discount_valid_days) && (
+                        <Input
+                          type="number"
+                          value={formData.discount_valid_days}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || '';
+                            if (value === '' || (value >= 1 && value <= 60)) {
+                              setFormData(prev => ({ ...prev, discount_valid_days: e.target.value }));
+                            }
+                          }}
+                          placeholder="1~60 사이의 숫자 입력"
+                          min="1"
+                          max="60"
+                          className="mt-2"
+                        />
+                      )}
+
+                      <p className="text-sm text-slate-500 mt-1">
+                        공구 마감 후부터 유효기간 적용
+                      </p>
+                    </div>
+                  )}
 
                   <div>
                     <Label className="flex items-center gap-2">
@@ -1652,54 +1665,57 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       )}
                     </div>
 
-                    <div>
-                      <Label>할인 유효기간 *</Label>
-                      <Select
-                        value={['1', '3', '7', '14', '30', '60', 'custom'].includes(formData.offline_discount_valid_days) ? formData.offline_discount_valid_days : 'custom'}
-                        onValueChange={(value) => {
-                          if (value === 'custom') {
-                            setFormData(prev => ({ ...prev, offline_discount_valid_days: '' }));
-                          } else {
-                            setFormData(prev => ({ ...prev, offline_discount_valid_days: value }));
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1일</SelectItem>
-                          <SelectItem value="3">3일</SelectItem>
-                          <SelectItem value="7">7일</SelectItem>
-                          <SelectItem value="14">14일</SelectItem>
-                          <SelectItem value="30">30일</SelectItem>
-                          <SelectItem value="60">60일</SelectItem>
-                          <SelectItem value="custom">직접입력 (1~60일)</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      {/* 직접입력 선택 시 숫자 입력 필드 표시 */}
-                      {!['1', '3', '7', '14', '30', '60'].includes(formData.offline_discount_valid_days) && (
-                        <Input
-                          type="number"
-                          value={formData.offline_discount_valid_days}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value) || '';
-                            if (value === '' || (value >= 1 && value <= 60)) {
-                              setFormData(prev => ({ ...prev, offline_discount_valid_days: e.target.value }));
+                    {/* 할인 유효기간 (기간행사 쿠폰증정은 숨김) */}
+                    {!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only') && (
+                      <div>
+                        <Label>할인 유효기간 *</Label>
+                        <Select
+                          value={['1', '3', '7', '14', '30', '60', 'custom'].includes(formData.offline_discount_valid_days) ? formData.offline_discount_valid_days : 'custom'}
+                          onValueChange={(value) => {
+                            if (value === 'custom') {
+                              setFormData(prev => ({ ...prev, offline_discount_valid_days: '' }));
+                            } else {
+                              setFormData(prev => ({ ...prev, offline_discount_valid_days: value }));
                             }
                           }}
-                          placeholder="1~60 사이의 숫자 입력"
-                          min="1"
-                          max="60"
-                          className="mt-2"
-                        />
-                      )}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">1일</SelectItem>
+                            <SelectItem value="3">3일</SelectItem>
+                            <SelectItem value="7">7일</SelectItem>
+                            <SelectItem value="14">14일</SelectItem>
+                            <SelectItem value="30">30일</SelectItem>
+                            <SelectItem value="60">60일</SelectItem>
+                            <SelectItem value="custom">직접입력 (1~60일)</SelectItem>
+                          </SelectContent>
+                        </Select>
 
-                      <p className="text-sm text-slate-500 mt-1">
-                        공구 마감 후부터 유효기간 적용
-                      </p>
-                    </div>
+                        {/* 직접입력 선택 시 숫자 입력 필드 표시 */}
+                        {!['1', '3', '7', '14', '30', '60'].includes(formData.offline_discount_valid_days) && (
+                          <Input
+                            type="number"
+                            value={formData.offline_discount_valid_days}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || '';
+                              if (value === '' || (value >= 1 && value <= 60)) {
+                                setFormData(prev => ({ ...prev, offline_discount_valid_days: e.target.value }));
+                              }
+                            }}
+                            placeholder="1~60 사이의 숫자 입력"
+                            min="1"
+                            max="60"
+                            className="mt-2"
+                          />
+                        )}
+
+                        <p className="text-sm text-slate-500 mt-1">
+                          공구 마감 후부터 유효기간 적용
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </>
