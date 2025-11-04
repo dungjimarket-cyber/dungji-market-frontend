@@ -748,6 +748,20 @@ export default function CustomDealDetailPage() {
     return label === '건강/의료' ? '건강/헬스케어' : label;
   };
 
+  // 이미지 슬라이드 애니메이션을 위한 스타일
+  const imageSlideStyle = `
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+  `;
+
   // 할인 링크도 리다이렉트 페이지를 거치도록 변환
   const redirectDiscountUrl = deal?.discount_url ? getRedirectUrl(deal.discount_url) : null;
 
@@ -765,6 +779,7 @@ export default function CustomDealDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <style>{imageSlideStyle}</style>
       {/* Header */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -828,12 +843,16 @@ export default function CustomDealDetailPage() {
                       setLightboxImageIndex(selectedImage);
                       setShowImageLightbox(true);
                     }}
-                    className="w-full cursor-zoom-in"
+                    className="w-full cursor-zoom-in overflow-hidden"
                   >
                     <img
+                      key={selectedImage}
                       src={sortedImages[selectedImage].image_url}
                       alt={deal.title}
-                      className={`w-full aspect-square object-contain ${isClosed ? 'opacity-50' : ''}`}
+                      className={`w-full aspect-square object-contain transition-all duration-300 ease-in-out ${isClosed ? 'opacity-50' : ''}`}
+                      style={{
+                        animation: 'fadeIn 0.3s ease-in-out'
+                      }}
                     />
                   </button>
 
