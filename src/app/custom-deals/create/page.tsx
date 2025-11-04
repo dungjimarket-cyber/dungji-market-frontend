@@ -1395,7 +1395,7 @@ export default function CreateCustomDealPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="coupon_only" id="coupon" />
-                  <Label htmlFor="coupon" className="cursor-pointer">서비스제공</Label>
+                  <Label htmlFor="coupon" className="cursor-pointer">서비스제공 (서비스, 할인쿠폰 등)</Label>
                 </div>
               </RadioGroup>
             </div>
