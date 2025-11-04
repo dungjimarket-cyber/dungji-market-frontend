@@ -20,16 +20,8 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isMapLoadedRef = useRef(false);
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    // 컴포넌트 언마운트 시 타이머 정리
-    return () => {
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-      }
-    };
-  }, []);
+  const retryCountRef = useRef(0);
+  const maxRetries = 20; // 최대 2초 (100ms * 20)
 
   useEffect(() => {
     // 스크립트가 로드되지 않았으면 대기
@@ -42,18 +34,14 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
       return;
     }
 
-    const loadMap = () => {
-      // window.kakao가 없으면 재시도
-      if (!window.kakao || !window.kakao.maps) {
-        console.log('[KakaoMap] Kakao SDK not ready, retrying...');
-        retryTimeoutRef.current = setTimeout(() => {
-          loadMap();
-        }, 100);
+    const initMap = () => {
+      if (!mapRef.current) {
+        console.log('[KakaoMap] Map ref not ready');
         return;
       }
 
-      if (!mapRef.current) {
-        console.log('[KakaoMap] Map ref not ready');
+      if (!window.kakao?.maps?.services) {
+        console.log('[KakaoMap] Kakao services not ready');
         return;
       }
 
@@ -63,6 +51,7 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
         geocoder.addressSearch(address, (result: any, status: any) => {
           if (!mapRef.current) {
             console.log('[KakaoMap] Map ref disappeared during geocoding');
+            setIsLoading(false);
             return;
           }
 
@@ -103,20 +92,31 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
       }
     };
 
-    // kakao.maps.load 사용하여 지도 API 로드 대기
-    if (window.kakao?.maps) {
+    const tryLoadMap = () => {
+      // window.kakao가 없으면 재시도
+      if (!window.kakao || !window.kakao.maps) {
+        retryCountRef.current += 1;
+
+        if (retryCountRef.current >= maxRetries) {
+          console.error('[KakaoMap] Max retries reached');
+          setError('지도를 불러올 수 없습니다');
+          setIsLoading(false);
+          return;
+        }
+
+        console.log(`[KakaoMap] Kakao SDK not ready, retrying... (${retryCountRef.current}/${maxRetries})`);
+        setTimeout(tryLoadMap, 100);
+        return;
+      }
+
+      // kakao.maps.load 사용
       window.kakao.maps.load(() => {
-        // 약간의 지연을 두어 DOM이 완전히 준비되도록 함
-        setTimeout(() => {
-          loadMap();
-        }, 50);
+        console.log('[KakaoMap] Kakao maps loaded, initializing...');
+        initMap();
       });
-    } else {
-      // window.kakao.maps가 없으면 재시도
-      retryTimeoutRef.current = setTimeout(() => {
-        loadMap();
-      }, 100);
-    }
+    };
+
+    tryLoadMap();
   }, [address, placeName, isScriptLoaded]);
 
   return (
