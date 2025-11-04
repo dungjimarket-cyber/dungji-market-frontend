@@ -17,9 +17,16 @@ interface KakaoMapProps {
 export default function KakaoMap({ address, placeName }: KakaoMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [mapInstance, setMapInstance] = useState<any>(null);
 
   useEffect(() => {
-    if (!isScriptLoaded || !window.kakao || !window.kakao.maps) {
+    // 스크립트가 로드되지 않았으면 대기
+    if (!isScriptLoaded) {
+      return;
+    }
+
+    // window.kakao가 없으면 대기
+    if (!window.kakao) {
       return;
     }
 
@@ -28,10 +35,15 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
         return;
       }
 
+      // 이미 지도가 생성되어 있으면 리턴
+      if (mapInstance) {
+        return;
+      }
+
       const geocoder = new window.kakao.maps.services.Geocoder();
 
       geocoder.addressSearch(address, (result: any, status: any) => {
-        if (status === window.kakao.maps.services.Status.OK) {
+        if (status === window.kakao.maps.services.Status.OK && mapRef.current) {
           const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
 
           const map = new window.kakao.maps.Map(mapRef.current, {
@@ -50,16 +62,19 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
             });
             infowindow.open(map, marker);
           }
+
+          setMapInstance(map);
         }
       });
     };
 
-    if (window.kakao.maps.load) {
-      window.kakao.maps.load(loadMap);
-    } else {
-      loadMap();
+    // kakao.maps.load 사용하여 지도 API 로드 대기
+    if (window.kakao.maps) {
+      window.kakao.maps.load(() => {
+        loadMap();
+      });
     }
-  }, [address, placeName, isScriptLoaded]);
+  }, [address, placeName, isScriptLoaded, mapInstance]);
 
   return (
     <>
