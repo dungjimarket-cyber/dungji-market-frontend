@@ -17,7 +17,7 @@ interface KakaoMapProps {
 export default function KakaoMap({ address, placeName }: KakaoMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
-  const [mapInstance, setMapInstance] = useState<any>(null);
+  const isMapLoadedRef = useRef(false);
 
   useEffect(() => {
     // 스크립트가 로드되지 않았으면 대기
@@ -30,13 +30,13 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
       return;
     }
 
+    // 이미 지도가 로드되었으면 리턴
+    if (isMapLoadedRef.current) {
+      return;
+    }
+
     const loadMap = () => {
       if (!mapRef.current) {
-        return;
-      }
-
-      // 이미 지도가 생성되어 있으면 리턴
-      if (mapInstance) {
         return;
       }
 
@@ -63,7 +63,7 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
             infowindow.open(map, marker);
           }
 
-          setMapInstance(map);
+          isMapLoadedRef.current = true;
         }
       });
     };
@@ -74,7 +74,7 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
         loadMap();
       });
     }
-  }, [address, placeName, isScriptLoaded, mapInstance]);
+  }, [address, placeName, isScriptLoaded]);
 
   return (
     <>
