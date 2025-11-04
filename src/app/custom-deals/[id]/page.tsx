@@ -857,7 +857,7 @@ export default function CustomDealDetailPage() {
                     className="w-full cursor-zoom-in overflow-hidden"
                   >
                     <img
-                      key={selectedImage}
+                      key={`${selectedImage}-${slideDirection}`}
                       src={sortedImages[selectedImage].image_url}
                       alt={deal.title}
                       className={`w-full aspect-square object-contain ${isClosed ? 'opacity-50' : ''}`}
@@ -885,7 +885,7 @@ export default function CustomDealDetailPage() {
                     <>
                       <button
                         onClick={() => {
-                          setSlideDirection('left');
+                          setSlideDirection('left'); // 왼쪽 버튼 = 왼쪽에서 슬라이드
                           setSelectedImage((prev) =>
                             prev === 0 ? sortedImages.length - 1 : prev - 1
                           );
@@ -896,7 +896,7 @@ export default function CustomDealDetailPage() {
                       </button>
                       <button
                         onClick={() => {
-                          setSlideDirection('right');
+                          setSlideDirection('right'); // 오른쪽 버튼 = 오른쪽에서 슬라이드
                           setSelectedImage((prev) =>
                             prev === sortedImages.length - 1 ? 0 : prev + 1
                           );
