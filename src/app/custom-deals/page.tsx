@@ -117,6 +117,14 @@ function CustomDealsContent() {
     router.push(queryString ? `/custom-deals?${queryString}` : '/custom-deals', { scroll: false });
   };
 
+  // URL 변경 시 state 동기화
+  useEffect(() => {
+    setSelectedType((searchParams.get('type') as any) || 'all');
+    setSelectedCategory(searchParams.get('category') || 'all');
+    setSearchQuery(searchParams.get('search') || '');
+    setLocationQuery(searchParams.get('location') || '');
+  }, [searchParams]);
+
   useEffect(() => {
     fetchCategories();
     fetchDeals();
