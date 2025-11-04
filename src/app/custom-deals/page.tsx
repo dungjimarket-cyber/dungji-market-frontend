@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, Plus, Heart, Users, Clock, MapPin, Tag, Info, BookOpen } from 'lucide-react';
@@ -70,17 +70,26 @@ interface CategoryOption {
 
 export default function CustomDealsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const [deals, setDeals] = useState<CustomDeal[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // 필터 상태
-  const [selectedType, setSelectedType] = useState<'all' | 'online' | 'offline' | 'coupon_only' | 'time_based'>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [locationQuery, setLocationQuery] = useState(''); // 지역 검색
+  // 필터 상태 - URL에서 초기값 읽기
+  const [selectedType, setSelectedType] = useState<'all' | 'online' | 'offline' | 'coupon_only' | 'time_based'>(
+    (searchParams.get('type') as any) || 'all'
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    searchParams.get('category') || 'all'
+  );
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get('search') || ''
+  );
+  const [locationQuery, setLocationQuery] = useState(
+    searchParams.get('location') || ''
+  );
   const [showClosedDeals, setShowClosedDeals] = useState(true); // 마감된 공구 표시 여부
   const [sortType, setSortType] = useState<'latest' | 'popular'>('latest'); // 정렬 방식
 
@@ -91,6 +100,22 @@ export default function CustomDealsPage() {
   // 프로필 체크 모달 상태
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+
+  // URL 업데이트 함수
+  const updateURL = (params: Record<string, string>) => {
+    const newParams = new URLSearchParams(searchParams.toString());
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value && value !== 'all' && value !== '') {
+        newParams.set(key, value);
+      } else {
+        newParams.delete(key);
+      }
+    });
+
+    const queryString = newParams.toString();
+    router.push(queryString ? `/custom-deals?${queryString}` : '/custom-deals', { scroll: false });
+  };
 
   useEffect(() => {
     fetchCategories();
@@ -357,6 +382,16 @@ export default function CustomDealsPage() {
                 placeholder="찾고 계신 공구를 검색해보세요"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    updateURL({
+                      type: selectedType,
+                      category: selectedCategory,
+                      search: searchQuery,
+                      location: locationQuery
+                    });
+                  }
+                }}
                 className="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
               />
             </div>
@@ -371,7 +406,15 @@ export default function CustomDealsPage() {
             <div className="flex flex-wrap gap-2">
               {/* Type Filter */}
               <button
-                onClick={() => setSelectedType('all')}
+                onClick={() => {
+                  setSelectedType('all');
+                  updateURL({
+                    type: 'all',
+                    category: selectedCategory,
+                    search: searchQuery,
+                    location: locationQuery
+                  });
+                }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'all'
                     ? 'bg-gray-900 text-white'
@@ -381,7 +424,15 @@ export default function CustomDealsPage() {
                 전체
               </button>
               <button
-                onClick={() => setSelectedType('online')}
+                onClick={() => {
+                  setSelectedType('online');
+                  updateURL({
+                    type: 'online',
+                    category: selectedCategory,
+                    search: searchQuery,
+                    location: locationQuery
+                  });
+                }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'online'
                     ? 'bg-gray-900 text-white'
@@ -391,7 +442,15 @@ export default function CustomDealsPage() {
                 온라인
               </button>
               <button
-                onClick={() => setSelectedType('offline')}
+                onClick={() => {
+                  setSelectedType('offline');
+                  updateURL({
+                    type: 'offline',
+                    category: selectedCategory,
+                    search: searchQuery,
+                    location: locationQuery
+                  });
+                }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'offline'
                     ? 'bg-gray-900 text-white border-2 border-gray-900'
@@ -401,7 +460,15 @@ export default function CustomDealsPage() {
                 오프라인매장
               </button>
               <button
-                onClick={() => setSelectedType('coupon_only')}
+                onClick={() => {
+                  setSelectedType('coupon_only');
+                  updateURL({
+                    type: 'coupon_only',
+                    category: selectedCategory,
+                    search: searchQuery,
+                    location: locationQuery
+                  });
+                }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'coupon_only'
                     ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
@@ -411,7 +478,15 @@ export default function CustomDealsPage() {
                 쿠폰/이벤트
               </button>
               <button
-                onClick={() => setSelectedType('time_based')}
+                onClick={() => {
+                  setSelectedType('time_based');
+                  updateURL({
+                    type: 'time_based',
+                    category: selectedCategory,
+                    search: searchQuery,
+                    location: locationQuery
+                  });
+                }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   selectedType === 'time_based'
                     ? 'bg-orange-600 text-white'
@@ -434,7 +509,16 @@ export default function CustomDealsPage() {
               {/* Category Filter */}
               <select
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={(e) => {
+                  const newCategory = e.target.value;
+                  setSelectedCategory(newCategory);
+                  updateURL({
+                    type: selectedType,
+                    category: newCategory,
+                    search: searchQuery,
+                    location: locationQuery
+                  });
+                }}
                 className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
               >
                 <option value="all">모든 카테고리</option>
@@ -452,6 +536,16 @@ export default function CustomDealsPage() {
                   placeholder="지역 검색"
                   value={locationQuery}
                   onChange={(e) => setLocationQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      updateURL({
+                        type: selectedType,
+                        category: selectedCategory,
+                        search: searchQuery,
+                        location: locationQuery
+                      });
+                    }
+                  }}
                   className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 />
               )}
