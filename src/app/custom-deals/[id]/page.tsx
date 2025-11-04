@@ -1562,11 +1562,10 @@ export default function CustomDealDetailPage() {
                   {!showMap ? (
                     <button
                       onClick={() => setShowMap(true)}
-                      className="w-full h-64 rounded-lg border-2 border-slate-300 bg-slate-50 hover:bg-slate-100 transition-colors flex flex-col items-center justify-center gap-2"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700"
                     >
-                      <MapPin className="w-8 h-8 text-slate-400" />
-                      <span className="text-sm font-medium text-slate-700">지도 보기</span>
-                      <span className="text-xs text-slate-500">클릭하여 매장 위치 확인</span>
+                      <MapPin className="w-4 h-4 text-slate-500" />
+                      지도 보기
                     </button>
                   ) : (
                     <KakaoMap
