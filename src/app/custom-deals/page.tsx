@@ -319,22 +319,26 @@ function CustomDealsContent() {
       <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto">
         <div className="bg-white px-4 py-4 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-xl font-bold text-gray-900">커공특가</h1>
-              <span
-                className="text-sm font-black whitespace-nowrap"
-                style={{
-                  transform: 'rotate(-8deg)',
-                  marginTop: '-4px',
-                  background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                }}
-              >
-                모이면 할인!
-              </span>
-              <p className="text-xs text-blue-600 font-medium ml-2">수수료 없는 진짜 공동구매 혜택!</p>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-xl font-bold text-gray-900">커공특가</h1>
+                <span
+                  className="text-sm font-black whitespace-nowrap"
+                  style={{
+                    transform: 'rotate(-8deg)',
+                    marginTop: '-4px',
+                    background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}
+                >
+                  모이면 할인!
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-slate-700 whitespace-nowrap">
+                온·오프라인 공동구매와 이벤트부터 할인정보 까지!
+              </p>
             </div>
             <div className="flex gap-2 sm:ml-auto">
               <Link href="/custom-deals/guide">
