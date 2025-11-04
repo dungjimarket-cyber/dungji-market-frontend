@@ -1552,8 +1552,7 @@ export default function CustomDealDetailPage() {
           {deal.location && (
             <Card className="border-slate-200 max-w-4xl mx-auto">
               <CardContent className="p-5">
-                <h2 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
+                <h2 className="text-lg font-bold text-slate-900 mb-3">
                   매장 위치
                 </h2>
 
