@@ -100,6 +100,7 @@ export default function CustomDealDetailPage() {
   // 터치 스와이프 상태
   const [touchStartX, setTouchStartX] = useState<number>(0);
   const [touchEndX, setTouchEndX] = useState<number>(0);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [bumpStatus, setBumpStatus] = useState<{
     can_bump: boolean;
@@ -750,14 +751,24 @@ export default function CustomDealDetailPage() {
 
   // 이미지 슬라이드 애니메이션을 위한 스타일
   const imageSlideStyle = `
-    @keyframes fadeIn {
+    @keyframes slideInFromRight {
       from {
         opacity: 0;
-        transform: scale(0.95);
+        transform: translateX(100%);
       }
       to {
         opacity: 1;
-        transform: scale(1);
+        transform: translateX(0);
+      }
+    }
+    @keyframes slideInFromLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
       }
     }
   `;
@@ -849,9 +860,11 @@ export default function CustomDealDetailPage() {
                       key={selectedImage}
                       src={sortedImages[selectedImage].image_url}
                       alt={deal.title}
-                      className={`w-full aspect-square object-contain transition-all duration-300 ease-in-out ${isClosed ? 'opacity-50' : ''}`}
+                      className={`w-full aspect-square object-contain ${isClosed ? 'opacity-50' : ''}`}
                       style={{
-                        animation: 'fadeIn 0.3s ease-in-out'
+                        animation: slideDirection === 'right'
+                          ? 'slideInFromRight 0.3s ease-out'
+                          : 'slideInFromLeft 0.3s ease-out'
                       }}
                     />
                   </button>
@@ -871,17 +884,23 @@ export default function CustomDealDetailPage() {
                   {sortedImages.length > 1 && (
                     <>
                       <button
-                        onClick={() => setSelectedImage((prev) =>
-                          prev === 0 ? sortedImages.length - 1 : prev - 1
-                        )}
+                        onClick={() => {
+                          setSlideDirection('left');
+                          setSelectedImage((prev) =>
+                            prev === 0 ? sortedImages.length - 1 : prev - 1
+                          );
+                        }}
                         className="absolute left-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
                       >
                         <ChevronLeft className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                       </button>
                       <button
-                        onClick={() => setSelectedImage((prev) =>
-                          prev === sortedImages.length - 1 ? 0 : prev + 1
-                        )}
+                        onClick={() => {
+                          setSlideDirection('right');
+                          setSelectedImage((prev) =>
+                            prev === sortedImages.length - 1 ? 0 : prev + 1
+                          );
+                        }}
                         className="absolute right-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
                       >
                         <ChevronRight className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
