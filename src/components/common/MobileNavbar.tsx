@@ -131,12 +131,15 @@ export default function MobileNavbar() {
         </Link>
 
         {/* 4. 커공 (큰 버튼) */}
-        <Link href="/custom-deals" className="flex flex-col items-center justify-center flex-1 py-2">
-          <button className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg mb-1 transform hover:scale-105 transition-transform">
+        <button
+          onClick={() => router.push('/custom-deals')}
+          className="flex flex-col items-center justify-center flex-1 py-2"
+        >
+          <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg mb-1 transform hover:scale-105 transition-transform">
             <FaStore className="text-xl" />
-          </button>
+          </div>
           <span className="text-[10px] font-semibold text-green-600 font-black-han-sans">커공</span>
-        </Link>
+        </button>
 
         {/* 5. 중고거래 */}
         <Link href="/used" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
