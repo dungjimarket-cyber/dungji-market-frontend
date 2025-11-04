@@ -1391,7 +1391,7 @@ export default function CustomDealDetailPage() {
                 style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
               >
                 <div
-                  className="[&>p]:mb-3 [&>p]:mt-0 [&>ul]:mb-3 [&>ul]:pl-6 [&>ul]:list-disc [&>ol]:mb-3 [&>ol]:pl-6 [&>ol]:list-decimal [&>h1]:mb-3 [&>h2]:mb-3 [&>h3]:mb-3"
+                  className="[&>p]:mb-3 [&>p]:mt-0 [&>p]:whitespace-pre-wrap [&>ul]:mb-3 [&>ul]:pl-6 [&>ul]:list-disc [&>ol]:mb-3 [&>ol]:pl-6 [&>ol]:list-decimal [&>h1]:mb-3 [&>h2]:mb-3 [&>h3]:mb-3"
                   dangerouslySetInnerHTML={{ __html: getDescriptionWithoutUrls() }}
                 />
               </div>
@@ -1562,9 +1562,9 @@ export default function CustomDealDetailPage() {
                   {!showMap ? (
                     <button
                       onClick={() => setShowMap(true)}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-green-300 bg-green-50 hover:bg-green-100 transition-colors text-sm font-medium text-green-700"
                     >
-                      <MapPin className="w-4 h-4 text-slate-500" />
+                      <MapPin className="w-4 h-4 text-green-600" />
                       지도 보기
                     </button>
                   ) : (
@@ -1578,7 +1578,6 @@ export default function CustomDealDetailPage() {
                 {/* 주소 및 연락처 */}
                 <div className="space-y-2.5 text-sm">
                   <div className="flex items-start gap-2.5">
-                    <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="font-medium text-slate-900">{deal.location}</p>
                       {deal.location_detail && (
