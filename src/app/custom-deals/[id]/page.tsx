@@ -107,6 +107,7 @@ export default function CustomDealDetailPage() {
     next_bump_available_at?: string;
   } | null>(null);
   const [linkPreviews, setLinkPreviews] = useState<LinkPreview[]>([]);
+  const [showMap, setShowMap] = useState(false);
   const [linkPreviewsLoading, setLinkPreviewsLoading] = useState(false);
 
   const {
@@ -1556,12 +1557,23 @@ export default function CustomDealDetailPage() {
                   매장 위치
                 </h2>
 
-                {/* 카카오맵 */}
+                {/* 지도 보기 버튼 또는 카카오맵 */}
                 <div className="mb-4">
-                  <KakaoMap
-                    address={deal.location}
-                    placeName={deal.title}
-                  />
+                  {!showMap ? (
+                    <button
+                      onClick={() => setShowMap(true)}
+                      className="w-full h-64 rounded-lg border-2 border-slate-300 bg-slate-50 hover:bg-slate-100 transition-colors flex flex-col items-center justify-center gap-2"
+                    >
+                      <MapPin className="w-8 h-8 text-slate-400" />
+                      <span className="text-sm font-medium text-slate-700">지도 보기</span>
+                      <span className="text-xs text-slate-500">클릭하여 매장 위치 확인</span>
+                    </button>
+                  ) : (
+                    <KakaoMap
+                      address={deal.location}
+                      placeName={deal.title}
+                    />
+                  )}
                 </div>
 
                 {/* 주소 및 연락처 */}
