@@ -100,6 +100,8 @@ export default function CustomDealDetailPage() {
   // 터치 스와이프 상태
   const [touchStartX, setTouchStartX] = useState<number>(0);
   const [touchEndX, setTouchEndX] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragOffset, setDragOffset] = useState<number>(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [bumpStatus, setBumpStatus] = useState<{
@@ -634,14 +636,24 @@ export default function CustomDealDetailPage() {
   // 터치 스와이프 핸들러 (메인 갤러리)
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.touches[0].clientX);
+    setIsDragging(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEndX(e.touches[0].clientX);
+    if (!isDragging || !touchStartX) return;
+
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - touchStartX;
+    setDragOffset(diff);
+    setTouchEndX(currentX);
   };
 
   const handleTouchEnd = () => {
-    if (!touchStartX || !touchEndX || !deal) return;
+    if (!touchStartX || !touchEndX || !deal) {
+      setIsDragging(false);
+      setDragOffset(0);
+      return;
+    }
 
     const swipeDistance = touchStartX - touchEndX;
     const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
@@ -650,11 +662,13 @@ export default function CustomDealDetailPage() {
     if (Math.abs(swipeDistance) > minSwipeDistance) {
       if (swipeDistance > 0) {
         // 왼쪽으로 스와이프 = 다음 이미지
+        setSlideDirection('left');
         setSelectedImage((prev) =>
           prev === imageCount - 1 ? 0 : prev + 1
         );
       } else {
         // 오른쪽으로 스와이프 = 이전 이미지
+        setSlideDirection('right');
         setSelectedImage((prev) =>
           prev === 0 ? imageCount - 1 : prev - 1
         );
@@ -664,6 +678,8 @@ export default function CustomDealDetailPage() {
     // 리셋
     setTouchStartX(0);
     setTouchEndX(0);
+    setIsDragging(false);
+    setDragOffset(0);
   };
 
   // 터치 스와이프 핸들러 (라이트박스)
@@ -862,9 +878,11 @@ export default function CustomDealDetailPage() {
                       alt={deal.title}
                       className={`w-full aspect-square object-contain ${isClosed ? 'opacity-50' : ''}`}
                       style={{
-                        animation: slideDirection === 'right'
+                        transform: isDragging ? `translateX(${dragOffset}px)` : 'translateX(0)',
+                        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+                        animation: !isDragging && (slideDirection === 'right'
                           ? 'slideInFromRight 0.3s ease-out'
-                          : 'slideInFromLeft 0.3s ease-out'
+                          : 'slideInFromLeft 0.3s ease-out')
                       }}
                     />
                   </button>
