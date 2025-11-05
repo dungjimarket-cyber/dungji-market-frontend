@@ -103,6 +103,7 @@ export default function CustomDealDetailPage() {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragOffset, setDragOffset] = useState<number>(0);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(true);
+  const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [bumpStatus, setBumpStatus] = useState<{
     can_bump: boolean;
@@ -655,8 +656,8 @@ export default function CustomDealDetailPage() {
       return;
     }
 
-    // Transition 중에는 스와이프 무시
-    if (!isTransitioning) {
+    // 애니메이션 진행 중에는 스와이프 무시
+    if (isAnimating) {
       setIsDragging(false);
       setDragOffset(0);
       setTouchStartX(0);
@@ -669,6 +670,7 @@ export default function CustomDealDetailPage() {
     const imageCount = deal.images.length;
 
     if (Math.abs(swipeDistance) > minSwipeDistance) {
+      setIsAnimating(true); // 애니메이션 시작
       if (swipeDistance > 0) {
         // 왼쪽으로 스와이프 = 다음 이미지
         setSelectedImage((prev) => prev + 1);
@@ -866,28 +868,31 @@ export default function CustomDealDetailPage() {
                         onTransitionEnd={(e) => {
                           // 자식 요소의 transition 이벤트 무시 (부모 div에서만 처리)
                           if (e.target !== e.currentTarget) return;
-                          if (!isTransitioning) return;
 
                           // 범위 초과 체크 강화 (빠른 클릭으로 -2, -3 또는 length+1, +2 가능)
                           if (selectedImage >= sortedImages.length) {
                             // 복제된 마지막 이미지 영역 → 실제 첫 이미지로 점프
                             setIsTransitioning(false);
-                            requestAnimationFrame(() => {
-                              setSelectedImage(0);
-                              requestAnimationFrame(() => {
-                                setIsTransitioning(true);
-                              });
-                            });
+                            setSelectedImage(0);
+                            // 다음 프레임에 transition 재활성화
+                            setTimeout(() => {
+                              setIsTransitioning(true);
+                              setIsAnimating(false); // 애니메이션 완료
+                            }, 50);
                           }
                           else if (selectedImage < 0) {
                             // 복제된 첫 이미지 영역 → 실제 마지막 이미지로 점프
                             setIsTransitioning(false);
-                            requestAnimationFrame(() => {
-                              setSelectedImage(sortedImages.length - 1);
-                              requestAnimationFrame(() => {
-                                setIsTransitioning(true);
-                              });
-                            });
+                            setSelectedImage(sortedImages.length - 1);
+                            // 다음 프레임에 transition 재활성화
+                            setTimeout(() => {
+                              setIsTransitioning(true);
+                              setIsAnimating(false); // 애니메이션 완료
+                            }, 50);
+                          }
+                          else {
+                            // 일반 이미지 간 이동 완료
+                            setIsAnimating(false);
                           }
                         }}
                       >
@@ -942,8 +947,9 @@ export default function CustomDealDetailPage() {
                     <>
                       <button
                         onClick={() => {
-                          // Transition 중에는 클릭 무시
-                          if (!isTransitioning) return;
+                          // 애니메이션 진행 중에는 클릭 무시
+                          if (isAnimating) return;
+                          setIsAnimating(true);
                           setSelectedImage((prev) => prev - 1);
                         }}
                         className="absolute left-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
@@ -952,8 +958,9 @@ export default function CustomDealDetailPage() {
                       </button>
                       <button
                         onClick={() => {
-                          // Transition 중에는 클릭 무시
-                          if (!isTransitioning) return;
+                          // 애니메이션 진행 중에는 클릭 무시
+                          if (isAnimating) return;
+                          setIsAnimating(true);
                           setSelectedImage((prev) => prev + 1);
                         }}
                         className="absolute right-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
