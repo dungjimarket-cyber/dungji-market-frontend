@@ -655,6 +655,15 @@ export default function CustomDealDetailPage() {
       return;
     }
 
+    // Transition 중에는 스와이프 무시
+    if (!isTransitioning) {
+      setIsDragging(false);
+      setDragOffset(0);
+      setTouchStartX(0);
+      setTouchEndX(0);
+      return;
+    }
+
     const swipeDistance = touchStartX - touchEndX;
     const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
     const imageCount = deal.images.length;
@@ -859,17 +868,26 @@ export default function CustomDealDetailPage() {
                           if (e.target !== e.currentTarget) return;
                           if (!isTransitioning) return;
 
-                          // 복제된 마지막 이미지에서 실제 첫 이미지로 점프
-                          if (selectedImage === sortedImages.length) {
+                          // 범위 초과 체크 강화 (빠른 클릭으로 -2, -3 또는 length+1, +2 가능)
+                          if (selectedImage >= sortedImages.length) {
+                            // 복제된 마지막 이미지 영역 → 실제 첫 이미지로 점프
                             setIsTransitioning(false);
-                            setSelectedImage(0);
-                            setTimeout(() => setIsTransitioning(true), 50);
+                            requestAnimationFrame(() => {
+                              setSelectedImage(0);
+                              requestAnimationFrame(() => {
+                                setIsTransitioning(true);
+                              });
+                            });
                           }
-                          // 복제된 첫 이미지에서 실제 마지막 이미지로 점프
-                          else if (selectedImage === -1) {
+                          else if (selectedImage < 0) {
+                            // 복제된 첫 이미지 영역 → 실제 마지막 이미지로 점프
                             setIsTransitioning(false);
-                            setSelectedImage(sortedImages.length - 1);
-                            setTimeout(() => setIsTransitioning(true), 50);
+                            requestAnimationFrame(() => {
+                              setSelectedImage(sortedImages.length - 1);
+                              requestAnimationFrame(() => {
+                                setIsTransitioning(true);
+                              });
+                            });
                           }
                         }}
                       >
@@ -923,13 +941,21 @@ export default function CustomDealDetailPage() {
                   {sortedImages.length > 1 && (
                     <>
                       <button
-                        onClick={() => setSelectedImage((prev) => prev - 1)}
+                        onClick={() => {
+                          // Transition 중에는 클릭 무시
+                          if (!isTransitioning) return;
+                          setSelectedImage((prev) => prev - 1);
+                        }}
                         className="absolute left-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
                       >
                         <ChevronLeft className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                       </button>
                       <button
-                        onClick={() => setSelectedImage((prev) => prev + 1)}
+                        onClick={() => {
+                          // Transition 중에는 클릭 무시
+                          if (!isTransitioning) return;
+                          setSelectedImage((prev) => prev + 1);
+                        }}
                         className="absolute right-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
                       >
                         <ChevronRight className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
