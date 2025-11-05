@@ -847,23 +847,33 @@ export default function CustomDealDetailPage() {
                       setLightboxImageIndex(selectedImage);
                       setShowImageLightbox(true);
                     }}
-                    className="w-full cursor-zoom-in overflow-hidden"
+                    className="w-full cursor-zoom-in"
                   >
                     <div className="relative w-full aspect-square overflow-hidden">
-                      <img
-                        key={selectedImage}
-                        src={sortedImages[selectedImage].image_url}
-                        alt={deal.title}
-                        className={`absolute inset-0 w-full h-full object-contain ${isClosed ? 'opacity-50' : ''}`}
+                      <div
+                        className="flex w-full h-full"
                         style={{
                           transform: isDragging
-                            ? `translateX(${dragOffset}px)`
-                            : 'translateX(0)',
+                            ? `translateX(calc(-${selectedImage * 100}% + ${dragOffset}px))`
+                            : `translateX(-${selectedImage * 100}%)`,
                           transition: isDragging
                             ? 'none'
                             : 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                         }}
-                      />
+                      >
+                        {sortedImages.map((image, index) => (
+                          <div
+                            key={index}
+                            className="w-full h-full flex-shrink-0 flex items-center justify-center"
+                          >
+                            <img
+                              src={image.image_url}
+                              alt={`${deal.title} - ${index + 1}`}
+                              className={`w-full h-full object-contain ${isClosed ? 'opacity-50' : ''}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </button>
 
