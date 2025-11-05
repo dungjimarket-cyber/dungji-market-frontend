@@ -664,15 +664,11 @@ export default function CustomDealDetailPage() {
       if (swipeDistance > 0) {
         // 왼쪽으로 스와이프 = 다음 이미지
         setSlideDirection('left');
-        setSelectedImage((prev) =>
-          prev === imageCount - 1 ? 0 : prev + 1
-        );
+        setSelectedImage((prev) => prev + 1);
       } else {
         // 오른쪽으로 스와이프 = 이전 이미지
         setSlideDirection('right');
-        setSelectedImage((prev) =>
-          prev === 0 ? imageCount - 1 : prev - 1
-        );
+        setSelectedImage((prev) => prev - 1);
       }
     }
 
@@ -929,10 +925,8 @@ export default function CustomDealDetailPage() {
                     <>
                       <button
                         onClick={() => {
-                          setSlideDirection('left'); // 왼쪽 버튼 = 왼쪽에서 슬라이드
-                          setSelectedImage((prev) =>
-                            prev === 0 ? sortedImages.length - 1 : prev - 1
-                          );
+                          setSlideDirection('left');
+                          setSelectedImage((prev) => prev - 1);
                         }}
                         className="absolute left-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
                       >
@@ -940,10 +934,8 @@ export default function CustomDealDetailPage() {
                       </button>
                       <button
                         onClick={() => {
-                          setSlideDirection('right'); // 오른쪽 버튼 = 오른쪽에서 슬라이드
-                          setSelectedImage((prev) =>
-                            prev === sortedImages.length - 1 ? 0 : prev + 1
-                          );
+                          setSlideDirection('right');
+                          setSelectedImage((prev) => prev + 1);
                         }}
                         className="absolute right-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
                       >
