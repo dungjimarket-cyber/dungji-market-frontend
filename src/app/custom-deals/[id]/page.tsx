@@ -765,29 +765,7 @@ export default function CustomDealDetailPage() {
     return label === '건강/의료' ? '건강/헬스케어' : label;
   };
 
-  // 이미지 슬라이드 애니메이션을 위한 스타일
-  const imageSlideStyle = `
-    @keyframes slideInFromRight {
-      from {
-        opacity: 0;
-        transform: translateX(100%);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-    @keyframes slideInFromLeft {
-      from {
-        opacity: 0;
-        transform: translateX(-100%);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-  `;
+  // 이미지 슬라이드 애니메이션을 위한 스타일 (삭제 - transform으로 통일)
 
   // 할인 링크도 리다이렉트 페이지를 거치도록 변환
   const redirectDiscountUrl = deal?.discount_url ? getRedirectUrl(deal.discount_url) : null;
@@ -806,7 +784,6 @@ export default function CustomDealDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <style>{imageSlideStyle}</style>
       {/* Header */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -872,21 +849,22 @@ export default function CustomDealDetailPage() {
                     }}
                     className="w-full cursor-zoom-in overflow-hidden"
                   >
-                    <img
-                      key={`${selectedImage}-${slideDirection}`}
-                      src={sortedImages[selectedImage].image_url}
-                      alt={deal.title}
-                      className={`w-full aspect-square object-contain ${isClosed ? 'opacity-50' : ''}`}
-                      style={{
-                        transform: isDragging ? `translateX(${dragOffset}px)` : 'translateX(0)',
-                        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-                        animation: !isDragging
-                          ? (slideDirection === 'right'
-                            ? 'slideInFromRight 0.3s ease-out'
-                            : 'slideInFromLeft 0.3s ease-out')
-                          : 'none'
-                      }}
-                    />
+                    <div className="relative w-full aspect-square overflow-hidden">
+                      <img
+                        key={selectedImage}
+                        src={sortedImages[selectedImage].image_url}
+                        alt={deal.title}
+                        className={`absolute inset-0 w-full h-full object-contain ${isClosed ? 'opacity-50' : ''}`}
+                        style={{
+                          transform: isDragging
+                            ? `translateX(${dragOffset}px)`
+                            : 'translateX(0)',
+                          transition: isDragging
+                            ? 'none'
+                            : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                        }}
+                      />
+                    </div>
                   </button>
 
                   {/* 확대 버튼 */}
