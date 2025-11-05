@@ -343,7 +343,7 @@ function CustomDealsContent() {
                 >
                   모이면 할인!
                 </span>
-                <p className="text-xs md:text-base text-blue-600 font-bold md:font-extrabold ml-1">누구나 등록 가능해요~</p>
+                <p className="text-xs md:text-base text-blue-600 font-bold md:font-extrabold ml-1">수수료 없는 진짜 혜택!</p>
               </div>
               <p className="text-xs md:text-sm font-bold text-slate-700 whitespace-nowrap">
                 온·오프라인 공동구매와 이벤트부터 할인정보 까지!
