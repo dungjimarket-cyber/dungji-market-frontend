@@ -102,7 +102,6 @@ export default function CustomDealDetailPage() {
   const [touchEndX, setTouchEndX] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragOffset, setDragOffset] = useState<number>(0);
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [isTransitioning, setIsTransitioning] = useState<boolean>(true);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [bumpStatus, setBumpStatus] = useState<{
@@ -663,11 +662,9 @@ export default function CustomDealDetailPage() {
     if (Math.abs(swipeDistance) > minSwipeDistance) {
       if (swipeDistance > 0) {
         // 왼쪽으로 스와이프 = 다음 이미지
-        setSlideDirection('left');
         setSelectedImage((prev) => prev + 1);
       } else {
         // 오른쪽으로 스와이프 = 이전 이미지
-        setSlideDirection('right');
         setSelectedImage((prev) => prev - 1);
       }
     }
@@ -857,7 +854,9 @@ export default function CustomDealDetailPage() {
                             ? 'none'
                             : 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                         }}
-                        onTransitionEnd={() => {
+                        onTransitionEnd={(e) => {
+                          // 자식 요소의 transition 이벤트 무시 (부모 div에서만 처리)
+                          if (e.target !== e.currentTarget) return;
                           if (!isTransitioning) return;
 
                           // 복제된 마지막 이미지에서 실제 첫 이미지로 점프
@@ -924,19 +923,13 @@ export default function CustomDealDetailPage() {
                   {sortedImages.length > 1 && (
                     <>
                       <button
-                        onClick={() => {
-                          setSlideDirection('left');
-                          setSelectedImage((prev) => prev - 1);
-                        }}
+                        onClick={() => setSelectedImage((prev) => prev - 1)}
                         className="absolute left-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
                       >
                         <ChevronLeft className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                       </button>
                       <button
-                        onClick={() => {
-                          setSlideDirection('right');
-                          setSelectedImage((prev) => prev + 1);
-                        }}
+                        onClick={() => setSelectedImage((prev) => prev + 1)}
                         className="absolute right-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
                       >
                         <ChevronRight className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
