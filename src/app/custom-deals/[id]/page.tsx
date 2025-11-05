@@ -103,6 +103,7 @@ export default function CustomDealDetailPage() {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragOffset, setDragOffset] = useState<number>(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(true);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [bumpStatus, setBumpStatus] = useState<{
     can_bump: boolean;
@@ -854,13 +855,39 @@ export default function CustomDealDetailPage() {
                         className="flex w-full h-full"
                         style={{
                           transform: isDragging
-                            ? `translateX(calc(-${selectedImage * 100}% + ${dragOffset}px))`
-                            : `translateX(-${selectedImage * 100}%)`,
-                          transition: isDragging
+                            ? `translateX(calc(-${(selectedImage + 1) * 100}% + ${dragOffset}px))`
+                            : `translateX(-${(selectedImage + 1) * 100}%)`,
+                          transition: (isDragging || !isTransitioning)
                             ? 'none'
                             : 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                         }}
+                        onTransitionEnd={() => {
+                          if (!isTransitioning) return;
+
+                          // 복제된 마지막 이미지에서 실제 첫 이미지로 점프
+                          if (selectedImage === sortedImages.length) {
+                            setIsTransitioning(false);
+                            setSelectedImage(0);
+                            setTimeout(() => setIsTransitioning(true), 50);
+                          }
+                          // 복제된 첫 이미지에서 실제 마지막 이미지로 점프
+                          else if (selectedImage === -1) {
+                            setIsTransitioning(false);
+                            setSelectedImage(sortedImages.length - 1);
+                            setTimeout(() => setIsTransitioning(true), 50);
+                          }
+                        }}
                       >
+                        {/* 마지막 이미지 복제 (앞쪽) */}
+                        <div className="w-full h-full flex-shrink-0 flex items-center justify-center">
+                          <img
+                            src={sortedImages[sortedImages.length - 1]?.image_url}
+                            alt="duplicate"
+                            className={`w-full h-full object-contain ${isClosed ? 'opacity-50' : ''}`}
+                          />
+                        </div>
+
+                        {/* 실제 이미지들 */}
                         {sortedImages.map((image, index) => (
                           <div
                             key={index}
@@ -873,6 +900,15 @@ export default function CustomDealDetailPage() {
                             />
                           </div>
                         ))}
+
+                        {/* 첫 이미지 복제 (뒤쪽) */}
+                        <div className="w-full h-full flex-shrink-0 flex items-center justify-center">
+                          <img
+                            src={sortedImages[0]?.image_url}
+                            alt="duplicate"
+                            className={`w-full h-full object-contain ${isClosed ? 'opacity-50' : ''}`}
+                          />
+                        </div>
                       </div>
                     </div>
                   </button>
