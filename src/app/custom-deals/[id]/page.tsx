@@ -880,9 +880,11 @@ export default function CustomDealDetailPage() {
                       style={{
                         transform: isDragging ? `translateX(${dragOffset}px)` : 'translateX(0)',
                         transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-                        animation: !isDragging && (slideDirection === 'right'
-                          ? 'slideInFromRight 0.3s ease-out'
-                          : 'slideInFromLeft 0.3s ease-out')
+                        animation: !isDragging
+                          ? (slideDirection === 'right'
+                            ? 'slideInFromRight 0.3s ease-out'
+                            : 'slideInFromLeft 0.3s ease-out')
+                          : 'none'
                       }}
                     />
                   </button>
