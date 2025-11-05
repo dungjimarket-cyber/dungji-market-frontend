@@ -656,27 +656,22 @@ export default function CustomDealDetailPage() {
       return;
     }
 
-    // 애니메이션 진행 중에는 스와이프 무시
-    if (isAnimating) {
-      setIsDragging(false);
-      setDragOffset(0);
-      setTouchStartX(0);
-      setTouchEndX(0);
-      return;
-    }
-
     const swipeDistance = touchStartX - touchEndX;
     const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
     const imageCount = deal.images.length;
 
+    // 스와이프 거리가 충분한 경우에만 이미지 변경
     if (Math.abs(swipeDistance) > minSwipeDistance) {
-      setIsAnimating(true); // 애니메이션 시작
-      if (swipeDistance > 0) {
-        // 왼쪽으로 스와이프 = 다음 이미지
-        setSelectedImage((prev) => prev + 1);
-      } else {
-        // 오른쪽으로 스와이프 = 이전 이미지
-        setSelectedImage((prev) => prev - 1);
+      // 애니메이션 진행 중이면 스킵 (버튼 클릭과 달리 드래그는 자연스러움)
+      if (!isAnimating) {
+        setIsAnimating(true); // 애니메이션 시작
+        if (swipeDistance > 0) {
+          // 왼쪽으로 스와이프 = 다음 이미지
+          setSelectedImage((prev) => prev + 1);
+        } else {
+          // 오른쪽으로 스와이프 = 이전 이미지
+          setSelectedImage((prev) => prev - 1);
+        }
       }
     }
 
