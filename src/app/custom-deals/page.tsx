@@ -735,22 +735,22 @@ function CustomDealsContent() {
                   </div>
 
                   <CardContent className="p-4 flex flex-col flex-1">
-                    {/* Location (offline only) - 제목 위에 표시 */}
+                    {/* Title - 고정 높이 (2줄) */}
+                    <h3 className="font-bold text-base text-slate-900 mb-1 line-clamp-2 h-12 whitespace-pre-line">
+                      {deal.title}
+                    </h3>
+
+                    {/* Location (offline only) - 제목 아래에 표시 */}
                     <div className="h-5 mb-1">
                       {deal.type === 'offline' && deal.location && (
-                        <div className="flex items-center gap-1 text-sm text-slate-900 font-bold">
-                          <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                        <div className="flex items-center gap-1 text-xs text-slate-600">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate">
                             {deal.location}
                           </span>
                         </div>
                       )}
                     </div>
-
-                    {/* Title - 고정 높이 (2줄) */}
-                    <h3 className="font-bold text-base text-slate-900 mb-1 line-clamp-2 h-12 whitespace-pre-line">
-                      {deal.title}
-                    </h3>
 
                     {/* Price - 고정 높이 */}
                     <div className="mb-2 h-16">
