@@ -858,7 +858,7 @@ export default function CustomDealDetailPage() {
                             : `translateX(-${selectedImage * 100}%)`,
                           transition: isDragging
                             ? 'none'
-                            : 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                            : 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                         }}
                       >
                         {sortedImages.map((image, index) => (
