@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle, Edit, Trash2, TrendingUp, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, Users, Clock, MapPin, Tag, Calendar, CheckCircle, AlertCircle, Edit, Trash2, TrendingUp, X, ZoomIn } from 'lucide-react';
 import KakaoMap from '@/components/kakao/KakaoMap';
 import { CountdownTimer } from '@/components/ui/CountdownTimer';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { convertLinksToRedirect, getRedirectUrl } from '@/lib/utils/linkRedirect';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 interface LinkPreview {
   url: string;
@@ -93,17 +98,9 @@ export default function CustomDealDetailPage() {
   const { user } = useAuth();
   const [deal, setDeal] = useState<CustomDeal | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(0);
   const [isExpired, setIsExpired] = useState(false);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
-  // 터치 스와이프 상태
-  const [touchStartX, setTouchStartX] = useState<number>(0);
-  const [touchEndX, setTouchEndX] = useState<number>(0);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [dragOffset, setDragOffset] = useState<number>(0);
-  const [isTransitioning, setIsTransitioning] = useState<boolean>(true);
-  const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [bumpStatus, setBumpStatus] = useState<{
     can_bump: boolean;
@@ -635,76 +632,7 @@ export default function CustomDealDetailPage() {
   };
 
   // 터치 스와이프 핸들러 (메인 갤러리)
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.touches[0].clientX);
-    setIsDragging(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || !touchStartX) return;
-
-    const currentX = e.touches[0].clientX;
-    const diff = currentX - touchStartX;
-    setDragOffset(diff);
-    setTouchEndX(currentX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStartX || !touchEndX || !deal) {
-      setIsDragging(false);
-      setDragOffset(0);
-      return;
-    }
-
-    const swipeDistance = touchStartX - touchEndX;
-    const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
-    const imageCount = deal.images.length;
-
-    // 스와이프 거리가 충분한 경우에만 이미지 변경
-    if (Math.abs(swipeDistance) > minSwipeDistance) {
-      setIsAnimating(true); // 애니메이션 시작
-      if (swipeDistance > 0) {
-        // 왼쪽으로 스와이프 = 다음 이미지
-        setSelectedImage((prev) => prev + 1);
-      } else {
-        // 오른쪽으로 스와이프 = 이전 이미지
-        setSelectedImage((prev) => prev - 1);
-      }
-    }
-
-    // 리셋
-    setTouchStartX(0);
-    setTouchEndX(0);
-    setIsDragging(false);
-    setDragOffset(0);
-  };
-
-  // 터치 스와이프 핸들러 (라이트박스)
-  const handleLightboxTouchEnd = () => {
-    if (!touchStartX || !touchEndX || !deal) return;
-
-    const swipeDistance = touchStartX - touchEndX;
-    const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
-    const imageCount = deal.images.length;
-
-    if (Math.abs(swipeDistance) > minSwipeDistance) {
-      if (swipeDistance > 0) {
-        // 왼쪽으로 스와이프 = 다음 이미지
-        setLightboxImageIndex((prev) =>
-          prev === imageCount - 1 ? 0 : prev + 1
-        );
-      } else {
-        // 오른쪽으로 스와이프 = 이전 이미지
-        setLightboxImageIndex((prev) =>
-          prev === 0 ? imageCount - 1 : prev - 1
-        );
-      }
-    }
-
-    // 리셋
-    setTouchStartX(0);
-    setTouchEndX(0);
-  };
+  // Swiper로 교체되어 터치 핸들러 불필요
 
   const getStatusBadge = () => {
     if (!deal) return null;
@@ -830,140 +758,48 @@ export default function CustomDealDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Images */}
           <div>
-            {/* Main Image */}
-            <div
-              className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4 relative group"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
+            {/* Main Image - Swiper */}
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4 relative group">
               {sortedImages.length > 0 ? (
                 <>
-                  <button
-                    onClick={() => {
-                      setLightboxImageIndex(selectedImage);
-                      setShowImageLightbox(true);
-                    }}
-                    className="w-full cursor-zoom-in"
+                  <Swiper
+                    modules={[Navigation, Pagination]}
+                    navigation
+                    pagination={{ clickable: true }}
+                    loop={true}
+                    speed={450}
+                    className="w-full aspect-square"
+                    onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
                   >
-                    <div className="relative w-full aspect-square overflow-hidden">
-                      <div
-                        className="flex w-full h-full"
-                        style={{
-                          transform: isDragging
-                            ? `translateX(calc(-${(selectedImage + 1) * 100}% + ${dragOffset}px))`
-                            : `translateX(-${(selectedImage + 1) * 100}%)`,
-                          transition: (isDragging || !isTransitioning)
-                            ? 'none'
-                            : 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                        }}
-                        onTransitionEnd={(e) => {
-                          // 자식 요소의 transition 이벤트 무시 (부모 div에서만 처리)
-                          if (e.target !== e.currentTarget) return;
-
-                          // 범위 초과 체크 강화 (빠른 클릭으로 -2, -3 또는 length+1, +2 가능)
-                          if (selectedImage >= sortedImages.length) {
-                            // 복제된 마지막 이미지 영역 → 실제 첫 이미지로 점프
-                            setIsTransitioning(false);
-                            setSelectedImage(0);
-                            // 다음 프레임에 transition 재활성화
-                            setTimeout(() => {
-                              setIsTransitioning(true);
-                              setIsAnimating(false); // 애니메이션 완료
-                            }, 50);
-                          }
-                          else if (selectedImage < 0) {
-                            // 복제된 첫 이미지 영역 → 실제 마지막 이미지로 점프
-                            setIsTransitioning(false);
-                            setSelectedImage(sortedImages.length - 1);
-                            // 다음 프레임에 transition 재활성화
-                            setTimeout(() => {
-                              setIsTransitioning(true);
-                              setIsAnimating(false); // 애니메이션 완료
-                            }, 50);
-                          }
-                          else {
-                            // 일반 이미지 간 이동 완료
-                            setIsAnimating(false);
-                          }
-                        }}
-                      >
-                        {/* 마지막 이미지 복제 (앞쪽) */}
-                        <div className="w-full h-full flex-shrink-0 flex items-center justify-center">
+                    {sortedImages.map((image, index) => (
+                      <SwiperSlide key={index}>
+                        <div
+                          className="w-full h-full flex items-center justify-center cursor-zoom-in"
+                          onClick={() => {
+                            setLightboxImageIndex(index);
+                            setShowImageLightbox(true);
+                          }}
+                        >
                           <img
-                            src={sortedImages[sortedImages.length - 1]?.image_url}
-                            alt="duplicate"
+                            src={image.image_url}
+                            alt={`${deal.title} - ${index + 1}`}
                             className={`w-full h-full object-contain ${isClosed ? 'opacity-50' : ''}`}
                           />
                         </div>
-
-                        {/* 실제 이미지들 */}
-                        {sortedImages.map((image, index) => (
-                          <div
-                            key={index}
-                            className="w-full h-full flex-shrink-0 flex items-center justify-center"
-                          >
-                            <img
-                              src={image.image_url}
-                              alt={`${deal.title} - ${index + 1}`}
-                              className={`w-full h-full object-contain ${isClosed ? 'opacity-50' : ''}`}
-                            />
-                          </div>
-                        ))}
-
-                        {/* 첫 이미지 복제 (뒤쪽) */}
-                        <div className="w-full h-full flex-shrink-0 flex items-center justify-center">
-                          <img
-                            src={sortedImages[0]?.image_url}
-                            alt="duplicate"
-                            className={`w-full h-full object-contain ${isClosed ? 'opacity-50' : ''}`}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </button>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
 
                   {/* 확대 버튼 */}
                   <button
-                    onClick={() => {
-                      setLightboxImageIndex(selectedImage);
-                      setShowImageLightbox(true);
-                    }}
-                    className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => setShowImageLightbox(true)}
+                    className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                   >
                     <ZoomIn className="w-5 h-5" />
                   </button>
 
-                  {/* 좌우 네비게이션 (이미지 2개 이상일 때) */}
-                  {sortedImages.length > 1 && (
-                    <>
-                      <button
-                        onClick={() => {
-                          // 애니메이션 진행 중에는 클릭 무시
-                          if (isAnimating) return;
-                          setIsAnimating(true);
-                          setSelectedImage((prev) => prev - 1);
-                        }}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
-                      >
-                        <ChevronLeft className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          // 애니메이션 진행 중에는 클릭 무시
-                          if (isAnimating) return;
-                          setIsAnimating(true);
-                          setSelectedImage((prev) => prev + 1);
-                        }}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
-                      >
-                        <ChevronRight className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
-                      </button>
-                    </>
-                  )}
-
                   {isClosed && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none">
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none z-10">
                       <div className="text-white font-bold text-5xl drop-shadow-lg">마감</div>
                     </div>
                   )}
@@ -975,33 +811,7 @@ export default function CustomDealDetailPage() {
               )}
             </div>
 
-            {/* Thumbnail Grid */}
-            {sortedImages.length > 1 && (
-              <div className="grid grid-cols-5 gap-2">
-                {sortedImages.map((image, index) => (
-                  <button
-                    key={image.id}
-                    onClick={() => setSelectedImage(index)}
-                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
-                      selectedImage === index
-                        ? 'border-blue-600'
-                        : 'border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <img
-                      src={image.image_url}
-                      alt={`${deal.title} ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    {index === 0 && (
-                      <Badge className="absolute top-1 left-1 bg-blue-600 text-white text-[11px] px-2 py-0.5 pointer-events-none whitespace-nowrap leading-none font-medium">
-                        대표
-                      </Badge>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Thumbnail Grid - Swiper에서 자동 처리되므로 제거 가능 */}
           </div>
 
           {/* Right Column - Info */}
@@ -1693,7 +1503,7 @@ export default function CustomDealDetailPage() {
 
       {/* Image Lightbox */}
       {showImageLightbox && sortedImages.length > 0 && (
-        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[60] p-4">
+        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[60]">
           <button
             onClick={() => setShowImageLightbox(false)}
             className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
@@ -1701,44 +1511,30 @@ export default function CustomDealDetailPage() {
             <X className="w-8 h-8" />
           </button>
 
-          <div
-            className="relative w-full h-full flex items-center justify-center"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleLightboxTouchEnd}
-          >
-            <img
-              src={sortedImages[lightboxImageIndex].image_url}
-              alt={`${deal.title} ${lightboxImageIndex + 1}`}
-              className="object-contain max-w-full max-h-full"
-            />
-
-            {/* 라이트박스 네비게이션 */}
-            {sortedImages.length > 1 && (
-              <>
-                <button
-                  onClick={() => setLightboxImageIndex((prev) =>
-                    prev === 0 ? sortedImages.length - 1 : prev - 1
-                  )}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
-                >
-                  <ChevronLeft className="w-10 h-10 text-white opacity-50 hover:opacity-100 transition-opacity" />
-                </button>
-                <button
-                  onClick={() => setLightboxImageIndex((prev) =>
-                    prev === sortedImages.length - 1 ? 0 : prev + 1
-                  )}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
-                >
-                  <ChevronRight className="w-10 h-10 text-white opacity-50 hover:opacity-100 transition-opacity" />
-                </button>
-
-                {/* 이미지 카운터 */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
-                  {lightboxImageIndex + 1} / {sortedImages.length}
-                </div>
-              </>
-            )}
+          <div className="w-full h-full flex items-center justify-center">
+            <Swiper
+              modules={[Navigation, Pagination]}
+              navigation
+              pagination={{
+                type: 'fraction',
+              }}
+              loop={true}
+              speed={450}
+              initialSlide={lightboxImageIndex}
+              className="w-full h-full"
+            >
+              {sortedImages.map((image, index) => (
+                <SwiperSlide key={index}>
+                  <div className="w-full h-full flex items-center justify-center p-4">
+                    <img
+                      src={image.image_url}
+                      alt={`${deal.title} ${index + 1}`}
+                      className="object-contain max-w-full max-h-full"
+                    />
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
         </div>
       )}
