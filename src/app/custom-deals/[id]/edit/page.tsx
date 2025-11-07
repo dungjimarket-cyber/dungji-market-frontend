@@ -341,26 +341,33 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     setImages(prev => {
       const updated = [...prev];
 
-      if (targetIndex !== undefined && files.length === 1) {
-        const file = files[0];
-        const existingImage = updated[targetIndex];
+      // targetIndex가 지정된 경우 (특정 슬롯에 추가/교체)
+      if (targetIndex !== undefined) {
+        if (files.length === 1) {
+          const file = files[0];
+          const existingImage = updated[targetIndex];
 
-        // 기존 blob URL 해제 (existingUrl은 S3 URL이므로 해제 안 함)
-        if (existingImage && existingImage.url && !existingImage.existingUrl) {
-          URL.revokeObjectURL(existingImage.url);
+          // 기존 blob URL 해제 (existingUrl은 S3 URL이므로 해제 안 함)
+          if (existingImage && existingImage.url && !existingImage.existingUrl) {
+            URL.revokeObjectURL(existingImage.url);
+          }
+
+          // 지정된 슬롯에 이미지 추가 (existingUrl과 id 제거)
+          updated[targetIndex] = {
+            file,
+            url: URL.createObjectURL(file),
+            isEmpty: false
+            // existingUrl과 id는 의도적으로 포함하지 않음 (새 파일로 교체)
+          };
+          setImagesModified(true);
+          return updated;
+        } else {
+          toast.error('한 번에 한 장씩만 추가할 수 있습니다');
+          return prev;
         }
-
-        // 새 이미지로 교체 (existingUrl과 id 제거)
-        updated[targetIndex] = {
-          file,
-          url: URL.createObjectURL(file),
-          isEmpty: false
-          // existingUrl과 id는 의도적으로 포함하지 않음 (새 파일로 교체)
-        };
-        setImagesModified(true); // 이미지 수정됨 표시
-        return updated;
       }
 
+      // targetIndex 없는 경우 (메인 input에서 다중 업로드)
       const actualImages = updated.filter(img => img && !img.isEmpty);
       if (actualImages.length + files.length > 5) {
         toast.error('최대 5장까지 업로드 가능합니다');
@@ -368,7 +375,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       }
 
       files.forEach((file) => {
-        // ✅ isEmpty 슬롯 먼저 찾기
+        // isEmpty 슬롯 먼저 찾기
         const emptySlotIndex = updated.findIndex(img => img?.isEmpty);
 
         if (emptySlotIndex !== -1) {
@@ -391,7 +398,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         }
       });
 
-      setImagesModified(true); // 이미지 수정됨 표시
+      setImagesModified(true);
       return updated;
     });
 
