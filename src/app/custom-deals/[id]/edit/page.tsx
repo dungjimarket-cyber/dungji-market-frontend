@@ -327,6 +327,11 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     const files = Array.isArray(e) ? e : Array.from(e.target.files || []);
     if (files.length === 0) return;
 
+    // input 초기화 (같은 파일 재선택 가능하도록)
+    if (!Array.isArray(e) && e.target) {
+      e.target.value = '';
+    }
+
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
         toast.error('이미지 파일만 업로드 가능합니다');
