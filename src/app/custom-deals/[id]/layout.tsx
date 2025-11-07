@@ -30,14 +30,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const mainImage = deal.images?.find((img: any) => img.order_index === 0) || deal.images?.[0];
     const imageUrl = mainImage?.image_url;
 
-    // 가격 정보 생성
+    // 가격 정보 생성 (상품 유형별 분기)
     let priceText = '';
-    if (deal.original_price && deal.final_price) {
-      const finalPrice = typeof deal.final_price === 'object'
-        ? (deal.final_price.min || 0)
-        : deal.final_price;
-      priceText = `${finalPrice.toLocaleString()}원 (${deal.discount_rate}% 할인)`;
+    if (deal.type === 'online') {
+      // 온라인몰: 전품목 할인
+      priceText = `전품목 ${deal.discount_rate}% 할인`;
+    } else if (deal.type === 'offline') {
+      // 오프라인: 시간대별 할인
+      priceText = `시간대별 최대 ${deal.discount_rate}% 할인`;
+    } else if (deal.type === 'service') {
+      // 서비스제공: 주문 시 할인
+      priceText = `주문 시 ${deal.discount_rate}% 할인`;
+    } else if (deal.type === 'period') {
+      // 기간행사: 기간 내 할인
+      priceText = `기간 내 ${deal.discount_rate}% 할인`;
     } else {
+      // 기본: 전품목 할인
       priceText = `전품목 ${deal.discount_rate}% 할인`;
     }
 
@@ -50,10 +58,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.dungjimarket.com';
     const canonicalUrl = `${baseUrl}/custom-deals/${id}`;
 
+    // 상품 유형별 키워드 생성
+    const typeKeywords: Record<string, string> = {
+      online: '온라인쇼핑, 전품목할인, 온라인몰',
+      offline: '오프라인매장, 시간대할인, 매장방문',
+      service: '서비스제공, 주문할인, 업체서비스',
+      period: '기간행사, 특별할인, 한정기간'
+    };
+    const typeKeyword = typeKeywords[deal.type] || '온라인쇼핑';
+
     return {
       title,
       description,
-      keywords: `${deal.title}, 커공특가, 공동구매, 할인, ${deal.type === 'offline' ? '오프라인매장' : '온라인쇼핑'}, 둥지마켓`,
+      keywords: `${deal.title}, 커공특가, 공동구매, 할인, ${typeKeyword}, 둥지마켓`,
       openGraph: {
         title,
         description,
