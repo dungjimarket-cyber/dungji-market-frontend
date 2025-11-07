@@ -115,17 +115,13 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       if (!response.ok) throw new Error('데이터 로드 실패');
 
       const data = await response.json();
-      console.log('[EDIT] 데이터 로드:', { seller: data.seller, userId: user?.id });
 
       // 권한 체크 (seller는 ID 자체)
       if (data.seller !== parseInt(user?.id || '0')) {
-        console.log('[EDIT] 권한 없음:', data.seller, '!==', parseInt(user?.id || '0'));
         toast.error('수정 권한이 없습니다');
         router.push(`/custom-deals/${dealId}`);
         return;
       }
-
-      console.log('[EDIT] 권한 확인 완료');
 
       // 상태 체크 (완료/취소/만료된 공구는 수정 불가)
       if (data.status === 'completed' || data.status === 'cancelled' || data.status === 'expired') {
@@ -349,18 +345,15 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
       // targetIndex가 지정된 경우 (특정 슬롯에 추가/교체)
       if (targetIndex !== undefined) {
-        console.log('✅ targetIndex 분기 진입:', { targetIndex, arrayLength: updated.length });
         if (files.length === 1) {
           const file = files[0];
 
           // 배열 길이가 targetIndex보다 작으면 확장
           while (updated.length <= targetIndex) {
-            console.log('📏 배열 확장:', updated.length, '→', updated.length + 1);
             updated.push({ file: null, url: '', isEmpty: true });
           }
 
           const existingImage = updated[targetIndex];
-          console.log('🖼️ 기존 이미지:', existingImage);
 
           // 기존 blob URL 해제 (existingUrl은 S3 URL이므로 해제 안 함)
           if (existingImage && existingImage.url && !existingImage.existingUrl) {
@@ -374,7 +367,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             isEmpty: false
             // existingUrl과 id는 의도적으로 포함하지 않음 (새 파일로 교체)
           };
-          console.log('✨ 이미지 설정 완료:', updated[targetIndex]);
           setImagesModified(true);
           return updated;
         } else {
@@ -628,13 +620,11 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
   // 수정 처리
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[EDIT] handleSubmit 시작');
 
     if (submitting) return;
 
     try {
       setSubmitting(true);
-      console.log('[EDIT] 제출 시작');
 
       // FormData로 전송
       const submitFormData = new FormData();
@@ -642,12 +632,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       // 이미지 처리 - 이미지가 변경된 경우에만 전송
       if (imagesModified) {
         const actualImages = images.filter(img => img && !img.isEmpty);
-        console.log('💾 저장할 이미지 순서:', actualImages.map((img, idx) => ({
-          index: idx,
-          isExisting: !!img.existingUrl,
-          id: img.id,
-          hasFile: !!img.file
-        })));
 
         // ✅ 순서대로 기존 이미지 ID 전송 (순서 유지 핵심!)
         actualImages.forEach((image) => {
@@ -682,7 +666,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   { type: 'image/webp' }
                 );
 
-                console.log('[EDIT] Compressed:', image.file.name, image.file.size, '->', compressedFile.size);
                 submitFormData.append('new_images', compressedFile);
               } catch (error) {
                 console.error(`[EDIT] Failed to compress image ${i + 1}:`, error);
@@ -774,29 +757,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         }
       }
 
-      // 디버깅: FormData 전송 내용 상세 출력
-      console.log('====================================');
-      console.log('📦 FormData 전송 내용 상세 디버깅');
-      console.log('====================================');
-      console.log('🔸 참여자 여부:', hasParticipants);
-      console.log('🔸 이미지 변경 여부:', imagesModified);
-      console.log('🔸 현재 images 상태:', images);
-      console.log('');
-      console.log('📋 전송될 필드 목록:');
-      const formDataEntries: Array<[string, any]> = [];
-      for (let [key, value] of submitFormData.entries()) {
-        formDataEntries.push([key, value]);
-        if (value instanceof File) {
-          console.log(`  ✅ ${key}: [File] ${value.name} (${(value.size / 1024).toFixed(2)}KB)`);
-        } else {
-          console.log(`  ✅ ${key}: ${value}`);
-        }
-      }
-      console.log('');
-      console.log('📊 전송 필드 개수:', formDataEntries.length);
-      console.log('====================================');
-
-      console.log('[EDIT] API 호출 직전');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/${dealId}/`, {
         method: 'PATCH',
         headers: {
@@ -805,14 +765,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         body: submitFormData
       });
 
-      console.log('');
-      console.log('🔻 API 응답 정보 🔻');
-      console.log('상태 코드:', response.status);
-      console.log('상태 텍스트:', response.statusText);
-      console.log('Content-Type:', response.headers.get('content-type'));
-
       if (!response.ok) {
-        console.error('❌ API 오류 발생');
 
         // 응답 텍스트 먼저 가져오기
         const responseText = await response.text();

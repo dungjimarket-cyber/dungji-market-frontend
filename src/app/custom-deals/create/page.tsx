@@ -277,6 +277,11 @@ export default function CreateCustomDealPage() {
     const files = Array.isArray(e) ? e : Array.from(e.target.files || []);
     if (files.length === 0) return;
 
+    // input 초기화 (같은 파일 재선택 가능하도록)
+    if (!Array.isArray(e) && e.target) {
+      e.target.value = '';
+    }
+
     // 파일 유효성 검사
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
@@ -307,44 +312,63 @@ export default function CreateCustomDealPage() {
     setImages(prev => {
       const updated = [...prev];
 
-      // 특정 슬롯에 개별 업로드
-      if (targetIndex !== undefined && files.length === 1) {
-        const file = files[0];
-        if (updated[targetIndex] && updated[targetIndex].url) {
-          URL.revokeObjectURL(updated[targetIndex].url);
+      // targetIndex가 지정된 경우 (특정 슬롯에 추가/교체)
+      if (targetIndex !== undefined) {
+        if (files.length === 1) {
+          const file = files[0];
+
+          // 배열 길이가 targetIndex보다 작으면 확장
+          while (updated.length <= targetIndex) {
+            updated.push({ file: null, url: '', isMain: false, isEmpty: true });
+          }
+
+          if (updated[targetIndex] && updated[targetIndex].url) {
+            URL.revokeObjectURL(updated[targetIndex].url);
+          }
+
+          updated[targetIndex] = {
+            file,
+            url: URL.createObjectURL(file),
+            isMain: targetIndex === 0,
+            isEmpty: false
+          };
+          return updated;
+        } else {
+          toast.error('한 번에 한 장씩만 추가할 수 있습니다');
+          return prev;
         }
-        updated[targetIndex] = {
-          file,
-          url: URL.createObjectURL(file),
-          isMain: targetIndex === 0,
-          isEmpty: false
-        };
-        return updated;
       }
 
-      // 다중 업로드
+      // targetIndex 없는 경우 (메인 input에서 다중 업로드)
       const actualImages = updated.filter(img => img && !img.isEmpty);
       if (actualImages.length + files.length > 5) {
         toast.error('최대 5장까지 업로드 가능합니다');
         return prev;
       }
 
-      const lastFilledIndex = actualImages.length > 0 ?
-        updated.findLastIndex(img => img && !img.isEmpty) : -1;
-      let insertIndex = lastFilledIndex + 1;
-
       files.forEach((file) => {
-        if (insertIndex < 5) {
-          if (updated[insertIndex] && updated[insertIndex].url) {
-            URL.revokeObjectURL(updated[insertIndex].url);
+        // isEmpty 슬롯 먼저 찾기
+        const emptySlotIndex = updated.findIndex(img => img?.isEmpty);
+
+        if (emptySlotIndex !== -1) {
+          // isEmpty 슬롯에 추가
+          if (updated[emptySlotIndex] && updated[emptySlotIndex].url) {
+            URL.revokeObjectURL(updated[emptySlotIndex].url);
           }
-          updated[insertIndex] = {
+          updated[emptySlotIndex] = {
             file,
             url: URL.createObjectURL(file),
-            isMain: insertIndex === 0,
+            isMain: emptySlotIndex === 0,
             isEmpty: false
           };
-          insertIndex++;
+        } else if (updated.length < 5) {
+          // 빈 슬롯 없으면 끝에 추가
+          updated.push({
+            file,
+            url: URL.createObjectURL(file),
+            isMain: updated.length === 0,
+            isEmpty: false
+          });
         }
       });
 
@@ -579,8 +603,6 @@ export default function CreateCustomDealPage() {
     const newErrors: Record<string, string> = {};
     let firstErrorRef: React.RefObject<any> | null = null;
 
-    console.log('[VALIDATE] 검증 시작');
-
     // 기본 필드
     if (!formData.title.trim()) {
       newErrors.title = '제목을 입력해주세요';
@@ -788,12 +810,6 @@ export default function CreateCustomDealPage() {
 
     const isValid = Object.keys(newErrors).length === 0;
 
-    console.log('[VALIDATE] 검증 완료:', {
-      isValid,
-      errorCount: Object.keys(newErrors).length,
-      errors: newErrors
-    });
-
     if (!isValid) {
       setErrors(newErrors);
       // 첫 번째 에러 필드로 포커스 및 스크롤
@@ -815,14 +831,11 @@ export default function CreateCustomDealPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('[DEBUG] handleSubmit 시작');
     if (loading) return;
 
     // 1. 패널티, 중복, 프로필 체크 (통합)
     try {
-      console.log('[DEBUG] 패널티 체크 시작');
       const result = await checkCanCreateCustomDeal(user);
-      console.log('[DEBUG] 패널티 체크 결과:', result);
 
       if (!result.canProceed) {
         // 패널티가 있는 경우
@@ -852,48 +865,26 @@ export default function CreateCustomDealPage() {
     }
 
     // 2. 개인회원의 오프라인 공구 등록 방지
-    console.log('[DEBUG] 오프라인 체크:', formData.type, isBusinessUser);
     if (formData.type === 'offline' && !isBusinessUser) {
       toast.error('오프라인매장은 사업자 회원만 등록할 수 있습니다');
       return;
     }
 
     // 3. 폼 유효성 검증
-    console.log('[DEBUG] validateForm 시작');
-    console.log('[DEBUG] formData:', {
-      deal_type: formData.deal_type,
-      pricing_type: formData.pricing_type,
-      deadline_date: formData.deadline_date,
-      deadline_time: formData.deadline_time
-    });
-
     const validation = validateForm();
-    console.log('[DEBUG] validateForm 결과:', validation.isValid);
-    console.log('[DEBUG] validation.errors:', validation.errors);
 
     if (!validation.isValid) {
       const firstErrorField = Object.keys(validation.errors)[0];
       const firstErrorMessage = validation.errors[firstErrorField];
-      console.log('[DEBUG] 첫 번째 에러 필드:', firstErrorField, firstErrorMessage);
       toast.error(firstErrorMessage || '입력 내용을 확인해주세요');
       return;
     }
-
-    console.log('[DEBUG] validation 통과, 등록 시작');
 
     try {
       setLoading(true);
 
       // FormData로 전송 (중고거래 방식)
       const actualImages = images.filter(img => img && !img.isEmpty);
-      console.log('[DEBUG] actualImages 개수:', actualImages.length);
-      console.log('[DEBUG] actualImages:', actualImages.map((img, i) => ({
-        index: i,
-        hasFile: !!img.file,
-        fileName: img.file?.name,
-        fileSize: img.file?.size,
-        isFile: img.file instanceof File
-      })));
 
       const submitFormData = new FormData();
 
@@ -921,20 +912,16 @@ export default function CreateCustomDealPage() {
               { type: 'image/webp' }
             );
 
-            console.log('[DEBUG] Compressed:', img.file.name, img.file.size, '->', compressedFile.size);
             submitFormData.append('images', compressedFile);
             appendedCount++;
           } catch (error) {
-            console.error(`[DEBUG] Failed to compress image ${i + 1}:`, error);
+            console.error(`Failed to compress image ${i + 1}:`, error);
             // 압축 실패 시 원본 사용
             submitFormData.append('images', img.file);
             appendedCount++;
           }
-        } else {
-          console.warn('[DEBUG] Image without file:', img);
         }
       }
-      console.log('[DEBUG] Total images appended:', appendedCount);
 
       // 기본 정보
       submitFormData.append('title', formData.title);
@@ -1010,33 +997,6 @@ export default function CreateCustomDealPage() {
         }
       }
 
-      // 디버깅: 전송할 데이터 로그 출력
-      console.log('=== 커스텀 공구 등록 데이터 ===');
-      console.log('타입:', formData.type);
-      console.log('가격 유형:', formData.pricing_type);
-      console.log('이미지 개수:', actualImages.length);
-
-      // FormData 내용 출력 (multiple values 고려)
-      const formDataEntries: Record<string, any[]> = {};
-      for (const [key, value] of submitFormData.entries()) {
-        if (!formDataEntries[key]) {
-          formDataEntries[key] = [];
-        }
-        if (value instanceof File) {
-          formDataEntries[key].push(`[File: ${value.name}, ${(value.size / 1024).toFixed(2)}KB]`);
-        } else {
-          formDataEntries[key].push(value);
-        }
-      }
-      console.log('전송 데이터:', formDataEntries);
-
-      // images 키의 모든 파일 확인
-      const imageFiles = submitFormData.getAll('images');
-      console.log('[DEBUG] FormData.getAll("images") 개수:', imageFiles.length);
-      console.log('[DEBUG] FormData.getAll("images") 상세:', imageFiles.map((f: any) =>
-        f instanceof File ? `${f.name} (${f.size} bytes)` : f
-      ));
-
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/`, {
         method: 'POST',
         headers: {
@@ -1045,14 +1005,10 @@ export default function CreateCustomDealPage() {
         body: submitFormData
       });
 
-      console.log('API 응답 상태:', response.status);
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('서버 에러 응답 (raw):', errorText);
         try {
           const errorData = JSON.parse(errorText);
-          console.error('서버 에러 응답 (parsed):', errorData);
           throw new Error(errorData.error || JSON.stringify(errorData) || '등록에 실패했습니다');
         } catch (e) {
           throw new Error(`등록 실패 (${response.status}): ${errorText.substring(0, 200)}`);
@@ -1060,7 +1016,6 @@ export default function CreateCustomDealPage() {
       }
 
       const data = await response.json();
-      console.log('등록 성공 응답:', data);
       toast.success('커스텀 공구가 등록되었습니다!');
       router.push(`/custom-deals/${data.id}`);
 
@@ -1210,13 +1165,21 @@ export default function CreateCustomDealPage() {
                           </div>
                         </>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="w-full h-full flex items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors"
-                        >
-                          <Plus className="w-6 h-6 text-slate-400" />
-                        </button>
+                        <>
+                          <input
+                            type="file"
+                            id={`image-add-${index}`}
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, index)}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor={`image-add-${index}`}
+                            className="w-full h-full flex items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+                          >
+                            <Plus className="w-6 h-6 text-slate-400" />
+                          </label>
+                        </>
                       )}
                     </div>
                   );
