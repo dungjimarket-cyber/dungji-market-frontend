@@ -957,13 +957,21 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           </div>
                         </>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="w-full h-full flex items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors"
-                        >
-                          <Plus className="w-6 h-6 text-slate-400" />
-                        </button>
+                        <>
+                          <input
+                            type="file"
+                            id={`image-add-${index}`}
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, index)}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor={`image-add-${index}`}
+                            className="w-full h-full flex items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+                          >
+                            <Plus className="w-6 h-6 text-slate-400" />
+                          </label>
+                        </>
                       )}
                     </div>
                   );
