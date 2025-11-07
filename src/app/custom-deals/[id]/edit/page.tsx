@@ -350,6 +350,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       if (targetIndex !== undefined) {
         if (files.length === 1) {
           const file = files[0];
+
+          // 배열 길이가 targetIndex보다 작으면 확장
+          while (updated.length <= targetIndex) {
+            updated.push({ file: null, url: '', isEmpty: true });
+          }
+
           const existingImage = updated[targetIndex];
 
           // 기존 blob URL 해제 (existingUrl은 S3 URL이므로 해제 안 함)
