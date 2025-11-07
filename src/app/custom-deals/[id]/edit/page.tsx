@@ -642,24 +642,27 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       // 이미지 처리 - 이미지가 변경된 경우에만 전송
       if (imagesModified) {
         const actualImages = images.filter(img => img && !img.isEmpty);
+        console.log('💾 저장할 이미지 순서:', actualImages.map((img, idx) => ({
+          index: idx,
+          isExisting: !!img.existingUrl,
+          id: img.id,
+          hasFile: !!img.file
+        })));
 
-        // 첫 번째 이미지가 대표 이미지 (정렬 불필요, 이미 순서대로 배열됨)
-        const existingImages = actualImages.filter(img => img.existingUrl && !img.file && img.id);
-        const newImages = actualImages.filter(img => img.file);
-
-        // 기존 이미지 ID들 전송 (유지할 이미지) - 정렬된 순서대로
-        existingImages.forEach((image) => {
-          if (image.id) {
+        // ✅ 순서대로 기존 이미지 ID 전송 (순서 유지 핵심!)
+        actualImages.forEach((image) => {
+          if (image.existingUrl && !image.file && image.id) {
             submitFormData.append('existing_image_ids', image.id.toString());
           }
         });
 
-        // 새로 추가된 이미지만 업로드 (압축 적용)
+        // ✅ 순서대로 새 이미지 업로드 (압축 적용)
+        const newImages = actualImages.filter(img => img.file);
         if (newImages.length > 0) {
           toast('이미지 처리 중...', { description: '이미지를 압축하고 있습니다.' });
 
-          for (let i = 0; i < newImages.length; i++) {
-            const image = newImages[i];
+          for (let i = 0; i < actualImages.length; i++) {
+            const image = actualImages[i];
 
             if (image.file) {
               try {
