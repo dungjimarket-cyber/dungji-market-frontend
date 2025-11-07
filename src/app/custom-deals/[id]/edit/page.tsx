@@ -367,21 +367,27 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         return prev;
       }
 
-      const lastFilledIndex = actualImages.length > 0 ?
-        updated.findLastIndex(img => img && !img.isEmpty) : -1;
-      let insertIndex = lastFilledIndex + 1;
-
       files.forEach((file) => {
-        if (insertIndex < 5) {
-          if (updated[insertIndex] && updated[insertIndex].url) {
-            URL.revokeObjectURL(updated[insertIndex].url);
+        // ✅ isEmpty 슬롯 먼저 찾기
+        const emptySlotIndex = updated.findIndex(img => img?.isEmpty);
+
+        if (emptySlotIndex !== -1) {
+          // isEmpty 슬롯에 추가
+          if (updated[emptySlotIndex] && updated[emptySlotIndex].url) {
+            URL.revokeObjectURL(updated[emptySlotIndex].url);
           }
-          updated[insertIndex] = {
+          updated[emptySlotIndex] = {
             file,
             url: URL.createObjectURL(file),
             isEmpty: false
           };
-          insertIndex++;
+        } else if (updated.length < 5) {
+          // 빈 슬롯 없으면 끝에 추가
+          updated.push({
+            file,
+            url: URL.createObjectURL(file),
+            isEmpty: false
+          });
         }
       });
 
