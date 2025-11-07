@@ -325,6 +325,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
   // 이미지 업로드 핸들러 (중고거래 로직 복사)
   const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement> | File[], targetIndex?: number) => {
     const files = Array.isArray(e) ? e : Array.from(e.target.files || []);
+    console.log('🔍 handleImageUpload 호출됨:', { targetIndex, filesLength: files.length });
     if (files.length === 0) return;
 
     // input 초기화 (같은 파일 재선택 가능하도록)
@@ -348,15 +349,18 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
       // targetIndex가 지정된 경우 (특정 슬롯에 추가/교체)
       if (targetIndex !== undefined) {
+        console.log('✅ targetIndex 분기 진입:', { targetIndex, arrayLength: updated.length });
         if (files.length === 1) {
           const file = files[0];
 
           // 배열 길이가 targetIndex보다 작으면 확장
           while (updated.length <= targetIndex) {
+            console.log('📏 배열 확장:', updated.length, '→', updated.length + 1);
             updated.push({ file: null, url: '', isEmpty: true });
           }
 
           const existingImage = updated[targetIndex];
+          console.log('🖼️ 기존 이미지:', existingImage);
 
           // 기존 blob URL 해제 (existingUrl은 S3 URL이므로 해제 안 함)
           if (existingImage && existingImage.url && !existingImage.existingUrl) {
@@ -370,6 +374,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             isEmpty: false
             // existingUrl과 id는 의도적으로 포함하지 않음 (새 파일로 교체)
           };
+          console.log('✨ 이미지 설정 완료:', updated[targetIndex]);
           setImagesModified(true);
           return updated;
         } else {
