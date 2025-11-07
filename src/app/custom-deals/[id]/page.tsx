@@ -1549,6 +1549,48 @@ export default function CustomDealDetailPage() {
           router.push('/mypage');
         }}
       />
+
+      {/* Swiper Navigation Custom Styles */}
+      <style jsx global>{`
+        .swiper-button-prev,
+        .swiper-button-next {
+          width: 40px !important;
+          height: 40px !important;
+          background: rgba(255, 255, 255, 0.2) !important;
+          backdrop-filter: blur(4px) !important;
+          border-radius: 50% !important;
+          transition: all 0.3s ease !important;
+        }
+
+        .swiper-button-prev:hover,
+        .swiper-button-next:hover {
+          background: rgba(255, 255, 255, 0.3) !important;
+          transform: scale(1.1) !important;
+        }
+
+        .swiper-button-prev::after,
+        .swiper-button-next::after {
+          font-size: 20px !important;
+          font-weight: bold !important;
+          color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .swiper-button-prev {
+          left: 8px !important;
+        }
+
+        .swiper-button-next {
+          right: 8px !important;
+        }
+
+        .swiper-pagination-bullet {
+          background: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .swiper-pagination-bullet-active {
+          background: rgba(255, 255, 255, 1) !important;
+        }
+      `}</style>
     </div>
   );
 }
