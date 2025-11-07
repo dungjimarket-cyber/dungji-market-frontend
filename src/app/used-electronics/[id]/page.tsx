@@ -737,15 +737,15 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 <>
                   <button
                     onClick={handlePrevImage}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full z-20 hover:bg-white"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 hover:scale-110 transition-all bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-6 h-6 text-white/70" />
                   </button>
                   <button
                     onClick={handleNextImage}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full z-20 hover:bg-white"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 hover:scale-110 transition-all bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm"
                   >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-6 h-6 text-white/70" />
                   </button>
 
                   {/* 인디케이터 */}
@@ -1985,9 +1985,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                       prev > 0 ? prev - 1 : electronics.images!.length - 1
                     );
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-all hover:scale-110"
                 >
-                  <ChevronLeft className="w-6 h-6 text-white" />
+                  <ChevronLeft className="w-6 h-6 text-white/70" />
                 </button>
                 <button
                   onClick={() => {
@@ -1995,9 +1995,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                       prev < electronics.images!.length - 1 ? prev + 1 : 0
                     );
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-all hover:scale-110"
                 >
-                  <ChevronRight className="w-6 h-6 text-white" />
+                  <ChevronRight className="w-6 h-6 text-white/70" />
                 </button>
               </>
             )}
@@ -2036,17 +2036,17 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   onClick={() => setLightboxImageIndex((prev) =>
                     prev === 0 ? electronics.images!.length - 1 : prev - 1
                   )}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-all hover:scale-110"
                 >
-                  <ChevronLeft className="w-10 h-10 text-white opacity-50 hover:opacity-100 transition-opacity" />
+                  <ChevronLeft className="w-6 h-6 text-white/70" />
                 </button>
                 <button
                   onClick={() => setLightboxImageIndex((prev) =>
                     prev === electronics.images!.length - 1 ? 0 : prev + 1
                   )}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 p-2 hover:scale-110 transition-transform"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-all hover:scale-110"
                 >
-                  <ChevronRight className="w-10 h-10 text-white opacity-50 hover:opacity-100 transition-opacity" />
+                  <ChevronRight className="w-6 h-6 text-white/70" />
                 </button>
 
                 {/* 이미지 카운터 */}
