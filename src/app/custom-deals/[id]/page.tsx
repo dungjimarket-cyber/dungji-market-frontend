@@ -14,10 +14,12 @@ import { useCustomProfileCheck } from '@/hooks/useCustomProfileCheck';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import { convertLinksToRedirect, getRedirectUrl } from '@/lib/utils/linkRedirect';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { Navigation, Pagination, Autoplay, Thumbs } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import 'swiper/css/thumbs';
 
 interface LinkPreview {
   url: string;
@@ -101,6 +103,7 @@ export default function CustomDealDetailPage() {
   const [isExpired, setIsExpired] = useState(false);
   const [showImageLightbox, setShowImageLightbox] = useState(false);
   const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
+  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [bumpStatus, setBumpStatus] = useState<{
     can_bump: boolean;
@@ -759,59 +762,85 @@ export default function CustomDealDetailPage() {
           {/* Left Column - Images */}
           <div>
             {/* Main Image - Swiper */}
-            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden mb-4 relative group">
-              {sortedImages.length > 0 ? (
-                <>
+            <div className="space-y-3">
+              <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
+                {sortedImages.length > 0 ? (
+                  <>
+                    <Swiper
+                      modules={[Navigation, Thumbs]}
+                      navigation
+                      thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                      loop={sortedImages.length > 1}
+                      speed={450}
+                      className="w-full aspect-[4/3]"
+                      onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
+                    >
+                      {sortedImages.map((image, index) => (
+                        <SwiperSlide key={index}>
+                          <div
+                            className="w-full h-full flex items-center justify-center cursor-zoom-in"
+                            onClick={() => {
+                              setLightboxImageIndex(index);
+                              setShowImageLightbox(true);
+                            }}
+                          >
+                            <img
+                              src={image.image_url}
+                              alt={`${deal.title} - ${index + 1}`}
+                              className={`w-full h-full object-contain ${isClosed ? 'opacity-50' : ''}`}
+                            />
+                          </div>
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+
+                    {/* 확대 버튼 */}
+                    <button
+                      onClick={() => setShowImageLightbox(true)}
+                      className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    >
+                      <ZoomIn className="w-5 h-5" />
+                    </button>
+
+                    {isClosed && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none z-10">
+                        <div className="text-white font-bold text-5xl drop-shadow-lg">마감</div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                    <Tag className="w-24 h-24 text-slate-300" />
+                  </div>
+                )}
+              </div>
+
+              {/* Thumbnail Navigation */}
+              {sortedImages.length > 1 && (
+                <div className="px-1">
                   <Swiper
-                    modules={[Navigation, Pagination]}
-                    navigation
-                    pagination={{ clickable: true }}
-                    loop={true}
-                    speed={450}
-                    className="w-full aspect-square"
-                    onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
+                    modules={[Thumbs]}
+                    onSwiper={setThumbsSwiper}
+                    spaceBetween={10}
+                    slidesPerView="auto"
+                    watchSlidesProgress
+                    className="w-full"
                   >
                     {sortedImages.map((image, index) => (
-                      <SwiperSlide key={index}>
-                        <div
-                          className="w-full h-full flex items-center justify-center cursor-zoom-in"
-                          onClick={() => {
-                            setLightboxImageIndex(index);
-                            setShowImageLightbox(true);
-                          }}
-                        >
+                      <SwiperSlide key={index} className="!w-auto">
+                        <div className="w-20 h-20 rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-slate-400 transition-all">
                           <img
                             src={image.image_url}
-                            alt={`${deal.title} - ${index + 1}`}
-                            className={`w-full h-full object-contain ${isClosed ? 'opacity-50' : ''}`}
+                            alt={`썸네일 ${index + 1}`}
+                            className="w-full h-full object-cover"
                           />
                         </div>
                       </SwiperSlide>
                     ))}
                   </Swiper>
-
-                  {/* 확대 버튼 */}
-                  <button
-                    onClick={() => setShowImageLightbox(true)}
-                    className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                  >
-                    <ZoomIn className="w-5 h-5" />
-                  </button>
-
-                  {isClosed && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none z-10">
-                      <div className="text-white font-bold text-5xl drop-shadow-lg">마감</div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="w-full aspect-square bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                  <Tag className="w-24 h-24 text-slate-300" />
                 </div>
               )}
             </div>
-
-            {/* Thumbnail Grid - Swiper에서 자동 처리되므로 제거 가능 */}
           </div>
 
           {/* Right Column - Info */}
@@ -1589,6 +1618,11 @@ export default function CustomDealDetailPage() {
 
         .swiper-pagination-bullet-active {
           background: rgba(255, 255, 255, 1) !important;
+        }
+
+        /* Thumbnail active state */
+        .swiper-slide-thumb-active > div {
+          border-color: hsl(var(--primary)) !important;
         }
       `}</style>
     </div>
