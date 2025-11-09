@@ -768,11 +768,13 @@ export default function CustomDealDetailPage() {
                   <>
                     <Swiper
                       modules={[Navigation, Thumbs]}
-                      navigation
+                      navigation={{
+                        enabled: true,
+                      }}
                       thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
                       loop={sortedImages.length > 1}
                       speed={450}
-                      className="w-full aspect-[4/3]"
+                      className="w-full aspect-[4/3] custom-deal-swiper"
                       onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
                     >
                       {sortedImages.map((image, index) => (
@@ -1581,35 +1583,46 @@ export default function CustomDealDetailPage() {
 
       {/* Swiper Navigation Custom Styles */}
       <style jsx global>{`
-        .swiper-button-prev,
-        .swiper-button-next {
-          width: 40px !important;
-          height: 40px !important;
-          background: rgba(255, 255, 255, 0.2) !important;
-          backdrop-filter: blur(4px) !important;
-          border-radius: 50% !important;
-          transition: all 0.3s ease !important;
+        /* 모바일에서 커스텀 딜 네비게이션 화살표 숨기기 */
+        @media (max-width: 768px) {
+          .custom-deal-swiper .swiper-button-prev,
+          .custom-deal-swiper .swiper-button-next {
+            display: none !important;
+          }
         }
 
-        .swiper-button-prev:hover,
-        .swiper-button-next:hover {
-          background: rgba(255, 255, 255, 0.3) !important;
-          transform: scale(1.1) !important;
-        }
+        /* 데스크톱 네비게이션 스타일 */
+        @media (min-width: 769px) {
+          .custom-deal-swiper .swiper-button-prev,
+          .custom-deal-swiper .swiper-button-next {
+            width: 40px !important;
+            height: 40px !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            backdrop-filter: blur(4px) !important;
+            border-radius: 50% !important;
+            transition: all 0.3s ease !important;
+          }
 
-        .swiper-button-prev::after,
-        .swiper-button-next::after {
-          font-size: 20px !important;
-          font-weight: bold !important;
-          color: rgba(255, 255, 255, 0.7) !important;
-        }
+          .custom-deal-swiper .swiper-button-prev:hover,
+          .custom-deal-swiper .swiper-button-next:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+            transform: scale(1.1) !important;
+          }
 
-        .swiper-button-prev {
-          left: 8px !important;
-        }
+          .custom-deal-swiper .swiper-button-prev::after,
+          .custom-deal-swiper .swiper-button-next::after {
+            font-size: 20px !important;
+            font-weight: bold !important;
+            color: rgba(255, 255, 255, 0.7) !important;
+          }
 
-        .swiper-button-next {
-          right: 8px !important;
+          .custom-deal-swiper .swiper-button-prev {
+            left: 8px !important;
+          }
+
+          .custom-deal-swiper .swiper-button-next {
+            right: 8px !important;
+          }
         }
 
         .swiper-pagination-bullet {
