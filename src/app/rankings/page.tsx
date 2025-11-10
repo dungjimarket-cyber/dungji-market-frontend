@@ -32,7 +32,7 @@ export default function RankingsMainPage() {
       return;
     }
 
-    router.push(`/rankings/${encodeURIComponent(selectedCity)}/${categoryId}?placeType=${placeType}`);
+    router.push(`/rankings/${encodeURIComponent(selectedCity)}/${categoryId}?placeType=${encodeURIComponent(placeType)}`);
   };
 
   // 직접 검색

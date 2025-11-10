@@ -43,6 +43,12 @@ export default async function RankingsPage({ params, searchParams }: PageProps) 
   const category = decodeURIComponent(resolvedParams.category);
 
   // 카테고리 정보 가져오기
+  console.log('========================================');
+  console.log('📄 [Rankings Page] 페이지 렌더링 시작');
+  console.log('========================================');
+  console.log('URL 파라미터:', { region, category });
+  console.log('쿼리 파라미터:', resolvedSearchParams);
+
   let placeType = resolvedSearchParams.placeType;
   let displayCategory = category;
 
@@ -53,21 +59,27 @@ export default async function RankingsPage({ params, searchParams }: PageProps) 
     }
     placeType = resolvedSearchParams.q;
     displayCategory = resolvedSearchParams.q;
+    console.log('🔍 검색 모드:', { placeType, displayCategory });
   } else {
     // 인기 카테고리인 경우
     const categoryInfo = POPULAR_CATEGORIES.find(c => c.id === category);
+    console.log('📋 찾은 카테고리 정보:', categoryInfo);
+
     if (!categoryInfo) {
       notFound();
     }
     placeType = placeType || categoryInfo.placeType;
     displayCategory = categoryInfo.label;
+    console.log('🏷️ 카테고리 모드:', {
+      queryPlaceType: resolvedSearchParams.placeType,
+      fallbackPlaceType: categoryInfo.placeType,
+      finalPlaceType: placeType,
+      displayCategory
+    });
   }
 
   // Google Places API 호출
-  console.log('========================================');
-  console.log('📄 [Rankings Page] 페이지 렌더링 시작');
-  console.log('========================================');
-  console.log('파라미터:', { region, category, displayCategory, placeType });
+  console.log('📤 최종 API 호출 파라미터:', { region, displayCategory, placeType });
 
   let places;
   try {
