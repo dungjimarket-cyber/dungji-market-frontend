@@ -14,9 +14,10 @@ interface RankingsListProps {
   initialPlaces: PlaceRanking[];
   city: string;
   category: string;
+  placeType: string;
 }
 
-export default function RankingsList({ initialPlaces, city, category }: RankingsListProps) {
+export default function RankingsList({ initialPlaces, city, category, placeType }: RankingsListProps) {
   const [sortBy, setSortBy] = useState<SortType>('popularity');
   const [showAll, setShowAll] = useState(false);
 
@@ -32,7 +33,7 @@ export default function RankingsList({ initialPlaces, city, category }: Rankings
   if (sortedPlaces.length === 0) {
     return (
       <div className="space-y-4">
-        <DebugInfo city={city} category={category} placeType={category} />
+        <DebugInfo city={city} category={category} placeType={placeType} />
         <div className="text-center py-12">
           <p className="text-muted-foreground">
             검색 결과가 없습니다. 다른 지역이나 카테고리를 선택해보세요.
@@ -45,7 +46,7 @@ export default function RankingsList({ initialPlaces, city, category }: Rankings
   return (
     <div className="space-y-8">
       {/* 디버그 정보 */}
-      <DebugInfo city={city} category={category} placeType={category} />
+      <DebugInfo city={city} category={category} placeType={placeType} />
 
       {/* 정렬 옵션 */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

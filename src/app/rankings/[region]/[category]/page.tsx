@@ -128,6 +128,7 @@ export default async function RankingsPage({ params, searchParams }: PageProps) 
             initialPlaces={places}
             city={region}
             category={displayCategory}
+            placeType={placeType}
           />
         </Suspense>
       </div>
