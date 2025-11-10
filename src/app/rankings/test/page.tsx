@@ -3,11 +3,18 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function ApiTestPage() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 실제 랭킹 페이지와 동일한 파라미터 구조
+  const [city, setCity] = useState('강남구');
+  const [category, setCategory] = useState('카페');
+  const [placeType, setPlaceType] = useState('cafe');
 
   const testApi = async () => {
     setLoading(true);
@@ -20,10 +27,15 @@ export default function ApiTestPage() {
       console.log('========================================');
       console.log('🧪 API 테스트 시작');
       console.log('========================================');
+      console.log('파라미터:', { city, category, placeType });
       console.log('API Key:', apiKey?.substring(0, 20) + '...');
 
+      // 실제 코드와 동일한 검색 쿼리 생성
+      const searchQuery = `${city} ${category}`;
+      console.log('🔎 검색 쿼리:', searchQuery);
+
       const requestBody = {
-        textQuery: '강남구 맛집',
+        textQuery: searchQuery,
         languageCode: 'ko',
         locationBias: {
           circle: {
@@ -38,7 +50,7 @@ export default function ApiTestPage() {
         maxResultCount: 5
       };
 
-      console.log('Request:', requestBody);
+      console.log('📤 Request Body:', requestBody);
 
       const response = await fetch('https://places.googleapis.com/v1/places:searchText', {
         method: 'POST',
@@ -50,16 +62,16 @@ export default function ApiTestPage() {
         body: JSON.stringify(requestBody)
       });
 
-      console.log('Response status:', response.status);
+      console.log('📥 Response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error response:', errorText);
+        console.error('❌ Error response:', errorText);
         throw new Error(`API Error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
-      console.log('Success:', data);
+      console.log('✅ Success:', data);
 
       setResult({
         status: response.status,
@@ -73,7 +85,7 @@ export default function ApiTestPage() {
       });
 
     } catch (err: any) {
-      console.error('Test failed:', err);
+      console.error('💥 Test failed:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -84,10 +96,45 @@ export default function ApiTestPage() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>Google Places API 테스트</CardTitle>
+          <CardTitle>Google Places API 디버깅 콘솔</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button onClick={testApi} disabled={loading}>
+          {/* 파라미터 입력 */}
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="city">City (지역)</Label>
+              <Input
+                id="city"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="강남구"
+              />
+            </div>
+            <div>
+              <Label htmlFor="category">Category (카테고리 - 한글)</Label>
+              <Input
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="카페"
+              />
+            </div>
+            <div>
+              <Label htmlFor="placeType">Place Type (영어)</Label>
+              <Input
+                id="placeType"
+                value={placeType}
+                onChange={(e) => setPlaceType(e.target.value)}
+                placeholder="cafe"
+              />
+            </div>
+          </div>
+
+          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+            <strong>검색 쿼리:</strong> <code>{city} {category}</code>
+          </div>
+
+          <Button onClick={testApi} disabled={loading} className="w-full">
             {loading ? '테스트 중...' : 'API 테스트 실행'}
           </Button>
 
