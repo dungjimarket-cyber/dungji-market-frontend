@@ -35,11 +35,9 @@ export interface CategoryInfo {
 export const POPULAR_CATEGORIES: CategoryInfo[] = [
   { id: 'restaurant', label: '식당', icon: '🍽️', placeType: 'restaurant' },
   { id: 'cafe', label: '카페', icon: '☕', placeType: 'cafe' },
-  { id: 'hair_salon', label: '헤어샵', icon: '💇', placeType: 'hair_care' },
+  { id: 'beauty', label: '미용/에스테틱', icon: '💅', placeType: 'beauty_salon' },
   { id: 'hospital', label: '병원', icon: '🏥', placeType: 'hospital' },
-  { id: 'gym', label: '헬스장', icon: '🏋️', placeType: 'gym' },
-  { id: 'convenience', label: '편의점', icon: '🏪', placeType: 'convenience_store' },
-  { id: 'hotel', label: '숙박', icon: '🏨', placeType: 'lodging' },
+  { id: 'fitness', label: '건강/피트니스', icon: '🏋️', placeType: 'gym' },
   { id: 'shopping', label: '쇼핑', icon: '🛍️', placeType: 'shopping_mall' },
 ];
 

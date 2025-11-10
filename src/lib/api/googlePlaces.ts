@@ -63,12 +63,12 @@ export async function fetchPlaceRankings(
     const coordinates = REGION_COORDINATES[city] || REGION_COORDINATES['강남구'];
     console.log('🗺️ 지역 좌표:', { city, coordinates });
 
-    // 검색 쿼리 생성 (한국어로 지역+카테고리)
-    const searchQuery = category === 'search'
-      ? placeType  // 직접 검색인 경우 placeType이 검색어
-      : `${city} ${category}`;  // "강남구 카페" 형식으로 검색
+    // 검색 쿼리 생성 - placeType을 기반으로 검색
+    // category는 표시용이고, placeType이 실제 검색어
+    const searchQuery = `${placeType} in ${city}`;
 
     console.log('🔎 검색 쿼리:', searchQuery);
+    console.log('🏷️ 카테고리 (표시용):', category);
 
     const requestBody = {
       textQuery: searchQuery,
