@@ -64,11 +64,21 @@ export default async function RankingsPage({ params, searchParams }: PageProps) 
   }
 
   // Google Places API 호출
+  console.log('========================================');
+  console.log('📄 [Rankings Page] 페이지 렌더링 시작');
+  console.log('========================================');
+  console.log('파라미터:', { region, category, displayCategory, placeType });
+
   let places;
   try {
+    console.log('🔄 getPlaceRankings 호출...');
     places = await getPlaceRankings(region, displayCategory, placeType);
+    console.log('✅ getPlaceRankings 성공:', places.length, '개');
   } catch (error) {
-    console.error('Failed to fetch rankings:', error);
+    console.error('========================================');
+    console.error('❌ [Rankings Page] API 호출 실패');
+    console.error('========================================');
+    console.error('에러:', error);
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">

@@ -41,21 +41,34 @@ export async function fetchPlaceRankings(
   placeType: string,
   minRating: number = 4.0
 ): Promise<PlaceRanking[]> {
+  console.log('========================================');
+  console.log('🔍 [Google Places] fetchPlaceRankings 시작');
+  console.log('========================================');
+  console.log('📍 파라미터:', { city, category, placeType, minRating });
+
+  console.log('🔑 API Key 확인:', {
+    exists: !!GOOGLE_PLACES_API_KEY,
+    prefix: GOOGLE_PLACES_API_KEY?.substring(0, 20) + '...',
+    envVarName: 'NEXT_PUBLIC_GOOGLE_PLACES_API_KEY'
+  });
+
   if (!GOOGLE_PLACES_API_KEY) {
-    console.error('Google Places API key is not configured');
+    console.error('❌ Google Places API key is not configured');
+    console.error('💡 Vercel 환경변수에 NEXT_PUBLIC_GOOGLE_PLACES_API_KEY 추가 필요');
     return [];
   }
 
   try {
     // 지역 좌표 가져오기
     const coordinates = REGION_COORDINATES[city] || REGION_COORDINATES['강남구'];
+    console.log('🗺️ 지역 좌표:', { city, coordinates });
 
     // 검색 쿼리 생성
     const searchQuery = category === 'search'
       ? placeType  // 직접 검색인 경우 placeType이 검색어
       : `${category} in ${city}`;
 
-    console.log(`[Google Places] Searching: ${searchQuery} near ${coordinates.latitude},${coordinates.longitude}`);
+    console.log('🔎 검색 쿼리:', searchQuery);
 
     const requestBody = {
       textQuery: searchQuery,
@@ -73,29 +86,68 @@ export async function fetchPlaceRankings(
       maxResultCount: 20 // 최대 20개 결과
     };
 
-    const response = await fetch('https://places.googleapis.com/v1/places:searchText', {
+    console.log('📤 API 요청 Body:', JSON.stringify(requestBody, null, 2));
+
+    const apiUrl = 'https://places.googleapis.com/v1/places:searchText';
+    console.log('🌐 API URL:', apiUrl);
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+      'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.types,places.location'
+    };
+    console.log('📋 요청 헤더:', {
+      'Content-Type': headers['Content-Type'],
+      'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY?.substring(0, 20) + '...',
+      'X-Goog-FieldMask': headers['X-Goog-FieldMask']
+    });
+
+    console.log('⏳ API 호출 중...');
+    const startTime = Date.now();
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.types,places.location'
-      },
+      headers,
       body: JSON.stringify(requestBody),
       next: { revalidate: CACHE_DURATION }
     });
 
+    const endTime = Date.now();
+    console.log(`⏱️ API 응답 시간: ${endTime - startTime}ms`);
+
+    console.log('📥 응답 상태:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[Google Places API Error] ${response.status}: ${errorText}`);
+      console.error('========================================');
+      console.error('❌ Google Places API 에러');
+      console.error('========================================');
+      console.error('상태 코드:', response.status);
+      console.error('에러 메시지:', errorText);
+      console.error('========================================');
       throw new Error(`Google Places API failed: ${response.status}`);
     }
 
     const data: GooglePlacesResponse = await response.json();
+    console.log('✅ API 응답 성공');
+    console.log('📊 결과 개수:', data.places?.length || 0);
 
     if (!data.places || data.places.length === 0) {
-      console.warn(`[Google Places] No results found for: ${searchQuery}`);
+      console.warn('⚠️ 검색 결과 없음');
+      console.warn('검색어:', searchQuery);
+      console.warn('지역:', city);
       return [];
     }
+
+    console.log('🏆 첫 3개 결과:', data.places.slice(0, 3).map(p => ({
+      name: p.displayName?.text,
+      rating: p.rating,
+      reviews: p.userRatingCount
+    })));
 
     // PlaceRanking 객체로 변환 및 인기도 점수 계산
     const rankings: PlaceRanking[] = data.places.map((place) => {
@@ -122,11 +174,19 @@ export async function fetchPlaceRankings(
       };
     });
 
-    console.log(`[Google Places] Found ${rankings.length} places`);
+    console.log('========================================');
+    console.log('✅ 최종 결과:', rankings.length, '개');
+    console.log('========================================');
     return rankings;
 
   } catch (error) {
-    console.error('[Google Places API Error]:', error);
+    console.error('========================================');
+    console.error('💥 예외 발생');
+    console.error('========================================');
+    console.error('에러:', error);
+    console.error('타입:', typeof error);
+    console.error('메시지:', error instanceof Error ? error.message : String(error));
+    console.error('========================================');
     throw error;
   }
 }
