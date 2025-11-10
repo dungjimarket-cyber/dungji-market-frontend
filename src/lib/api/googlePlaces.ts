@@ -1,7 +1,7 @@
 // Google Places API 서비스 레이어
 
 import { PlaceRanking, REGION_COORDINATES } from '@/types/ranking';
-import { generateGoogleMapsUrl, generateNaverPlaceSearchUrl } from '@/lib/naverMap';
+import { generateGoogleMapsUrl } from '@/lib/naverMap';
 
 const GOOGLE_PLACES_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 const CACHE_DURATION = 3600; // 1시간 캐싱
@@ -178,10 +178,6 @@ export async function fetchPlaceRankings(
         googleMapsUrl: generateGoogleMapsUrl(
           place.displayName.text,
           { lat: place.location.latitude, lng: place.location.longitude }
-        ),
-        naverSearchUrl: generateNaverPlaceSearchUrl(
-          place.displayName.text,
-          place.formattedAddress
         ),
         popularityScore,
         photoUrl
