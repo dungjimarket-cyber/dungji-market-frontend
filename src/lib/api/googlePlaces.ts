@@ -55,7 +55,7 @@ export async function fetchPlaceRankings(
   if (!GOOGLE_PLACES_API_KEY) {
     console.error('❌ Google Places API key is not configured');
     console.error('💡 Vercel 환경변수에 NEXT_PUBLIC_GOOGLE_PLACES_API_KEY 추가 필요');
-    return [];
+    throw new Error('GOOGLE_PLACES_API_KEY_MISSING');
   }
 
   try {
@@ -140,7 +140,7 @@ export async function fetchPlaceRankings(
       console.warn('⚠️ 검색 결과 없음');
       console.warn('검색어:', searchQuery);
       console.warn('지역:', city);
-      return [];
+      throw new Error(`NO_RESULTS: ${searchQuery}`);
     }
 
     console.log('🏆 첫 3개 결과:', data.places.slice(0, 3).map(p => ({

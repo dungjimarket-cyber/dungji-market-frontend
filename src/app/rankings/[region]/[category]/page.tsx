@@ -94,18 +94,25 @@ export default async function RankingsPage({ params, searchParams }: PageProps) 
     console.log('🔄 getPlaceRankings 호출...');
     places = await getPlaceRankings(region, displayCategory, placeType);
     console.log('✅ getPlaceRankings 성공:', places.length, '개');
-  } catch (error) {
+  } catch (error: any) {
     console.error('========================================');
     console.error('❌ [Rankings Page] API 호출 실패');
     console.error('========================================');
     console.error('에러:', error);
+
+    const errorMessage = error?.message || '알 수 없는 오류';
+
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold mb-4">데이터를 불러오는데 실패했습니다</h2>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-4">
             잠시 후 다시 시도해주세요.
           </p>
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-sm">
+            <p className="font-bold text-red-800 mb-2">오류 정보:</p>
+            <p className="text-red-700">{errorMessage}</p>
+          </div>
           <Link href="/rankings">
             <Button>
               <ArrowLeft className="w-4 h-4 mr-2" />
