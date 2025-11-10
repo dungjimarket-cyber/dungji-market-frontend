@@ -12,6 +12,7 @@ export interface PlaceRanking {
   googleMapsUrl: string;      // Google Maps 링크 (지도 보기)
   naverSearchUrl: string;      // 네이버 검색 링크 (리뷰 참고용)
   popularityScore: number;     // rating × log10(reviews + 1)
+  photoUrl?: string;           // 매장 대표 사진
 }
 
 export type SortType = 'rating' | 'reviews' | 'popularity';

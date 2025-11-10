@@ -43,17 +43,41 @@ export default function PodiumCard({ place, rank }: PodiumCardProps) {
 
   return (
     <div className={style.container}>
-      <Card className={`${style.card} hover:scale-[1.02] transition-transform duration-300`}>
-        <CardContent className="p-6 space-y-4">
-          {/* 랭킹 배지 */}
-          <div className="flex items-start justify-between">
-            <div className={`${style.badge} rounded-full flex items-center justify-center font-bold shadow-lg`}>
-              {rank}
+      <Card className={`${style.card} hover:scale-[1.02] transition-transform duration-300 overflow-hidden`}>
+        {/* 매장 사진 */}
+        {place.photoUrl && (
+          <div className={`relative ${isFirst ? 'h-48' : 'h-32'} w-full overflow-hidden`}>
+            <img
+              src={place.photoUrl}
+              alt={place.name}
+              className="w-full h-full object-cover"
+            />
+            {/* 랭킹 배지 오버레이 */}
+            <div className="absolute top-3 left-3">
+              <div className={`${style.badge} rounded-full flex items-center justify-center font-bold shadow-lg`}>
+                {rank}
+              </div>
             </div>
-            <Badge variant="secondary" className="text-xs">
-              인기도 {place.popularityScore.toFixed(1)}
-            </Badge>
+            <div className="absolute top-3 right-3">
+              <Badge variant="secondary" className="text-xs bg-white/90 backdrop-blur">
+                인기도 {place.popularityScore.toFixed(1)}
+              </Badge>
+            </div>
           </div>
+        )}
+
+        <CardContent className="p-6 space-y-4">
+          {/* 사진 없을 때만 랭킹 배지 표시 */}
+          {!place.photoUrl && (
+            <div className="flex items-start justify-between">
+              <div className={`${style.badge} rounded-full flex items-center justify-center font-bold shadow-lg`}>
+                {rank}
+              </div>
+              <Badge variant="secondary" className="text-xs">
+                인기도 {place.popularityScore.toFixed(1)}
+              </Badge>
+            </div>
+          )}
 
           {/* 업체명 */}
           <div>

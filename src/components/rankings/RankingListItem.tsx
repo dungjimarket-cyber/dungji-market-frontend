@@ -12,13 +12,24 @@ interface RankingListItemProps {
 
 export default function RankingListItem({ place, rank }: RankingListItemProps) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-shadow overflow-hidden">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           {/* 랭킹 번호 */}
           <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground">
             {rank}
           </div>
+
+          {/* 매장 사진 (있으면) */}
+          {place.photoUrl && (
+            <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden">
+              <img
+                src={place.photoUrl}
+                alt={place.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
 
           {/* 정보 */}
           <div className="flex-1 min-w-0">

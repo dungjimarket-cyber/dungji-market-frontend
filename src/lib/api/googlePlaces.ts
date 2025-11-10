@@ -20,6 +20,11 @@ interface GooglePlaceResult {
     latitude: number;
     longitude: number;
   };
+  photos?: Array<{
+    name: string;
+    widthPx: number;
+    heightPx: number;
+  }>;
 }
 
 interface GooglePlacesResponse {
@@ -94,7 +99,7 @@ export async function fetchPlaceRankings(
     const headers = {
       'Content-Type': 'application/json',
       'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-      'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.types,places.location'
+      'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.types,places.location,places.photos'
     };
     console.log('📋 요청 헤더:', {
       'Content-Type': headers['Content-Type'],
@@ -153,6 +158,14 @@ export async function fetchPlaceRankings(
     const rankings: PlaceRanking[] = data.places.map((place) => {
       const popularityScore = calculatePopularityScore(place.rating, place.userRatingCount);
 
+      // 첫 번째 사진 URL 생성 (있는 경우)
+      let photoUrl: string | undefined;
+      if (place.photos && place.photos.length > 0) {
+        const photoName = place.photos[0].name;
+        // Google Places Photo API URL
+        photoUrl = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=400&key=${GOOGLE_PLACES_API_KEY}`;
+      }
+
       return {
         placeId: place.id,
         name: place.displayName.text,
@@ -170,7 +183,8 @@ export async function fetchPlaceRankings(
           place.displayName.text,
           place.formattedAddress
         ),
-        popularityScore
+        popularityScore,
+        photoUrl
       };
     });
 
