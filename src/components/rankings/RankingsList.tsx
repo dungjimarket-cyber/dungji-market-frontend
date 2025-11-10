@@ -5,6 +5,7 @@ import { PlaceRanking, SortType } from '@/types/ranking';
 import { sortPlaces } from '@/lib/api/googlePlaces';
 import PodiumCard from './PodiumCard';
 import RankingListItem from './RankingListItem';
+import DebugInfo from './DebugInfo';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,16 +31,22 @@ export default function RankingsList({ initialPlaces, city, category }: Rankings
 
   if (sortedPlaces.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">
-          검색 결과가 없습니다. 다른 지역이나 카테고리를 선택해보세요.
-        </p>
+      <div className="space-y-4">
+        <DebugInfo city={city} category={category} placeType={category} />
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">
+            검색 결과가 없습니다. 다른 지역이나 카테고리를 선택해보세요.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
+      {/* 디버그 정보 */}
+      <DebugInfo city={city} category={category} placeType={category} />
+
       {/* 정렬 옵션 */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
