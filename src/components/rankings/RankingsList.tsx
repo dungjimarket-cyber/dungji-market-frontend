@@ -21,6 +21,14 @@ export default function RankingsList({ initialPlaces, city, category, placeType 
   const [sortBy, setSortBy] = useState<SortType>('popularity');
   const [showAll, setShowAll] = useState(false);
 
+  // 서버에서 받은 데이터 확인
+  console.log('🎯 [RankingsList] 서버에서 받은 데이터:', {
+    initialPlacesLength: initialPlaces.length,
+    city,
+    category,
+    placeType
+  });
+
   // 정렬된 장소 목록
   const sortedPlaces = useMemo(() => {
     return sortPlaces(initialPlaces, sortBy);
