@@ -15,9 +15,13 @@ interface RankingsListProps {
   city: string;
   category: string;
   placeType: string;
+  serverDebug?: {
+    apiKeyExists: boolean;
+    apiKeyPrefix: string;
+  };
 }
 
-export default function RankingsList({ initialPlaces, city, category, placeType }: RankingsListProps) {
+export default function RankingsList({ initialPlaces, city, category, placeType, serverDebug }: RankingsListProps) {
   const [sortBy, setSortBy] = useState<SortType>('popularity');
   const [showAll, setShowAll] = useState(false);
 
@@ -26,7 +30,8 @@ export default function RankingsList({ initialPlaces, city, category, placeType 
     initialPlacesLength: initialPlaces.length,
     city,
     category,
-    placeType
+    placeType,
+    serverDebug
   });
 
   // 정렬된 장소 목록

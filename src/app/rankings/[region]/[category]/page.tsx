@@ -81,6 +81,14 @@ export default async function RankingsPage({ params, searchParams }: PageProps) 
   // Google Places API 호출
   console.log('📤 최종 API 호출 파라미터:', { region, displayCategory, placeType });
 
+  // 서버 환경변수 확인
+  const serverApiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
+  console.log('🔐 [Server] API Key 확인:', {
+    exists: !!serverApiKey,
+    prefix: serverApiKey?.substring(0, 20) + '...',
+    envNodeEnv: process.env.NODE_ENV
+  });
+
   let places;
   try {
     console.log('🔄 getPlaceRankings 호출...');
@@ -129,6 +137,10 @@ export default async function RankingsPage({ params, searchParams }: PageProps) 
             city={region}
             category={displayCategory}
             placeType={placeType}
+            serverDebug={{
+              apiKeyExists: !!serverApiKey,
+              apiKeyPrefix: serverApiKey?.substring(0, 20) + '...' || 'N/A'
+            }}
           />
         </Suspense>
       </div>
