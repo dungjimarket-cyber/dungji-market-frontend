@@ -805,7 +805,7 @@ function CustomDealsContent() {
                                 </span>
                               </div>
                               <div className="text-lg font-bold text-orange-600">
-                                서비스제공
+                                기간행사
                               </div>
                             </div>
                           )}
@@ -853,7 +853,7 @@ function CustomDealsContent() {
                       ) : deal.pricing_type === 'coupon_only' ? (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-lg font-bold text-blue-600">
-                            선착순 쿠폰 증정
+                            선착순 이벤트
                           </span>
                           <span className="text-[10px] font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
                             이벤트

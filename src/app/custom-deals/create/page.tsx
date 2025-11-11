@@ -1358,7 +1358,7 @@ export default function CreateCustomDealPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="coupon_only" id="coupon" />
-                  <Label htmlFor="coupon" className="cursor-pointer">서비스제공 (서비스, 할인쿠폰 등)</Label>
+                  <Label htmlFor="coupon" className="cursor-pointer">기간행사 (무료 이벤트/체험)</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -1464,12 +1464,12 @@ export default function CreateCustomDealPage() {
               </div>
             )}
 
-            {/* 서비스제공 안내 */}
+            {/* 기간행사 안내 */}
             {formData.pricing_type === 'coupon_only' && (
               <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
                 {formData.deal_type === 'time_based' ? (
                   <>
-                    💡 기간행사 서비스제공: 가격 정보 없이 기간 내 조건 없이 무료 서비스나 이벤트를 제공합니다
+                    💡 기간행사: 가격 정보 없이 기간 내 조건 없이 무료 서비스나 이벤트를 제공합니다
                     <div className="mt-2">
                       • 오프라인: 매장 위치와 연락처만 입력<br/>
                       • 온라인: 행사 안내 링크 입력 (선택사항)
@@ -1477,7 +1477,7 @@ export default function CreateCustomDealPage() {
                   </>
                 ) : (
                   <>
-                    💡 인원 모집 쿠폰증정: 목표 인원 달성 시 참여자에게만 쿠폰을 제공합니다
+                    💡 선착순 이벤트: 목표 인원 달성 시 참여자에게만 쿠폰을 제공합니다
                     <div className="mt-2">
                       • 할인 코드, 링크 또는 텍스트 형태로 제공 가능
                     </div>
@@ -1488,7 +1488,7 @@ export default function CreateCustomDealPage() {
           </CardContent>
         </Card>
 
-        {/* 기간행사: 할인 링크 / 서비스제공+기간행사: 행사 안내 링크 */}
+        {/* 기간행사: 할인 링크 / 행사 안내 링크 */}
         {formData.deal_type === 'time_based' && (
           <Card className="mb-6 border-orange-200 bg-orange-50/30">
             <CardHeader>

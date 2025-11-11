@@ -122,7 +122,7 @@ export default function CustomDealsGuidePage() {
                 </p>
               </div>
               <div className="bg-white p-2.5 rounded-md border-t border-orange-200 mt-2 pt-2">
-                <p className="text-xs text-gray-800 font-medium mb-1">🎁 서비스제공 옵션</p>
+                <p className="text-xs text-gray-800 font-medium mb-1">🎁 무료 이벤트 옵션</p>
                 <p className="text-xs text-gray-600">
                   무료 체험권, 웰컴 쿠폰 등 구매 없이 무료로 제공하는 이벤트 진행 가능
                 </p>

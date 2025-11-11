@@ -388,13 +388,9 @@ export default function CustomDealDetailPage() {
     let shareText = '';
 
     if (deal.deal_type === 'time_based') {
-      if (deal.pricing_type === 'coupon_only') {
-        shareText = `${deal.title} - 서비스제공`;
-      } else {
-        shareText = `${deal.title} - 기간행사`;
-      }
+      shareText = `${deal.title} - 기간행사`;
     } else if (deal.pricing_type === 'coupon_only') {
-      shareText = `${deal.title} - 선착순 쿠폰증정`;
+      shareText = `${deal.title} - 선착순 이벤트`;
     } else if (deal.final_price) {
       const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
         ? ((deal.final_price as any).min || 0).toLocaleString()
@@ -874,7 +870,7 @@ export default function CustomDealDetailPage() {
                 {deal.pricing_type === 'coupon_only' ? (
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 mb-1">
-                      {deal.deal_type === 'time_based' ? '서비스제공' : '선착순 쿠폰증정'}
+                      {deal.deal_type === 'time_based' ? '기간행사' : '선착순 이벤트'}
                     </div>
                     {deal.deal_type !== 'time_based' && (
                       <p className="text-xs text-slate-600">인원 마감시 쿠폰수령정보를 참여내역으로 전송해드립니다</p>
