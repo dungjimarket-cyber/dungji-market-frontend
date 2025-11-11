@@ -118,7 +118,7 @@ export default function DesktopNavbar() {
 
           <div className="flex space-x-8">
             <Link href="/custom-deals" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
-              커공 특가
+              커공/이벤트
             </Link>
             <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
               견적서비스
