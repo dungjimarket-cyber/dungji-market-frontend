@@ -798,15 +798,8 @@ function CustomDealsContent() {
                               </div>
                             </>
                           ) : (
-                            <div className="flex flex-col gap-2">
-                              <div>
-                                <span className="text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
-                                  기간행사
-                                </span>
-                              </div>
-                              <div className="text-lg font-bold text-orange-600">
-                                기간행사
-                              </div>
+                            <div className="text-lg font-bold text-orange-600">
+                              기간행사
                             </div>
                           )}
                         </div>
@@ -851,13 +844,8 @@ function CustomDealsContent() {
                           </div>
                         </>
                       ) : deal.pricing_type === 'coupon_only' ? (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-lg font-bold text-blue-600">
-                            선착순 이벤트
-                          </span>
-                          <span className="text-[10px] font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 px-1.5 py-0.5 rounded-md whitespace-nowrap shadow-sm">
-                            이벤트
-                          </span>
+                        <div className="text-lg font-bold text-blue-600">
+                          선착순 이벤트
                         </div>
                       ) : (
                         deal.discount_rate > 0 ? (
