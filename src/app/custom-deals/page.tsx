@@ -663,18 +663,19 @@ function CustomDealsContent() {
 
                 // 온라인/오프라인 탭: 해당 타입이면서 coupon_only만 제외
                 if (selectedType === 'online' || selectedType === 'offline') {
-                  if (deal.type !== selectedType) return false; // 타입 불일치 제외
-                  if (deal.pricing_type === 'coupon_only') return false; // 쿠폰전용 제외
-
-                  // 오프라인 기간행사 디버깅
+                  // 오프라인 기간행사 디버깅 (필터 전)
                   if (selectedType === 'offline' && deal.deal_type === 'time_based') {
-                    console.log(`[오프라인 필터] ${deal.title.substring(0, 30)}`, {
+                    console.log(`[오프라인 필터 체크] ${deal.title.substring(0, 30)}`, {
+                      type_match: deal.type === selectedType,
+                      not_coupon: deal.pricing_type !== 'coupon_only',
                       isDealClosed,
                       showClosedDeals,
                       willShow: showClosedDeals || !isDealClosed
                     });
                   }
 
+                  if (deal.type !== selectedType) return false; // 타입 불일치 제외
+                  if (deal.pricing_type === 'coupon_only') return false; // 쿠폰전용 제외
                   return showClosedDeals || !isDealClosed;
                 }
 
