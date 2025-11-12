@@ -308,6 +308,10 @@ export default function MyCustomDeals() {
   };
 
   const isDealCancelled = (deal: CustomDeal) => {
+    // 기간행사의 expired는 정상 마감이므로 취소가 아님
+    if (deal.deal_type === 'time_based' && deal.status === 'expired') {
+      return false;
+    }
     return deal.status === 'cancelled' || deal.status === 'expired';
   };
 
