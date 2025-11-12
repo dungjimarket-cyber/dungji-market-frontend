@@ -184,15 +184,19 @@ function CustomDealsContent() {
       const data = await response.json();
       const dealsData = Array.isArray(data) ? data : data.results || [];
 
-      // 디버깅: deal_type 필드 확인
-      console.log('📊 API Response Sample:', dealsData.slice(0, 3).map((d: CustomDeal) => ({
-        id: d.id,
-        title: d.title,
-        deal_type: d.deal_type,
-        pricing_type: d.pricing_type
-      })));
+      // 시장가와 공구가 기반으로 할인율 재계산
+      const recalculatedDeals = dealsData.map((deal: CustomDeal) => {
+        if (deal.original_price && deal.final_price) {
+          const calculatedRate = Math.floor((1 - deal.final_price / deal.original_price) * 100);
+          return {
+            ...deal,
+            discount_rate: Math.max(0, Math.min(99, calculatedRate))
+          };
+        }
+        return deal;
+      });
 
-      setDeals(dealsData);
+      setDeals(recalculatedDeals);
     } catch (error) {
       console.error('목록 로드 실패:', error);
       setDeals([]);

@@ -176,6 +176,13 @@ export default function CustomDealDetailPage() {
       }
 
       const data = await response.json();
+
+      // 시장가와 공구가 기반으로 할인율 재계산
+      if (data.original_price && data.final_price) {
+        const calculatedRate = Math.floor((1 - data.final_price / data.original_price) * 100);
+        data.discount_rate = Math.max(0, Math.min(99, calculatedRate));
+      }
+
       setDeal(data);
     } catch (error) {
       console.error('로드 실패:', error);

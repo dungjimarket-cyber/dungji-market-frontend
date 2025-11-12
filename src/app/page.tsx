@@ -162,7 +162,19 @@ function HomeContent() {
             ? newData
             : (newData.results || []);
 
-          setCustomDeals(customDealsItems);
+          // 시장가와 공구가 기반으로 할인율 재계산
+          const recalculatedCustomDeals = customDealsItems.map((deal: any) => {
+            if (deal.original_price && deal.final_price) {
+              const calculatedRate = Math.floor((1 - deal.final_price / deal.original_price) * 100);
+              return {
+                ...deal,
+                discount_rate: Math.max(0, Math.min(99, calculatedRate))
+              };
+            }
+            return deal;
+          });
+
+          setCustomDeals(recalculatedCustomDeals);
           setNewGroupBuys(newItems.slice(0, 2));
         }
       } catch (error) {
