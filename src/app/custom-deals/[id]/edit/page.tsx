@@ -617,6 +617,36 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
     }
   };
 
+  // 정상가 변경 시 할인율 자동 재계산
+  const handleOriginalPriceChange = (price: string) => {
+    const original = parseInt(price.replace(/,/g, '')) || 0;
+    const final = parseInt(formData.final_price.replace(/,/g, '')) || 0;
+
+    setFormData(prev => ({
+      ...prev,
+      original_price: formatPrice(price)
+    }));
+
+    // 공구특가가 이미 입력되어 있으면 할인율 재계산
+    if (original > 0 && final > 0) {
+      if (final > original) {
+        setErrors(prev => ({ ...prev, final_price: '공구특가는 정상가를 초과할 수 없습니다' }));
+      } else {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.final_price;
+          return newErrors;
+        });
+      }
+
+      const calculatedRate = Math.floor((1 - final / original) * 100);
+      setFormData(prev => ({
+        ...prev,
+        discount_rate: Math.max(0, Math.min(99, calculatedRate)).toString()
+      }));
+    }
+  };
+
   // 수정 처리
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1186,7 +1216,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       <Label>정가 *</Label>
                       <Input
                         value={formData.original_price}
-                        onChange={(e) => handleInputChange('original_price', formatPrice(e.target.value))}
+                        onChange={(e) => handleOriginalPriceChange(e.target.value)}
                         placeholder="0"
                         className={errors.original_price ? 'border-red-300' : ''}
                       />
