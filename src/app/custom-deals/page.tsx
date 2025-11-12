@@ -345,7 +345,19 @@ function CustomDealsContent() {
                 >
                   공동구매,이벤트,행사
                 </span>
-                <p className="text-xs md:text-base text-blue-600 font-bold md:font-extrabold ml-1">수수료 없는 진짜 혜택!</p>
+                <span
+                  className="text-xs font-black whitespace-nowrap"
+                  style={{
+                    transform: 'rotate(-8deg)',
+                    marginTop: '-4px',
+                    background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}
+                >
+                  수수료없는 찐~혜택!
+                </span>
               </div>
               <p className="text-xs md:text-sm font-bold text-slate-700 whitespace-nowrap">
                 온·오프라인 공동구매와 이벤트부터 할인정보 까지!
