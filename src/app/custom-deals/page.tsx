@@ -159,10 +159,8 @@ function CustomDealsContent() {
       if (selectedType === 'time_based') {
         params.append('deal_type', 'time_based');
       }
-      // 쿠폰/이벤트가 아닐 때만 type 파라미터 추가
-      else if (selectedType !== 'all' && selectedType !== 'coupon_only') {
-        params.append('type', selectedType);
-      }
+      // 온라인/오프라인 탭은 프론트엔드에서 필터링 (기간행사 포함을 위해)
+      // 전체, 쿠폰/이벤트도 백엔드 필터 없이 프론트에서 처리
 
       if (selectedCategory !== 'all') {
         params.append('category', selectedCategory);
