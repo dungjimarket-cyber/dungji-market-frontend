@@ -350,7 +350,7 @@ function CustomDealsContent() {
                   style={{
                     transform: 'rotate(-8deg)',
                     marginTop: '-4px',
-                    background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text'
@@ -653,8 +653,10 @@ function CustomDealsContent() {
 
                 // 온라인/오프라인 탭: 해당 타입이면서 coupon_only와 time_based 제외
                 if (selectedType === 'online' || selectedType === 'offline') {
-                  if (deal.pricing_type === 'coupon_only') return false;
-                  if (deal.deal_type === 'time_based') return false;
+                  if (deal.type !== selectedType) return false; // 타입 불일치 제외
+                  if (deal.pricing_type === 'coupon_only') return false; // 쿠폰전용 제외
+                  if (deal.deal_type === 'time_based') return false; // 기간행사 제외
+                  return showClosedDeals || !isDealClosed;
                 }
 
                 // 전체 탭: 모든 타입 표시 (쿠폰전용 포함)
