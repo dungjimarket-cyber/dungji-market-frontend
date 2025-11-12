@@ -394,17 +394,35 @@ export default function CustomDealDetailPage() {
 
     let shareText = '';
 
-    if (deal.deal_type === 'time_based') {
-      shareText = `${deal.title} - 기간행사`;
-    } else if (deal.pricing_type === 'coupon_only') {
-      shareText = `${deal.title} - 선착순 이벤트`;
-    } else if (deal.final_price) {
+    // pricing_type 우선 체크 (쿠폰전용)
+    if (deal.pricing_type === 'coupon_only') {
+      // 기간행사 쿠폰전용
+      if (deal.deal_type === 'time_based') {
+        shareText = `${deal.title} - 기간행사 (선착순 이벤트)`;
+      } else {
+        shareText = `${deal.title} - 선착순 이벤트`;
+      }
+    }
+    // 단일품목 또는 복수품목
+    else if (deal.original_price && deal.final_price) {
       const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
         ? ((deal.final_price as any).min || 0).toLocaleString()
         : deal.final_price.toLocaleString();
-      shareText = `${deal.title} - ${finalPriceStr}원 (${deal.discount_rate}% 할인)`;
-    } else {
-      shareText = `${deal.title} - 전품목 ${deal.discount_rate}% 할인`;
+
+      // 기간행사 단일품목
+      if (deal.deal_type === 'time_based') {
+        shareText = `${deal.title} - 기간행사 ${finalPriceStr}원 (${deal.discount_rate}% 할인)`;
+      } else {
+        shareText = `${deal.title} - ${finalPriceStr}원 (${deal.discount_rate}% 할인)`;
+      }
+    }
+    // 전품목 할인
+    else {
+      if (deal.deal_type === 'time_based') {
+        shareText = `${deal.title} - 기간행사 전품목 ${deal.discount_rate}% 할인`;
+      } else {
+        shareText = `${deal.title} - 전품목 ${deal.discount_rate}% 할인`;
+      }
     }
 
     if (navigator.share) {
