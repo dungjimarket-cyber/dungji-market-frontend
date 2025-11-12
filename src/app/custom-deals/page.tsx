@@ -182,6 +182,25 @@ function CustomDealsContent() {
       const data = await response.json();
       const dealsData = Array.isArray(data) ? data : data.results || [];
 
+      // 디버깅: API에서 받은 모든 기간행사 로그
+      console.log('[API Response] 전체 딜 개수:', dealsData.length);
+      const timeBasedDeals = dealsData.filter((d: CustomDeal) => d.deal_type === 'time_based');
+      console.log('[API Response] 기간행사 개수:', timeBasedDeals.length);
+      timeBasedDeals.forEach((deal: CustomDeal) => {
+        const expiredAt = deal.expired_at ? new Date(deal.expired_at) : null;
+        const now = new Date();
+        const isFuture = expiredAt ? expiredAt.getTime() > now.getTime() : false;
+        console.log(`[API 기간행사 ${deal.id}]`, {
+          title: deal.title.substring(0, 30),
+          status: deal.status,
+          expired_at: deal.expired_at,
+          expired_at_parsed: expiredAt?.toLocaleString('ko-KR'),
+          현재시각: now.toLocaleString('ko-KR'),
+          미래인가: isFuture,
+          시간차_분: expiredAt ? Math.round((expiredAt.getTime() - now.getTime()) / 60000) : null
+        });
+      });
+
       // 시장가와 공구가 기반으로 할인율 재계산
       const recalculatedDeals = dealsData.map((deal: CustomDeal) => {
         if (deal.original_price && deal.final_price) {
