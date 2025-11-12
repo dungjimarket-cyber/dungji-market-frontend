@@ -179,8 +179,11 @@ export default function CustomDealDetailPage() {
 
     updateMetaTag('og:title', deal.title);
     updateMetaTag('og:description', description);
-    if (deal.primary_image) {
-      updateMetaTag('og:image', deal.primary_image);
+
+    // 대표 이미지 찾기 (is_primary가 true인 것 또는 첫 번째 이미지)
+    const primaryImage = deal.images?.find(img => img.is_primary)?.image_url || deal.images?.[0]?.image_url;
+    if (primaryImage) {
+      updateMetaTag('og:image', primaryImage);
     }
     updateMetaTag('og:url', window.location.href);
 
@@ -198,8 +201,8 @@ export default function CustomDealDetailPage() {
     updateTwitterTag('twitter:card', 'summary_large_image');
     updateTwitterTag('twitter:title', deal.title);
     updateTwitterTag('twitter:description', description);
-    if (deal.primary_image) {
-      updateTwitterTag('twitter:image', deal.primary_image);
+    if (primaryImage) {
+      updateTwitterTag('twitter:image', primaryImage);
     }
 
     // 페이지 타이틀
