@@ -392,6 +392,16 @@ export default function CustomDealDetailPage() {
 
     const url = window.location.href;
 
+    // 디버깅: 딜 정보 확인
+    console.log('[공유] Deal 정보:', {
+      title: deal.title,
+      deal_type: deal.deal_type,
+      pricing_type: deal.pricing_type,
+      original_price: deal.original_price,
+      final_price: deal.final_price,
+      discount_rate: deal.discount_rate
+    });
+
     let shareText = '';
 
     // pricing_type 우선 체크 (쿠폰전용)
