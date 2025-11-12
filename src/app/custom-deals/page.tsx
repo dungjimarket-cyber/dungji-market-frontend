@@ -182,6 +182,18 @@ function CustomDealsContent() {
       const data = await response.json();
       const dealsData = Array.isArray(data) ? data : data.results || [];
 
+      console.log(`[fetchDeals] selectedType: ${selectedType}, Total deals: ${dealsData.length}`);
+
+      // 오프라인 탭 디버깅
+      if (selectedType === 'offline') {
+        const offlineDeals = dealsData.filter((d: any) => d.type === 'offline');
+        const offlineTimeBased = offlineDeals.filter((d: any) => d.deal_type === 'time_based');
+        console.log(`[오프라인 탭] 전체 오프라인: ${offlineDeals.length}, 오프라인 기간행사: ${offlineTimeBased.length}`);
+        offlineTimeBased.forEach((d: any) => {
+          console.log(`  - ${d.title} (deal_type: ${d.deal_type}, type: ${d.type})`);
+        });
+      }
+
       // 시장가와 공구가 기반으로 할인율 재계산
       const recalculatedDeals = dealsData.map((deal: CustomDeal) => {
         if (deal.original_price && deal.final_price) {
