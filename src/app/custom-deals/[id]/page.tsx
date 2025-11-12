@@ -131,6 +131,81 @@ export default function CustomDealDetailPage() {
     }
   }, [params.id]);
 
+  // 메타태그 업데이트
+  useEffect(() => {
+    if (!deal) return;
+
+    let description = '';
+
+    // pricing_type 우선 체크
+    if (deal.pricing_type === 'coupon_only') {
+      if (deal.deal_type === 'time_based') {
+        description = `${deal.title} - 기간행사 (선착순 이벤트)`;
+      } else {
+        description = `${deal.title} - 선착순 이벤트`;
+      }
+    }
+    // 단일품목 또는 복수품목
+    else if (deal.original_price && deal.final_price) {
+      const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
+        ? ((deal.final_price as any).min || 0).toLocaleString()
+        : deal.final_price.toLocaleString();
+
+      if (deal.deal_type === 'time_based') {
+        description = `${deal.title} - 기간행사 ${finalPriceStr}원 (${deal.discount_rate}% 할인)`;
+      } else {
+        description = `${deal.title} - ${finalPriceStr}원 (${deal.discount_rate}% 할인)`;
+      }
+    }
+    // 전품목 할인
+    else {
+      if (deal.deal_type === 'time_based') {
+        description = `${deal.title} - 기간행사 전품목 ${deal.discount_rate}% 할인`;
+      } else {
+        description = `${deal.title} - 전품목 ${deal.discount_rate}% 할인`;
+      }
+    }
+
+    // Open Graph 메타태그 업데이트
+    const updateMetaTag = (property: string, content: string) => {
+      let tag = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', property);
+        document.head.appendChild(tag);
+      }
+      tag.content = content;
+    };
+
+    updateMetaTag('og:title', deal.title);
+    updateMetaTag('og:description', description);
+    if (deal.primary_image) {
+      updateMetaTag('og:image', deal.primary_image);
+    }
+    updateMetaTag('og:url', window.location.href);
+
+    // Twitter Card
+    const updateTwitterTag = (name: string, content: string) => {
+      let tag = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement;
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('name', name);
+        document.head.appendChild(tag);
+      }
+      tag.content = content;
+    };
+
+    updateTwitterTag('twitter:card', 'summary_large_image');
+    updateTwitterTag('twitter:title', deal.title);
+    updateTwitterTag('twitter:description', description);
+    if (deal.primary_image) {
+      updateTwitterTag('twitter:image', deal.primary_image);
+    }
+
+    // 페이지 타이틀
+    document.title = `${deal.title} | 둥지마켓`;
+  }, [deal]);
+
   useEffect(() => {
     // 본인 공구일 때만 끌올 상태 체크
     if (deal && user && deal.seller === parseInt(user.id) && deal.status === 'recruiting') {
@@ -391,22 +466,10 @@ export default function CustomDealDetailPage() {
     if (!deal) return;
 
     const url = window.location.href;
-
-    // 디버깅: 딜 정보 확인
-    console.log('[공유] Deal 정보:', {
-      title: deal.title,
-      deal_type: deal.deal_type,
-      pricing_type: deal.pricing_type,
-      original_price: deal.original_price,
-      final_price: deal.final_price,
-      discount_rate: deal.discount_rate
-    });
-
     let shareText = '';
 
     // pricing_type 우선 체크 (쿠폰전용)
     if (deal.pricing_type === 'coupon_only') {
-      console.log('[공유] 조건: 쿠폰전용');
       // 기간행사 쿠폰전용
       if (deal.deal_type === 'time_based') {
         shareText = `${deal.title} - 기간행사 (선착순 이벤트)`;
@@ -416,14 +479,12 @@ export default function CustomDealDetailPage() {
     }
     // 단일품목 또는 복수품목
     else if (deal.original_price && deal.final_price) {
-      console.log('[공유] 조건: 단일품목/복수품목 (가격 있음)');
       const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
         ? ((deal.final_price as any).min || 0).toLocaleString()
         : deal.final_price.toLocaleString();
 
       // 기간행사 단일품목
       if (deal.deal_type === 'time_based') {
-        console.log('[공유] 최종 텍스트: 기간행사 단일품목');
         shareText = `${deal.title} - 기간행사 ${finalPriceStr}원 (${deal.discount_rate}% 할인)`;
       } else {
         shareText = `${deal.title} - ${finalPriceStr}원 (${deal.discount_rate}% 할인)`;
@@ -431,16 +492,12 @@ export default function CustomDealDetailPage() {
     }
     // 전품목 할인
     else {
-      console.log('[공유] 조건: 전품목 할인');
       if (deal.deal_type === 'time_based') {
-        console.log('[공유] 최종 텍스트: 기간행사 전품목');
         shareText = `${deal.title} - 기간행사 전품목 ${deal.discount_rate}% 할인`;
       } else {
         shareText = `${deal.title} - 전품목 ${deal.discount_rate}% 할인`;
       }
     }
-
-    console.log('[공유] 최종 shareText:', shareText);
 
     if (navigator.share) {
       try {
