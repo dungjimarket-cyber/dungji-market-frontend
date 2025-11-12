@@ -651,11 +651,10 @@ function CustomDealsContent() {
                   return showClosedDeals || !isDealClosed;
                 }
 
-                // 온라인/오프라인 탭: 해당 타입이면서 coupon_only와 time_based 제외
+                // 온라인/오프라인 탭: 해당 타입이면서 coupon_only만 제외
                 if (selectedType === 'online' || selectedType === 'offline') {
                   if (deal.type !== selectedType) return false; // 타입 불일치 제외
                   if (deal.pricing_type === 'coupon_only') return false; // 쿠폰전용 제외
-                  if (deal.deal_type === 'time_based') return false; // 기간행사 제외
                   return showClosedDeals || !isDealClosed;
                 }
 
