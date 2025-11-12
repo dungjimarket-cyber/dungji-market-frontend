@@ -665,6 +665,16 @@ function CustomDealsContent() {
                 if (selectedType === 'online' || selectedType === 'offline') {
                   if (deal.type !== selectedType) return false; // 타입 불일치 제외
                   if (deal.pricing_type === 'coupon_only') return false; // 쿠폰전용 제외
+
+                  // 오프라인 기간행사 디버깅
+                  if (selectedType === 'offline' && deal.deal_type === 'time_based') {
+                    console.log(`[오프라인 필터] ${deal.title.substring(0, 30)}`, {
+                      isDealClosed,
+                      showClosedDeals,
+                      willShow: showClosedDeals || !isDealClosed
+                    });
+                  }
+
                   return showClosedDeals || !isDealClosed;
                 }
 
