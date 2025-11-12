@@ -406,6 +406,7 @@ export default function CustomDealDetailPage() {
 
     // pricing_type 우선 체크 (쿠폰전용)
     if (deal.pricing_type === 'coupon_only') {
+      console.log('[공유] 조건: 쿠폰전용');
       // 기간행사 쿠폰전용
       if (deal.deal_type === 'time_based') {
         shareText = `${deal.title} - 기간행사 (선착순 이벤트)`;
@@ -415,12 +416,14 @@ export default function CustomDealDetailPage() {
     }
     // 단일품목 또는 복수품목
     else if (deal.original_price && deal.final_price) {
+      console.log('[공유] 조건: 단일품목/복수품목 (가격 있음)');
       const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
         ? ((deal.final_price as any).min || 0).toLocaleString()
         : deal.final_price.toLocaleString();
 
       // 기간행사 단일품목
       if (deal.deal_type === 'time_based') {
+        console.log('[공유] 최종 텍스트: 기간행사 단일품목');
         shareText = `${deal.title} - 기간행사 ${finalPriceStr}원 (${deal.discount_rate}% 할인)`;
       } else {
         shareText = `${deal.title} - ${finalPriceStr}원 (${deal.discount_rate}% 할인)`;
@@ -428,12 +431,16 @@ export default function CustomDealDetailPage() {
     }
     // 전품목 할인
     else {
+      console.log('[공유] 조건: 전품목 할인');
       if (deal.deal_type === 'time_based') {
+        console.log('[공유] 최종 텍스트: 기간행사 전품목');
         shareText = `${deal.title} - 기간행사 전품목 ${deal.discount_rate}% 할인`;
       } else {
         shareText = `${deal.title} - 전품목 ${deal.discount_rate}% 할인`;
       }
     }
+
+    console.log('[공유] 최종 shareText:', shareText);
 
     if (navigator.share) {
       try {
