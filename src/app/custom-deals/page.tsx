@@ -182,18 +182,6 @@ function CustomDealsContent() {
       const data = await response.json();
       const dealsData = Array.isArray(data) ? data : data.results || [];
 
-      console.log(`[fetchDeals] selectedType: ${selectedType}, Total deals: ${dealsData.length}`);
-
-      // 오프라인 탭 디버깅
-      if (selectedType === 'offline') {
-        const offlineDeals = dealsData.filter((d: any) => d.type === 'offline');
-        const offlineTimeBased = offlineDeals.filter((d: any) => d.deal_type === 'time_based');
-        console.log(`[오프라인 탭] 전체 오프라인: ${offlineDeals.length}, 오프라인 기간행사: ${offlineTimeBased.length}`);
-        offlineTimeBased.forEach((d: any) => {
-          console.log(`  - ${d.title} (deal_type: ${d.deal_type}, type: ${d.type})`);
-        });
-      }
-
       // 시장가와 공구가 기반으로 할인율 재계산
       const recalculatedDeals = dealsData.map((deal: CustomDeal) => {
         if (deal.original_price && deal.final_price) {
@@ -661,21 +649,11 @@ function CustomDealsContent() {
                   return showClosedDeals || !isDealClosed;
                 }
 
-                // 온라인/오프라인 탭: 해당 타입이면서 coupon_only만 제외
+                // 온라인/오프라인 탭: 해당 타입이면서 coupon_only만 제외 (단, 기간행사는 포함)
                 if (selectedType === 'online' || selectedType === 'offline') {
-                  // 오프라인 기간행사 디버깅 (필터 전)
-                  if (selectedType === 'offline' && deal.deal_type === 'time_based') {
-                    console.log(`[오프라인 필터 체크] ${deal.title.substring(0, 30)}`, {
-                      type_match: deal.type === selectedType,
-                      not_coupon: deal.pricing_type !== 'coupon_only',
-                      isDealClosed,
-                      showClosedDeals,
-                      willShow: showClosedDeals || !isDealClosed
-                    });
-                  }
-
                   if (deal.type !== selectedType) return false; // 타입 불일치 제외
-                  if (deal.pricing_type === 'coupon_only') return false; // 쿠폰전용 제외
+                  // 쿠폰전용은 제외하되, 기간행사는 예외 (오프라인 기간행사는 대부분 쿠폰/서비스 제공)
+                  if (deal.pricing_type === 'coupon_only' && deal.deal_type !== 'time_based') return false;
                   return showClosedDeals || !isDealClosed;
                 }
 
