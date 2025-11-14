@@ -197,6 +197,22 @@ function CustomDealsContent() {
       const data = await response.json();
       const dealsData = Array.isArray(data) ? data : data.results || [];
 
+      // 디버깅: API 응답 전체 로그
+      console.log('[API 전체 응답]', {
+        총개수: dealsData.length,
+        상태별: {
+          recruiting: dealsData.filter((d: CustomDeal) => d.status === 'recruiting').length,
+          pending_seller: dealsData.filter((d: CustomDeal) => d.status === 'pending_seller').length,
+          completed: dealsData.filter((d: CustomDeal) => d.status === 'completed').length,
+          expired: dealsData.filter((d: CustomDeal) => d.status === 'expired').length,
+          cancelled: dealsData.filter((d: CustomDeal) => d.status === 'cancelled').length,
+        },
+        타입별: {
+          participant_based: dealsData.filter((d: CustomDeal) => d.deal_type === 'participant_based').length,
+          time_based: dealsData.filter((d: CustomDeal) => d.deal_type === 'time_based').length,
+        }
+      });
+
       // 디버깅: API에서 받은 모든 기간행사 로그
       console.log('[API Response] 전체 딜 개수:', dealsData.length);
       const timeBasedDeals = dealsData.filter((d: CustomDeal) => d.deal_type === 'time_based');
