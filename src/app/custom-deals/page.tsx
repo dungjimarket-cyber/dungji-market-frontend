@@ -157,6 +157,25 @@ function CustomDealsContent() {
     return () => clearInterval(timer);
   }, []);
 
+  // 무한 스크롤
+  useEffect(() => {
+    const handleScroll = () => {
+      if (loadingMore || !hasMore) return;
+
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+
+      // 하단에서 300px 전에 다음 페이지 로드
+      if (scrollTop + clientHeight >= scrollHeight - 300) {
+        loadMore();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadingMore, hasMore, nextUrl]);
+
   const fetchCategories = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom/categories/`);
@@ -1010,24 +1029,13 @@ function CustomDealsContent() {
               </div>
             )}
 
-            {/* 더보기 버튼 */}
-            {!loading && hasMore && (
-              <div className="mt-6 text-center">
-                <Button
-                  onClick={loadMore}
-                  disabled={loadingMore}
-                  variant="outline"
-                  className="px-8 py-3"
-                >
-                  {loadingMore ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 mr-2"></div>
-                      로딩 중...
-                    </>
-                  ) : (
-                    '더보기'
-                  )}
-                </Button>
+            {/* 로딩 인디케이터 */}
+            {loadingMore && (
+              <div className="mt-6 text-center py-4">
+                <div className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+                  <span className="text-gray-600">로딩 중...</span>
+                </div>
               </div>
             )}
           </div>
