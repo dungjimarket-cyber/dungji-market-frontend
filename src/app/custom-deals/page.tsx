@@ -75,6 +75,9 @@ function CustomDealsContent() {
   const [deals, setDeals] = useState<CustomDeal[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // 필터 상태 - URL에서 초기값 읽기
@@ -170,6 +173,9 @@ function CustomDealsContent() {
       let url = `${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/`;
       const params = new URLSearchParams();
 
+      // 페이지네이션
+      params.append('limit', '20');
+
       // 기간행사 필터
       if (selectedType === 'time_based') {
         params.append('deal_type', 'time_based');
@@ -196,6 +202,10 @@ function CustomDealsContent() {
       const response = await fetch(url);
       const data = await response.json();
       const dealsData = Array.isArray(data) ? data : data.results || [];
+
+      // 페이지네이션 정보 업데이트
+      setNextUrl(data.next || null);
+      setHasMore(!!data.next);
 
       // 디버깅: API 응답 전체 로그
       console.log('[API 전체 응답]', {
@@ -250,6 +260,40 @@ function CustomDealsContent() {
       setDeals([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMore = async () => {
+    if (!nextUrl || loadingMore) return;
+
+    try {
+      setLoadingMore(true);
+      const response = await fetch(nextUrl);
+
+      if (!response.ok) throw new Error('Failed to fetch');
+      const data = await response.json();
+
+      const newDeals = Array.isArray(data) ? data : data.results || [];
+
+      // 할인율 재계산
+      const recalculatedDeals = newDeals.map((deal: CustomDeal) => {
+        if (deal.original_price && deal.final_price) {
+          const calculatedRate = Math.floor((1 - deal.final_price / deal.original_price) * 100);
+          return {
+            ...deal,
+            discount_rate: Math.max(0, Math.min(99, calculatedRate))
+          };
+        }
+        return deal;
+      });
+
+      setDeals(prev => [...prev, ...recalculatedDeals]);
+      setNextUrl(data.next || null);
+      setHasMore(!!data.next);
+    } catch (error) {
+      console.error('추가 로드 실패:', error);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -963,6 +1007,27 @@ function CustomDealsContent() {
               </Link>
                 );
               })}
+              </div>
+            )}
+
+            {/* 더보기 버튼 */}
+            {!loading && hasMore && (
+              <div className="mt-6 text-center">
+                <Button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  variant="outline"
+                  className="px-8 py-3"
+                >
+                  {loadingMore ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 mr-2"></div>
+                      로딩 중...
+                    </>
+                  ) : (
+                    '더보기'
+                  )}
+                </Button>
               </div>
             )}
           </div>
