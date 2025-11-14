@@ -177,12 +177,10 @@ function CustomDealsContent() {
       // 페이지네이션
       params.append('limit', '20');
 
-      // 기간행사 필터
-      if (selectedType === 'time_based') {
-        params.append('deal_type', 'time_based');
+      // 탭별 필터링을 백엔드로 전달
+      if (selectedType && selectedType !== 'all') {
+        params.append('selected_type', selectedType);
       }
-      // 온라인/오프라인 탭은 프론트엔드에서 필터링 (기간행사 포함을 위해)
-      // 전체, 쿠폰/이벤트도 백엔드 필터 없이 프론트에서 처리
 
       if (selectedCategory !== 'all') {
         params.append('category', selectedCategory);
@@ -391,9 +389,9 @@ function CustomDealsContent() {
     return () => clearInterval(timer);
   }, []);
 
-  // IntersectionObserver를 사용한 무한 스크롤 (최적화)
+  // IntersectionObserver를 사용한 무한 스크롤
   useEffect(() => {
-    if (!loadMoreRef.current || !hasMore) return;
+    if (!loadMoreRef.current || !hasMore || loadingMore || loading) return;
 
     // 기존 observer 정리
     if (observerRef.current) {
@@ -407,45 +405,31 @@ function CustomDealsContent() {
 
         console.log('[Observer 트리거]', {
           isIntersecting: entry.isIntersecting,
-          wasIntersecting: isIntersectingRef.current,
-          nextUrl: nextUrlRef.current,
-          loadingMore: loadingMoreRef.current
+          hasMore,
+          loadingMore: loadingMoreRef.current,
+          nextUrl: nextUrlRef.current
         });
 
-        // 중복 트리거 방지: 이전 상태와 비교
-        if (entry.isIntersecting && !isIntersectingRef.current) {
-          isIntersectingRef.current = true;
-
-          // ref를 통해 최신 상태 확인
-          if (nextUrlRef.current && !loadingMoreRef.current) {
-            console.log('[Observer → loadMore 호출]');
-            loadMore();
-          } else {
-            console.log('[Observer → loadMore 스킵]', {
-              reason: !nextUrlRef.current ? 'nextUrl 없음' : 'loading 중'
-            });
-          }
-        } else if (!entry.isIntersecting) {
-          isIntersectingRef.current = false;
+        // 뷰포트에 보이고, 로딩 중이 아니면 loadMore 호출
+        if (entry.isIntersecting && hasMore && !loadingMoreRef.current) {
+          console.log('[Observer → loadMore 호출]');
+          loadMore();
         }
       },
       {
-        // 10% 보이면 트리거 (미리 로드)
         threshold: 0.1,
-        // 하단 300px 마진 (더 일찍 로드)
         rootMargin: '0px 0px 300px 0px'
       }
     );
 
     observerRef.current.observe(loadMoreRef.current);
 
-    // cleanup
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, loadMore]); // loadingMore 제거, loadMore는 안정적인 참조
+  }, [hasMore, loadingMore, loading, loadMore]);
 
   const getRemainingTime = (expiredAt: string) => {
     const now = new Date();
@@ -805,26 +789,6 @@ function CustomDealsContent() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {deals
-              .filter((deal) => {
-                // 백엔드에서 이미 취소건과 인원미달 expired 제외됨
-                // 프론트에서는 탭별 필터링만 수행
-
-                // 탭별 필터링
-                if (selectedType === 'time_based') {
-                  // 기간행사 탭
-                  return deal.deal_type === 'time_based';
-                } else if (selectedType === 'coupon_only') {
-                  // 쿠폰/이벤트 탭 (기간행사 제외)
-                  return deal.pricing_type === 'coupon_only' && deal.deal_type !== 'time_based';
-                } else if (selectedType === 'online' || selectedType === 'offline') {
-                  // 온라인/오프라인 탭 (쿠폰전용 인원모집형 제외, 기간행사는 포함)
-                  return deal.type === selectedType &&
-                    !(deal.pricing_type === 'coupon_only' && deal.deal_type !== 'time_based');
-                }
-
-                // 전체 탭: 모두 표시
-                return true;
-              })
               .sort((a, b) => {
                 // 1차 정렬: 마감된 공구를 뒤로
                 const aIsClosed = isDealClosed(a, currentTime);
