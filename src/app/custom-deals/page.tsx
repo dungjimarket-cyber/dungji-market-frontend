@@ -90,14 +90,13 @@ function CustomDealsContent() {
   const [locationQuery, setLocationQuery] = useState(
     searchParams.get('location') || ''
   );
-  const [showClosedDeals, setShowClosedDeals] = useState(true); // 마감된 공구 표시 여부
   const [sortType, setSortType] = useState<'latest' | 'popular'>('latest'); // 정렬 방식
 
   // 패널티 모달 상태
   const [penaltyInfo, setPenaltyInfo] = useState<CustomPenalty | null>(null);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
 
-  // 마감 판정 유틸 함수
+  // 마감 판정 유틸 함수 (정렬용)
   const isDealClosed = (deal: CustomDeal, currentTime: Date): boolean => {
     if (deal.deal_type === 'time_based') {
       // 기간행사: expired_at(모집기간) 종료 시 마감
@@ -109,7 +108,7 @@ function CustomDealsContent() {
       const isExpired = deal.expired_at
         ? new Date(deal.expired_at).getTime() <= currentTime.getTime()
         : false;
-      return deal.status === 'completed' || deal.status === 'expired' || isExpired;
+      return deal.status === 'completed' || deal.status === 'pending_seller' || isExpired;
     }
   };
 
@@ -610,17 +609,7 @@ function CustomDealsContent() {
                 />
               )}
 
-              {/* Status Filter */}
-              <button
-                onClick={() => setShowClosedDeals(!showClosedDeals)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  !showClosedDeals
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {showClosedDeals ? '진행중만 보기' : '전체 보기'}
-              </button>
+              {/* Status Filter 제거: 백엔드에서 필터링 */}
             </div>
           </div>
 
@@ -641,59 +630,24 @@ function CustomDealsContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {deals
               .filter((deal) => {
-                // 취소된 공구는 항상 제외
-                if (deal.status === 'cancelled') return false;
-
-                // 마감 판정
-                const isClosed = isDealClosed(deal, currentTime);
-
-                // 디버깅: 메가칩스 추적
-                if (deal.id === 92) {
-                  console.log(`[메가칩스 ID:92 - ${selectedType} 탭]`, {
-                    isClosed,
-                    showClosedDeals,
-                    status: deal.status,
-                    expired_at: deal.expired_at
-                  });
-                }
+                // 백엔드에서 이미 취소건과 인원미달 expired 제외됨
+                // 프론트에서는 탭별 필터링만 수행
 
                 // 탭별 필터링
-                let passesTabFilter = true;
-
                 if (selectedType === 'time_based') {
                   // 기간행사 탭
-                  passesTabFilter = deal.deal_type === 'time_based';
+                  return deal.deal_type === 'time_based';
                 } else if (selectedType === 'coupon_only') {
-                  // 쿠폰/이벤트 탭
-                  passesTabFilter = deal.pricing_type === 'coupon_only' && deal.deal_type !== 'time_based';
+                  // 쿠폰/이벤트 탭 (기간행사 제외)
+                  return deal.pricing_type === 'coupon_only' && deal.deal_type !== 'time_based';
                 } else if (selectedType === 'online' || selectedType === 'offline') {
-                  // 온라인/오프라인 탭
-                  passesTabFilter = deal.type === selectedType &&
+                  // 온라인/오프라인 탭 (쿠폰전용 인원모집형 제외, 기간행사는 포함)
+                  return deal.type === selectedType &&
                     !(deal.pricing_type === 'coupon_only' && deal.deal_type !== 'time_based');
                 }
-                // 전체 탭은 passesTabFilter = true 유지
 
-                if (!passesTabFilter) return false;
-
-                // 마감 필터링 (모든 탭 통일)
-                const result = showClosedDeals || !isClosed;
-
-                // 디버깅 로그 (마감건만)
-                if (isClosed && !result) {
-                  console.log(`[${selectedType} 탭 - 마감건 제외]`, {
-                    id: deal.id,
-                    title: deal.title.substring(0, 30),
-                    type: deal.type,
-                    deal_type: deal.deal_type,
-                    pricing_type: deal.pricing_type,
-                    status: deal.status,
-                    expired_at: deal.expired_at,
-                    isClosed,
-                    showClosedDeals
-                  });
-                }
-
-                return result;
+                // 전체 탭: 모두 표시
+                return true;
               })
               .sort((a, b) => {
                 // 1차 정렬: 마감된 공구를 뒤로
