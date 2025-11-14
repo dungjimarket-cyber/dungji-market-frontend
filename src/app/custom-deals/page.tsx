@@ -647,6 +647,16 @@ function CustomDealsContent() {
                 // 마감 판정
                 const isClosed = isDealClosed(deal, currentTime);
 
+                // 디버깅: 메가칩스 추적
+                if (deal.id === 92) {
+                  console.log(`[메가칩스 ID:92 - ${selectedType} 탭]`, {
+                    isClosed,
+                    showClosedDeals,
+                    status: deal.status,
+                    expired_at: deal.expired_at
+                  });
+                }
+
                 // 탭별 필터링
                 let passesTabFilter = true;
 
