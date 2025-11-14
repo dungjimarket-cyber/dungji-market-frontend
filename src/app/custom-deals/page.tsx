@@ -208,6 +208,12 @@ function CustomDealsContent() {
       setNextUrl(data.next || null);
       setHasMore(!!data.next);
 
+      console.log('[페이지네이션 정보]', {
+        nextUrl: data.next,
+        hasMore: !!data.next,
+        totalReceived: dealsData.length
+      });
+
       // 디버깅: API 응답 전체 로그
       console.log('[API 전체 응답]', {
         총개수: dealsData.length,
@@ -265,13 +271,29 @@ function CustomDealsContent() {
   };
 
   const loadMore = useCallback(async () => {
+    console.log('[loadMore 호출]', {
+      nextUrl: nextUrlRef.current,
+      loadingMore: loadingMoreRef.current,
+      hasMore
+    });
+
     // ref를 사용하여 최신 값 확인 (race condition 방지)
-    if (!nextUrlRef.current || loadingMoreRef.current) return;
+    if (!nextUrlRef.current || loadingMoreRef.current) {
+      console.log('[loadMore 중단]', {
+        reason: !nextUrlRef.current ? 'nextUrl 없음' : 'already loading'
+      });
+      return;
+    }
 
     // 중복 호출 방지
     const currentRequestId = ++requestIdRef.current;
     loadingMoreRef.current = true;
     setLoadingMore(true);
+
+    console.log('[loadMore 시작]', {
+      requestId: currentRequestId,
+      url: nextUrlRef.current
+    });
 
     try {
       const response = await fetch(nextUrlRef.current);
@@ -383,13 +405,25 @@ function CustomDealsContent() {
       (entries) => {
         const entry = entries[0];
 
+        console.log('[Observer 트리거]', {
+          isIntersecting: entry.isIntersecting,
+          wasIntersecting: isIntersectingRef.current,
+          nextUrl: nextUrlRef.current,
+          loadingMore: loadingMoreRef.current
+        });
+
         // 중복 트리거 방지: 이전 상태와 비교
         if (entry.isIntersecting && !isIntersectingRef.current) {
           isIntersectingRef.current = true;
 
           // ref를 통해 최신 상태 확인
           if (nextUrlRef.current && !loadingMoreRef.current) {
+            console.log('[Observer → loadMore 호출]');
             loadMore();
+          } else {
+            console.log('[Observer → loadMore 스킵]', {
+              reason: !nextUrlRef.current ? 'nextUrl 없음' : 'loading 중'
+            });
           }
         } else if (!entry.isIntersecting) {
           isIntersectingRef.current = false;
