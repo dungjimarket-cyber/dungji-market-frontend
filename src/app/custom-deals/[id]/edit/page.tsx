@@ -1104,7 +1104,11 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     type="date"
                     value={formData.deadline_date}
                     onChange={(e) => handleInputChange('deadline_date', e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={(() => {
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      return tomorrow.toISOString().split('T')[0];
+                    })()}
                     className={errors.deadline_date ? 'border-red-300' : ''}
                   />
                   {errors.deadline_date && <p className="text-sm text-red-600 mt-1">{errors.deadline_date}</p>}
