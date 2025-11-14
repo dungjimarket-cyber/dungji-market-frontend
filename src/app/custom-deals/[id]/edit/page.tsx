@@ -1053,8 +1053,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           </CardContent>
         </Card>
 
-        {/* 부분 판매 허용 옵션 (기간행사 쿠폰증정은 숨김) */}
-        {!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only') && (
+        {/* 부분 판매 허용 옵션 (기간행사는 숨김) */}
+        {originalData?.deal_type !== 'time_based' && (
           <Card className="mb-6 border-slate-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1067,67 +1067,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 <div className="flex-1">
                   <p className="font-medium text-slate-900">부분 판매 허용</p>
                   <p className="text-sm text-slate-500">인원 미달 시 24시간 내 판매 여부 선택 가능</p>
-                  {originalData?.deal_type === 'time_based' && (
-                    <p className="text-xs text-orange-600 mt-1">기간행사는 부분 판매 옵션을 사용할 수 없습니다</p>
-                  )}
                 </div>
                 <Switch
                   checked={formData.allow_partial_sale}
                   onCheckedChange={(checked) => handleInputChange('allow_partial_sale', checked)}
-                  disabled={originalData?.deal_type === 'time_based'}
                 />
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 등록기간 수정 (기간행사만) */}
-        {originalData?.deal_type === 'time_based' && (
-          <Card className="mb-6 border-orange-200 bg-orange-50/30">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-orange-900">
-                <Clock className="w-5 h-5" />
-                등록 기간 수정
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-orange-100 border border-orange-200 p-3 rounded-lg">
-                <p className="text-sm text-orange-900 font-medium">
-                  기간행사는 등록 기간을 수정할 수 있습니다
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm text-slate-700">마감 날짜 *</Label>
-                  <Input
-                    type="date"
-                    value={formData.deadline_date}
-                    onChange={(e) => handleInputChange('deadline_date', e.target.value)}
-                    min={(() => {
-                      const tomorrow = new Date();
-                      tomorrow.setDate(tomorrow.getDate() + 1);
-                      return tomorrow.toISOString().split('T')[0];
-                    })()}
-                    className={errors.deadline_date ? 'border-red-300' : ''}
-                  />
-                  {errors.deadline_date && <p className="text-sm text-red-600 mt-1">{errors.deadline_date}</p>}
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-700">마감 시간 *</Label>
-                  <Input
-                    type="time"
-                    value={formData.deadline_time}
-                    onChange={(e) => handleInputChange('deadline_time', e.target.value)}
-                    className={errors.deadline_time ? 'border-red-300' : ''}
-                  />
-                  {errors.deadline_time && <p className="text-sm text-red-600 mt-1">{errors.deadline_time}</p>}
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-600">
-                💡 현재 시간 기준으로 1시간 이후부터 설정 가능합니다
-              </p>
             </CardContent>
           </Card>
         )}
@@ -2020,6 +1965,47 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
             )}
           </CardContent>
         </Card>
+        )}
+
+        {/* 등록기간 수정 (기간행사만) */}
+        {originalData?.deal_type === 'time_based' && (
+          <Card className="mb-6 border-orange-200 bg-orange-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-900">
+                <Clock className="w-5 h-5" />
+                등록 기간 수정
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm text-slate-700">마감 날짜 *</Label>
+                  <Input
+                    type="date"
+                    value={formData.deadline_date}
+                    onChange={(e) => handleInputChange('deadline_date', e.target.value)}
+                    min={(() => {
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      return tomorrow.toISOString().split('T')[0];
+                    })()}
+                    className={errors.deadline_date ? 'border-red-300' : ''}
+                  />
+                  {errors.deadline_date && <p className="text-sm text-red-600 mt-1">{errors.deadline_date}</p>}
+                </div>
+                <div>
+                  <Label className="text-sm text-slate-700">마감 시간 *</Label>
+                  <Input
+                    type="time"
+                    value={formData.deadline_time}
+                    onChange={(e) => handleInputChange('deadline_time', e.target.value)}
+                    className={errors.deadline_time ? 'border-red-300' : ''}
+                  />
+                  {errors.deadline_time && <p className="text-sm text-red-600 mt-1">{errors.deadline_time}</p>}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* 제출 버튼 */}
