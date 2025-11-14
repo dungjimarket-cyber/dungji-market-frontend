@@ -1243,7 +1243,7 @@ export default function CustomDealDetailPage() {
             )}
 
             {/* 기간행사: 할인 링크 */}
-            {deal.deal_type === 'time_based' && !isExpired && deal.discount_url && (
+            {deal.deal_type === 'time_based' && !isClosed && deal.discount_url && (
               <div className="space-y-3">
                 <a
                   href={getRedirectUrl(deal.discount_url)}

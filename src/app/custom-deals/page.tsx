@@ -831,9 +831,11 @@ function CustomDealsContent() {
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                         <div className="text-center">
                           <div className="text-white font-bold text-3xl mb-1 drop-shadow-lg">마감</div>
-                          <div className="text-white text-xs bg-black/30 px-3 py-1 rounded-full">
-                            {deal.status_display}
-                          </div>
+                          {deal.deal_type !== 'time_based' && (
+                            <div className="text-white text-xs bg-black/30 px-3 py-1 rounded-full">
+                              {deal.status_display}
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
