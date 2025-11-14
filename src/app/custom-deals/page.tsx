@@ -97,6 +97,22 @@ function CustomDealsContent() {
   const [penaltyInfo, setPenaltyInfo] = useState<CustomPenalty | null>(null);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
 
+  // 마감 판정 유틸 함수
+  const isDealClosed = (deal: CustomDeal, currentTime: Date): boolean => {
+    if (deal.deal_type === 'time_based') {
+      // 기간행사: expired_at(모집기간) 종료 시 마감
+      return deal.expired_at
+        ? new Date(deal.expired_at).getTime() <= currentTime.getTime()
+        : false;
+    } else {
+      // 일반 공구: status 또는 expired_at 체크
+      const isExpired = deal.expired_at
+        ? new Date(deal.expired_at).getTime() <= currentTime.getTime()
+        : false;
+      return deal.status === 'completed' || deal.status === 'expired' || isExpired;
+    }
+  };
+
   // 프로필 체크 모달 상태
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
@@ -628,78 +644,51 @@ function CustomDealsContent() {
                 // 취소된 공구는 항상 제외
                 if (deal.status === 'cancelled') return false;
 
-                // 마감 체크
-                let isDealClosed = false;
+                // 마감 판정
+                const isClosed = isDealClosed(deal, currentTime);
 
-                if (deal.deal_type === 'time_based') {
-                  // 기간행사: expired_at(모집기간) 종료 시 마감
-                  isDealClosed = deal.expired_at
-                    ? new Date(deal.expired_at).getTime() <= currentTime.getTime()
-                    : false;
-                } else {
-                  // 일반 공구: status 또는 expired_at 체크
-                  const isExpired = deal.expired_at
-                    ? new Date(deal.expired_at).getTime() <= currentTime.getTime()
-                    : false;
-                  isDealClosed = deal.status === 'completed' || deal.status === 'expired' || isExpired;
-                }
+                // 탭별 필터링
+                let passesTabFilter = true;
 
-                // 기간행사 탭: deal_type이 time_based인 것만
                 if (selectedType === 'time_based') {
-                  if (deal.deal_type !== 'time_based') return false;
+                  // 기간행사 탭
+                  passesTabFilter = deal.deal_type === 'time_based';
+                } else if (selectedType === 'coupon_only') {
+                  // 쿠폰/이벤트 탭
+                  passesTabFilter = deal.pricing_type === 'coupon_only' && deal.deal_type !== 'time_based';
+                } else if (selectedType === 'online' || selectedType === 'offline') {
+                  // 온라인/오프라인 탭
+                  passesTabFilter = deal.type === selectedType &&
+                    !(deal.pricing_type === 'coupon_only' && deal.deal_type !== 'time_based');
+                }
+                // 전체 탭은 passesTabFilter = true 유지
 
-                  // 디버깅: 모든 기간행사 출력
-                  console.log(`[기간행사 ${deal.id}]`, {
+                if (!passesTabFilter) return false;
+
+                // 마감 필터링 (모든 탭 통일)
+                const result = showClosedDeals || !isClosed;
+
+                // 디버깅 로그 (마감건만)
+                if (isClosed && !result) {
+                  console.log(`[${selectedType} 탭 - 마감건 제외]`, {
+                    id: deal.id,
                     title: deal.title.substring(0, 30),
+                    type: deal.type,
+                    deal_type: deal.deal_type,
+                    pricing_type: deal.pricing_type,
                     status: deal.status,
                     expired_at: deal.expired_at,
-                    isDealClosed,
-                    showClosedDeals,
-                    willShow: showClosedDeals || !isDealClosed
+                    isClosed,
+                    showClosedDeals
                   });
-
-                  return showClosedDeals || !isDealClosed;
                 }
 
-                // 쿠폰/이벤트 탭: pricing_type이 coupon_only이면서 time_based가 아닌 것만
-                if (selectedType === 'coupon_only') {
-                  if (deal.pricing_type !== 'coupon_only') return false;
-                  if (deal.deal_type === 'time_based') return false; // 기간행사 제외
-                  return showClosedDeals || !isDealClosed;
-                }
-
-                // 온라인/오프라인 탭: 해당 타입이면서 coupon_only만 제외 (단, 기간행사는 포함)
-                if (selectedType === 'online' || selectedType === 'offline') {
-                  if (deal.type !== selectedType) return false; // 타입 불일치 제외
-                  // 쿠폰전용은 제외하되, 기간행사는 예외 (오프라인 기간행사는 대부분 쿠폰/서비스 제공)
-                  if (deal.pricing_type === 'coupon_only' && deal.deal_type !== 'time_based') return false;
-                  return showClosedDeals || !isDealClosed;
-                }
-
-                // 전체 탭: 모든 타입 표시 (쿠폰전용 포함)
-
-                // showClosedDeals에 따라 마감된 공구 표시 여부 결정
-                return showClosedDeals || !isDealClosed;
+                return result;
               })
               .sort((a, b) => {
                 // 1차 정렬: 마감된 공구를 뒤로
-                let aIsClosed = false;
-                let bIsClosed = false;
-
-                // 기간행사: expired_at만 체크
-                if (a.deal_type === 'time_based') {
-                  aIsClosed = a.expired_at ? new Date(a.expired_at).getTime() <= currentTime.getTime() : false;
-                } else {
-                  const aExpired = a.expired_at ? new Date(a.expired_at).getTime() <= currentTime.getTime() : false;
-                  aIsClosed = a.status === 'completed' || a.status === 'expired' || aExpired;
-                }
-
-                if (b.deal_type === 'time_based') {
-                  bIsClosed = b.expired_at ? new Date(b.expired_at).getTime() <= currentTime.getTime() : false;
-                } else {
-                  const bExpired = b.expired_at ? new Date(b.expired_at).getTime() <= currentTime.getTime() : false;
-                  bIsClosed = b.status === 'completed' || b.status === 'expired' || bExpired;
-                }
+                const aIsClosed = isDealClosed(a, currentTime);
+                const bIsClosed = isDealClosed(b, currentTime);
 
                 if (aIsClosed && !bIsClosed) return 1;  // a가 마감이면 뒤로
                 if (!aIsClosed && bIsClosed) return -1; // b가 마감이면 뒤로
@@ -715,15 +704,7 @@ function CustomDealsContent() {
               })
               .map((deal) => {
                 // 마감 체크
-                let isClosed = false;
-                if (deal.deal_type === 'time_based') {
-                  // 기간행사: expired_at(모집기간) 종료 시 마감
-                  isClosed = deal.expired_at ? new Date(deal.expired_at).getTime() <= currentTime.getTime() : false;
-                } else {
-                  // 일반 공구: status 또는 expired_at 체크
-                  const isExpired = deal.expired_at ? new Date(deal.expired_at).getTime() <= currentTime.getTime() : false;
-                  isClosed = deal.status === 'completed' || deal.status === 'expired' || isExpired;
-                }
+                const isClosed = isDealClosed(deal, currentTime);
                 return (
               <Link key={deal.id} href={`/custom-deals/${deal.id}`}>
                 <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-slate-200 overflow-hidden flex flex-col">
