@@ -103,6 +103,12 @@ function CustomDealsContent() {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
+  // 성능 최적화용 ref
+  const loadingMoreRef = useRef(false);
+  const nextUrlRef = useRef<string | null>(null);
+  const requestIdRef = useRef(0);
+  const isIntersectingRef = useRef(false);
+
   // 마감 판정 유틸 함수 (정렬용)
   const isDealClosed = (deal: CustomDeal, currentTime: Date): boolean => {
     if (deal.deal_type === 'time_based') {
@@ -146,6 +152,11 @@ function CustomDealsContent() {
     setSearchQuery(searchParams.get('search') || '');
     setLocationQuery(searchParams.get('location') || '');
   }, [searchParams]);
+
+  // nextUrl ref 동기화
+  useEffect(() => {
+    nextUrlRef.current = nextUrl;
+  }, [nextUrl]);
 
   const fetchCategories = async () => {
     try {
@@ -254,11 +265,22 @@ function CustomDealsContent() {
   };
 
   const loadMore = useCallback(async () => {
-    if (!nextUrl || loadingMore) return;
+    // ref를 사용하여 최신 값 확인 (race condition 방지)
+    if (!nextUrlRef.current || loadingMoreRef.current) return;
+
+    // 중복 호출 방지
+    const currentRequestId = ++requestIdRef.current;
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
 
     try {
-      setLoadingMore(true);
-      const response = await fetch(nextUrl);
+      const response = await fetch(nextUrlRef.current);
+
+      // 응답이 최신 요청인지 확인 (race condition 완전 차단)
+      if (currentRequestId !== requestIdRef.current) {
+        console.log('[무한스크롤] 오래된 요청 무시');
+        return;
+      }
 
       if (!response.ok) throw new Error('Failed to fetch');
       const data = await response.json();
@@ -283,9 +305,13 @@ function CustomDealsContent() {
     } catch (error) {
       console.error('추가 로드 실패:', error);
     } finally {
-      setLoadingMore(false);
+      // 최신 요청인 경우에만 로딩 상태 해제
+      if (currentRequestId === requestIdRef.current) {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      }
     }
-  }, [nextUrl, loadingMore]);
+  }, []); // dependency 없음 - ref만 사용
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -343,9 +369,9 @@ function CustomDealsContent() {
     return () => clearInterval(timer);
   }, []);
 
-  // IntersectionObserver를 사용한 무한 스크롤
+  // IntersectionObserver를 사용한 무한 스크롤 (최적화)
   useEffect(() => {
-    if (!loadMoreRef.current || !hasMore || loadingMore) return;
+    if (!loadMoreRef.current || !hasMore) return;
 
     // 기존 observer 정리
     if (observerRef.current) {
@@ -355,9 +381,18 @@ function CustomDealsContent() {
     // 새 observer 생성
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        // 타겟 요소가 뷰포트에 보이면 loadMore 실행
-        if (entries[0].isIntersecting && hasMore && !loadingMore) {
-          loadMore();
+        const entry = entries[0];
+
+        // 중복 트리거 방지: 이전 상태와 비교
+        if (entry.isIntersecting && !isIntersectingRef.current) {
+          isIntersectingRef.current = true;
+
+          // ref를 통해 최신 상태 확인
+          if (nextUrlRef.current && !loadingMoreRef.current) {
+            loadMore();
+          }
+        } else if (!entry.isIntersecting) {
+          isIntersectingRef.current = false;
         }
       },
       {
@@ -376,7 +411,7 @@ function CustomDealsContent() {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, loadingMore, loadMore]);
+  }, [hasMore, loadMore]); // loadingMore 제거, loadMore는 안정적인 참조
 
   const getRemainingTime = (expiredAt: string) => {
     const now = new Date();
