@@ -1348,12 +1348,9 @@ export default function CreateCustomDealPage() {
           </CardContent>
         </Card>
 
-        {/* 가격 정보 */}
+        {/* 기간행사 vs 인원 모집 특가 선택 */}
         <Card className="mb-6 border-slate-200">
-          <CardHeader>
-            <CardTitle>가격 정보</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-6">
             {/* 기간행사 체크박스 */}
             <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
               <div>
@@ -1367,7 +1364,15 @@ export default function CreateCustomDealPage() {
                 }}
               />
             </div>
+          </CardContent>
+        </Card>
 
+        {/* 가격 정보 */}
+        <Card className="mb-6 border-slate-200">
+          <CardHeader>
+            <CardTitle>가격 정보</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             {/* 가격 유형 선택 */}
             <div>
               <Label>가격 유형 *</Label>
