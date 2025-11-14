@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -99,6 +99,10 @@ function CustomDealsContent() {
   const [penaltyInfo, setPenaltyInfo] = useState<CustomPenalty | null>(null);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
 
+  // IntersectionObserver용 ref
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
   // 마감 판정 유틸 함수 (정렬용)
   const isDealClosed = (deal: CustomDeal, currentTime: Date): boolean => {
     if (deal.deal_type === 'time_based') {
@@ -142,39 +146,6 @@ function CustomDealsContent() {
     setSearchQuery(searchParams.get('search') || '');
     setLocationQuery(searchParams.get('location') || '');
   }, [searchParams]);
-
-  useEffect(() => {
-    fetchCategories();
-    fetchDeals();
-  }, [selectedType, selectedCategory, locationQuery]);
-
-  // 1분마다 현재 시간 업데이트 (실시간 카운트다운)
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  // 무한 스크롤
-  useEffect(() => {
-    const handleScroll = () => {
-      if (loadingMore || !hasMore) return;
-
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight;
-      const clientHeight = document.documentElement.clientHeight;
-
-      // 하단에서 300px 전에 다음 페이지 로드
-      if (scrollTop + clientHeight >= scrollHeight - 300) {
-        loadMore();
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadingMore, hasMore, nextUrl]);
 
   const fetchCategories = async () => {
     try {
@@ -282,7 +253,7 @@ function CustomDealsContent() {
     }
   };
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
     if (!nextUrl || loadingMore) return;
 
     try {
@@ -314,7 +285,7 @@ function CustomDealsContent() {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [nextUrl, loadingMore]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -349,6 +320,63 @@ function CustomDealsContent() {
     // 모든 체크 통과 시 페이지 이동
     router.push('/custom-deals/create');
   };
+
+  // 초기 로딩
+  useEffect(() => {
+    fetchCategories();
+    fetchDeals();
+  }, []);
+
+  // 필터 변경 시 재로딩
+  useEffect(() => {
+    if (!loading) {
+      fetchDeals();
+    }
+  }, [selectedType, selectedCategory, locationQuery]);
+
+  // 1분마다 현재 시간 업데이트 (실시간 카운트다운)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // IntersectionObserver를 사용한 무한 스크롤
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore || loadingMore) return;
+
+    // 기존 observer 정리
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    // 새 observer 생성
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        // 타겟 요소가 뷰포트에 보이면 loadMore 실행
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          loadMore();
+        }
+      },
+      {
+        // 10% 보이면 트리거 (미리 로드)
+        threshold: 0.1,
+        // 하단 300px 마진 (더 일찍 로드)
+        rootMargin: '0px 0px 300px 0px'
+      }
+    );
+
+    observerRef.current.observe(loadMoreRef.current);
+
+    // cleanup
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, loadingMore, loadMore]);
 
   const getRemainingTime = (expiredAt: string) => {
     const now = new Date();
@@ -1029,13 +1057,15 @@ function CustomDealsContent() {
               </div>
             )}
 
-            {/* 로딩 인디케이터 */}
-            {loadingMore && (
-              <div className="mt-6 text-center py-4">
-                <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
-                  <span className="text-gray-600">로딩 중...</span>
-                </div>
+            {/* IntersectionObserver 타겟 & 로딩 인디케이터 */}
+            {!loading && (
+              <div ref={loadMoreRef} className="mt-6 text-center py-4">
+                {loadingMore && (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+                    <span className="text-gray-600">로딩 중...</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
