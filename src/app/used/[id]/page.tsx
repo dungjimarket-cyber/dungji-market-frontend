@@ -2359,22 +2359,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
           /* 모바일에서 네비게이션 화살표 숨기기 */
           @media (max-width: 768px) {
-            .used-phone-swiper {
-              max-width: 100vw !important;
-              width: 100vw !important;
-              left: 50% !important;
-              right: auto !important;
-              transform: translateX(-50%) !important;
-              contain: layout size style !important;
-            }
-
-            .used-phone-swiper .swiper-wrapper,
-            .used-phone-swiper .swiper-slide,
-            .used-phone-swiper .swiper-slide > div {
-              max-width: 100vw !important;
-              width: 100% !important;
-            }
-
             .used-phone-swiper .swiper-button-prev,
             .used-phone-swiper .swiper-button-next {
               display: none !important;

@@ -2130,22 +2130,6 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
         /* 모바일에서 네비게이션 화살표 숨기기 */
         @media (max-width: 768px) {
-          .used-electronics-swiper {
-            max-width: 100vw !important;
-            width: 100vw !important;
-            left: 50% !important;
-            right: auto !important;
-            transform: translateX(-50%) !important;
-            contain: layout size style !important;
-          }
-
-          .used-electronics-swiper .swiper-wrapper,
-          .used-electronics-swiper .swiper-slide,
-          .used-electronics-swiper .swiper-slide > div {
-            max-width: 100vw !important;
-            width: 100% !important;
-          }
-
           .used-electronics-swiper .swiper-button-prev,
           .used-electronics-swiper .swiper-button-next {
             display: none !important;
