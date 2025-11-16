@@ -730,6 +730,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
                   loop={electronics.images.length > 1}
                   speed={450}
+                  observer={true}
+                  observeParents={true}
+                  watchOverflow={true}
                   className="w-full aspect-square used-electronics-swiper rounded-xl overflow-hidden"
                   onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
                 >
@@ -794,6 +797,8 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             spaceBetween={10}
             slidesPerView="auto"
             watchSlidesProgress
+            observer={true}
+            observeParents={true}
             className="w-full mt-4"
           >
             {electronics.images.map((image, index) => (

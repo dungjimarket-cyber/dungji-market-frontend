@@ -891,6 +891,9 @@ export default function CustomDealDetailPage() {
                       thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
                       loop={sortedImages.length > 1}
                       speed={450}
+                      observer={true}
+                      observeParents={true}
+                      watchOverflow={true}
                       className="w-full aspect-[4/3] custom-deal-swiper"
                       onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
                     >
@@ -943,6 +946,8 @@ export default function CustomDealDetailPage() {
                     spaceBetween={10}
                     slidesPerView="auto"
                     watchSlidesProgress
+                    observer={true}
+                    observeParents={true}
                     className="w-full"
                   >
                     {sortedImages.map((image, index) => (

@@ -776,6 +776,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                       thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
                       loop={phone.images.length > 1}
                       speed={450}
+                      observer={true}
+                      observeParents={true}
+                      watchOverflow={true}
                       className="w-full aspect-square used-phone-swiper"
                       onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
                     >
@@ -836,6 +839,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     spaceBetween={10}
                     slidesPerView="auto"
                     watchSlidesProgress
+                    observer={true}
+                    observeParents={true}
                     className="w-full"
                   >
                     {phone.images.map((image, index) => (
