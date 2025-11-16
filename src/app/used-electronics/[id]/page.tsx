@@ -716,7 +716,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         </div>
       </div>
 
-      <div className="w-full overflow-x-hidden">
+      <div className="w-full">
         <div className="container max-w-7xl mx-auto px-4 py-6 lg:py-8">
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
           {/* 이미지 섹션 */}
