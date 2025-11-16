@@ -792,12 +792,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                               setShowImageLightbox(true);
                             }}
                           >
-                            <Image
+                            <img
                               src={image.imageUrl || '/images/phone-placeholder.png'}
                               alt={`${phone.model} - ${index + 1}`}
-                              fill
-                              className="object-contain"
-                              priority={index === 0}
+                              className="w-full h-full object-contain"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.src = '/images/phone-placeholder.png';

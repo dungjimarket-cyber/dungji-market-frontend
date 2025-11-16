@@ -745,12 +745,10 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                           setShowImageLightbox(true);
                         }}
                       >
-                        <Image
+                        <img
                           src={image.imageUrl || '/images/no-image.png'}
                           alt={`${electronics.model_name} - ${index + 1}`}
-                          fill
-                          className="object-contain"
-                          priority={index === 0}
+                          className="w-full h-full object-contain"
                         />
 
                         {/* 거래중 오버레이 */}
