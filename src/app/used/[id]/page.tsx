@@ -768,7 +768,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
                 {phone.images && phone.images.length > 0 ? (
                   <>
-                    <div className="w-full aspect-square relative overflow-hidden">
+                    <div className="w-full aspect-square sm:aspect-square relative overflow-hidden">
                       <Swiper
                         modules={[Navigation, Thumbs]}
                         navigation={{
@@ -832,11 +832,11 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
               {/* 썸네일 네비게이션 - Swiper */}
               {phone.images && phone.images.length > 1 && (
-                <div className="px-1 overflow-hidden">
+                <div className="px-0 sm:px-1 overflow-hidden">
                   <Swiper
                     modules={[Thumbs, FreeMode]}
                     onSwiper={setThumbsSwiper}
-                    spaceBetween={10}
+                    spaceBetween={8}
                     slidesPerView="auto"
                     freeMode={true}
                     watchSlidesProgress
@@ -846,7 +846,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   >
                     {phone.images.map((image, index) => (
                       <SwiperSlide key={index} className="!w-auto">
-                        <div className="min-w-[60px] max-w-[80px] w-[calc((100vw-3rem)/4.33)] sm:w-[calc((100vw-2rem-50px)/6)] md:w-[calc((100vw-2rem-60px)/7)] aspect-square rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
+                        <div className="min-w-[60px] max-w-[80px] w-[calc((100vw-4rem-28px)/4.5)] sm:w-[calc((100vw-2rem-64px)/8)] md:w-[calc((100vw-2rem-80px)/10)] aspect-square rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
                           <Image
                             src={image.imageUrl || '/images/phone-placeholder.png'}
                             alt={`썸네일 ${index + 1}`}

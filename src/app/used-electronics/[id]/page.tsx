@@ -789,11 +789,11 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
         {/* 썸네일 */}
         {electronics.images && electronics.images.length > 1 && (
-          <div className="overflow-hidden mt-4">
+          <div className="overflow-hidden mt-4 px-0 sm:px-1">
             <Swiper
               modules={[Thumbs, FreeMode]}
               onSwiper={setThumbsSwiper}
-              spaceBetween={10}
+              spaceBetween={8}
               slidesPerView="auto"
               freeMode={true}
               watchSlidesProgress
@@ -803,7 +803,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             >
             {electronics.images.map((image, index) => (
               <SwiperSlide key={index} className="!w-auto">
-                <div className="min-w-[60px] max-w-[80px] w-[calc((100vw-3rem)/4.33)] sm:w-[calc((100vw-2rem-50px)/6)] md:w-[calc((100vw-2rem-60px)/7)] aspect-square rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
+                <div className="min-w-[60px] max-w-[80px] w-[calc((100vw-4rem-28px)/4.5)] sm:w-[calc((100vw-2rem-64px)/8)] md:w-[calc((100vw-2rem-80px)/10)] aspect-square rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
                   <Image
                     src={image.imageUrl || '/images/no-image.png'}
                     alt={`썸네일 ${index + 1}`}
