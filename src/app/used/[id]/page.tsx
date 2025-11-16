@@ -2348,12 +2348,18 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           .used-phone-swiper .swiper-slide img {
             max-width: 100% !important;
             max-height: 100% !important;
-            width: 100% !important;
-            height: 100% !important;
             object-fit: contain !important;
           }
 
-          /* 모바일에서만 이미지 자동 크기 조절 */
+          /* 데스크톱에서 이미지 100% 크기 */
+          @media (min-width: 641px) {
+            .used-phone-swiper .swiper-slide img {
+              width: 100% !important;
+              height: 100% !important;
+            }
+          }
+
+          /* 모바일에서 이미지 자동 크기 조절 */
           @media (max-width: 640px) {
             .used-phone-swiper .swiper-slide img {
               width: auto !important;
