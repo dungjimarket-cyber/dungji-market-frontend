@@ -723,7 +723,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           <div className="w-full">
             {/* 메인 이미지 */}
             {electronics.images && electronics.images.length > 0 ? (
-              <div className="relative w-full aspect-square rounded-xl overflow-hidden">
+              <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden">
                 <Swiper
                   modules={[Navigation, Thumbs]}
                   navigation={{ enabled: true }}
@@ -782,7 +782,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 </Swiper>
               </div>
             ) : (
-              <div className="w-full aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center">
+              <div className="w-full aspect-[4/3] bg-gray-50 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center">
                 <Package className="w-20 h-20 text-gray-400" />
               </div>
             )}
