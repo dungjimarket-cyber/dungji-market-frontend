@@ -2121,6 +2121,14 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             contain: layout size style !important;
           }
 
+          .used-electronics-swiper .swiper-slide img {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+          }
+
           .used-electronics-swiper .swiper-button-prev,
           .used-electronics-swiper .swiper-button-next {
             display: none !important;

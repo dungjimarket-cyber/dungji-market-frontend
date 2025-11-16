@@ -2350,6 +2350,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               contain: layout size style !important;
             }
 
+            .used-phone-swiper .swiper-slide img {
+              max-width: 100% !important;
+              max-height: 100% !important;
+              width: 100% !important;
+              height: 100% !important;
+              object-fit: contain !important;
+            }
+
             .used-phone-swiper .swiper-button-prev,
             .used-phone-swiper .swiper-button-next {
               display: none !important;
