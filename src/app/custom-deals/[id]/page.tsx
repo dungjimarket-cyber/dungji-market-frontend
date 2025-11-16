@@ -883,7 +883,7 @@ export default function CustomDealDetailPage() {
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
                 {sortedImages.length > 0 ? (
                   <>
-                    <div className="w-full aspect-[4/3]">
+                    <div className="w-full aspect-[4/3] relative">
                       <Swiper
                         modules={[Navigation, Thumbs]}
                         navigation={{
@@ -895,7 +895,7 @@ export default function CustomDealDetailPage() {
                         observer={true}
                         observeParents={true}
                         watchOverflow={true}
-                        className="w-full h-full custom-deal-swiper"
+                        className="w-full h-full custom-deal-swiper !absolute !inset-0"
                         onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
                       >
                       {sortedImages.map((image, index) => (

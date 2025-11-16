@@ -768,7 +768,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
                 {phone.images && phone.images.length > 0 ? (
                   <>
-                    <div className="w-full aspect-square">
+                    <div className="w-full aspect-square relative">
                       <Swiper
                         modules={[Navigation, Thumbs]}
                         navigation={{
@@ -780,7 +780,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         observer={true}
                         observeParents={true}
                         watchOverflow={true}
-                        className="w-full h-full used-phone-swiper"
+                        className="w-full h-full used-phone-swiper !absolute !inset-0"
                         onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
                       >
                       {phone.images.map((image, index) => (

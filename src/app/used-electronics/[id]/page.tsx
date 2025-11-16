@@ -733,7 +733,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   observer={true}
                   observeParents={true}
                   watchOverflow={true}
-                  className="w-full h-full used-electronics-swiper"
+                  className="w-full h-full used-electronics-swiper !absolute !inset-0"
                   onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
                 >
                   {electronics.images.map((image, index) => (
