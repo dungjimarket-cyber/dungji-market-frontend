@@ -458,7 +458,19 @@ export default function CustomDealDetailPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || '참여 실패');
+
+        // 에러 메시지 표시
+        toast.error(errorData.error || '참여에 실패했습니다');
+
+        // needs_reload 플래그가 있으면 페이지 리로드하여 최신 상태 반영
+        if (errorData.needs_reload) {
+          console.log('[PARTICIPATE] 상태 변경 감지, 페이지 리로드');
+          setTimeout(() => {
+            fetchDeal(); // 최신 데이터로 업데이트
+          }, 1000); // 토스트 메시지를 보여주고 나서 리로드
+        }
+
+        return;
       }
 
       toast.success('참여가 완료되었습니다!');
