@@ -113,6 +113,7 @@ export default function CustomDealDetailPage() {
   const [linkPreviews, setLinkPreviews] = useState<LinkPreview[]>([]);
   const [showMap, setShowMap] = useState(false);
   const [linkPreviewsLoading, setLinkPreviewsLoading] = useState(false);
+  const [participating, setParticipating] = useState(false);
 
   const {
     checkProfile,
@@ -439,6 +440,9 @@ export default function CustomDealDetailPage() {
       return;
     }
 
+    // 중복 클릭 방지: 로딩 상태 설정
+    setParticipating(true);
+
     try {
       const token = localStorage.getItem('accessToken');
 
@@ -462,6 +466,9 @@ export default function CustomDealDetailPage() {
     } catch (error: any) {
       console.error('참여 실패:', error);
       toast.error(error.message || '참여에 실패했습니다');
+    } finally {
+      // 완료 또는 실패 후 로딩 상태 해제
+      setParticipating(false);
     }
   };
 
@@ -1290,13 +1297,26 @@ export default function CustomDealDetailPage() {
              deal.current_participants < deal.target_participants &&
              (!user || deal.seller !== parseInt(user.id)) && (
               <div className="space-y-3">
+                {/* 마감 임박 배지 (27명 이상일 때) */}
+                {deal.current_participants >= 27 && (
+                  <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-3 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold text-orange-900">마감 임박</p>
+                      <p className="text-xs text-orange-700">
+                        {deal.target_participants - deal.current_participants}명 남았습니다
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <Button
                   size="lg"
                   className="w-full font-semibold py-6 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-300 disabled:cursor-not-allowed"
                   onClick={handleParticipate}
-                  disabled={user?.penalty_info?.is_active || user?.penaltyInfo?.isActive}
+                  disabled={participating || user?.penalty_info?.is_active || user?.penaltyInfo?.isActive}
                 >
-                  참여하기
+                  {participating ? '참여 처리 중...' : '참여하기'}
                 </Button>
 
                 {/* 할인 제공 안내 */}
