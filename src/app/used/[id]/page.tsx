@@ -846,7 +846,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                   >
                     {phone.images.map((image, index) => (
                       <SwiperSlide key={index} className="!w-auto">
-                        <div className="min-w-[60px] max-w-[80px] w-[calc((100vw-2rem-60px)/7)] aspect-square rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
+                        <div className="min-w-[60px] max-w-[80px] w-[calc((100vw-2rem-32px)/4.5)] sm:w-[calc((100vw-2rem-48px)/6)] md:w-[calc((100vw-2rem-60px)/7)] aspect-square rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
                           <Image
                             src={image.imageUrl || '/images/phone-placeholder.png'}
                             alt={`썸네일 ${index + 1}`}
