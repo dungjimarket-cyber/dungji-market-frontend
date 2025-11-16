@@ -2115,18 +2115,22 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         @media (min-width: 769px) {
           .used-electronics-swiper .swiper-button-prev,
           .used-electronics-swiper .swiper-button-next {
+            position: absolute !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
             width: 40px !important;
             height: 40px !important;
             background: rgba(255, 255, 255, 0.2) !important;
             backdrop-filter: blur(4px) !important;
             border-radius: 50% !important;
             transition: all 0.3s ease !important;
+            z-index: 10 !important;
           }
 
           .used-electronics-swiper .swiper-button-prev:hover,
           .used-electronics-swiper .swiper-button-next:hover {
             background: rgba(255, 255, 255, 0.3) !important;
-            transform: scale(1.1) !important;
+            transform: translateY(-50%) scale(1.1) !important;
           }
 
           .used-electronics-swiper .swiper-button-prev::after,
@@ -2134,6 +2138,14 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             font-size: 18px !important;
             color: rgba(255, 255, 255, 0.9) !important;
             font-weight: 900 !important;
+          }
+
+          .used-electronics-swiper .swiper-button-prev {
+            left: 8px !important;
+          }
+
+          .used-electronics-swiper .swiper-button-next {
+            right: 8px !important;
           }
         }
 

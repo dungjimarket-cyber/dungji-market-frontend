@@ -1744,18 +1744,22 @@ export default function CustomDealDetailPage() {
         @media (min-width: 769px) {
           .custom-deal-swiper .swiper-button-prev,
           .custom-deal-swiper .swiper-button-next {
+            position: absolute !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
             width: 40px !important;
             height: 40px !important;
             background: rgba(255, 255, 255, 0.2) !important;
             backdrop-filter: blur(4px) !important;
             border-radius: 50% !important;
             transition: all 0.3s ease !important;
+            z-index: 10 !important;
           }
 
           .custom-deal-swiper .swiper-button-prev:hover,
           .custom-deal-swiper .swiper-button-next:hover {
             background: rgba(255, 255, 255, 0.3) !important;
-            transform: scale(1.1) !important;
+            transform: translateY(-50%) scale(1.1) !important;
           }
 
           .custom-deal-swiper .swiper-button-prev::after,
