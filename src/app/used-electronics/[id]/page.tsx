@@ -723,7 +723,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           <div className="w-full">
             {/* 메인 이미지 */}
             {electronics.images && electronics.images.length > 0 ? (
-              <div className="relative">
+              <div className="relative w-full aspect-square rounded-xl overflow-hidden">
                 <Swiper
                   modules={[Navigation, Thumbs]}
                   navigation={{ enabled: true }}
@@ -733,7 +733,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                   observer={true}
                   observeParents={true}
                   watchOverflow={true}
-                  className="w-full aspect-square used-electronics-swiper rounded-xl overflow-hidden"
+                  className="w-full h-full used-electronics-swiper"
                   onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
                 >
                   {electronics.images.map((image, index) => (

@@ -883,20 +883,21 @@ export default function CustomDealDetailPage() {
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
                 {sortedImages.length > 0 ? (
                   <>
-                    <Swiper
-                      modules={[Navigation, Thumbs]}
-                      navigation={{
-                        enabled: true,
-                      }}
-                      thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
-                      loop={sortedImages.length > 1}
-                      speed={450}
-                      observer={true}
-                      observeParents={true}
-                      watchOverflow={true}
-                      className="w-full aspect-[4/3] custom-deal-swiper"
-                      onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
-                    >
+                    <div className="w-full aspect-[4/3]">
+                      <Swiper
+                        modules={[Navigation, Thumbs]}
+                        navigation={{
+                          enabled: true,
+                        }}
+                        thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                        loop={sortedImages.length > 1}
+                        speed={450}
+                        observer={true}
+                        observeParents={true}
+                        watchOverflow={true}
+                        className="w-full h-full custom-deal-swiper"
+                        onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
+                      >
                       {sortedImages.map((image, index) => (
                         <SwiperSlide key={index}>
                           <div
@@ -915,6 +916,7 @@ export default function CustomDealDetailPage() {
                         </SwiperSlide>
                       ))}
                     </Swiper>
+                    </div>
 
                     {/* 확대 버튼 */}
                     <button

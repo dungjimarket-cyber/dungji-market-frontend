@@ -768,20 +768,21 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
                 {phone.images && phone.images.length > 0 ? (
                   <>
-                    <Swiper
-                      modules={[Navigation, Thumbs]}
-                      navigation={{
-                        enabled: true,
-                      }}
-                      thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
-                      loop={phone.images.length > 1}
-                      speed={450}
-                      observer={true}
-                      observeParents={true}
-                      watchOverflow={true}
-                      className="w-full aspect-square used-phone-swiper"
-                      onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
-                    >
+                    <div className="w-full aspect-square">
+                      <Swiper
+                        modules={[Navigation, Thumbs]}
+                        navigation={{
+                          enabled: true,
+                        }}
+                        thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                        loop={phone.images.length > 1}
+                        speed={450}
+                        observer={true}
+                        observeParents={true}
+                        watchOverflow={true}
+                        className="w-full h-full used-phone-swiper"
+                        onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
+                      >
                       {phone.images.map((image, index) => (
                         <SwiperSlide key={index}>
                           <div
@@ -806,6 +807,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         </SwiperSlide>
                       ))}
                     </Swiper>
+                    </div>
 
                     {/* 확대 버튼 */}
                     <button
