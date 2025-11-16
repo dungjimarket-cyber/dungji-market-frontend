@@ -789,7 +789,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
         {/* 썸네일 */}
         {electronics.images && electronics.images.length > 1 && (
-          <div className="overflow-hidden mt-4">
+          <div className="mt-4">
             <Swiper
               modules={[Thumbs, FreeMode]}
               onSwiper={setThumbsSwiper}

@@ -832,7 +832,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
               {/* 썸네일 네비게이션 - Swiper */}
               {phone.images && phone.images.length > 1 && (
-                <div className="px-1 overflow-hidden">
+                <div className="px-1">
                   <Swiper
                     modules={[Thumbs, FreeMode]}
                     onSwiper={setThumbsSwiper}
