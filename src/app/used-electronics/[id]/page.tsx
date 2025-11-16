@@ -15,7 +15,7 @@ import {
   CheckCircle2, MessageSquarePlus, Calendar, Tag, Box, FileCheck, Settings
 } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Thumbs } from 'swiper/modules';
+import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -791,7 +791,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         {electronics.images && electronics.images.length > 1 && (
           <div className="overflow-hidden mt-4">
             <Swiper
-              modules={[Thumbs]}
+              modules={[Thumbs, FreeMode]}
               onSwiper={setThumbsSwiper}
               spaceBetween={10}
               slidesPerView="auto"

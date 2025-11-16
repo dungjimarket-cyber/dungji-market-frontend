@@ -15,7 +15,7 @@ import {
   CheckCircle2, MessageSquarePlus
 } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Thumbs } from 'swiper/modules';
+import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -834,7 +834,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               {phone.images && phone.images.length > 1 && (
                 <div className="px-1 overflow-hidden">
                   <Swiper
-                    modules={[Thumbs]}
+                    modules={[Thumbs, FreeMode]}
                     onSwiper={setThumbsSwiper}
                     spaceBetween={10}
                     slidesPerView="auto"
