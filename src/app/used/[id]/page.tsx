@@ -2325,11 +2325,20 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             left: 0 !important;
             right: 0 !important;
             width: 100% !important;
+            height: 100% !important;
             margin: 0 !important;
           }
 
           .used-phone-swiper .swiper-wrapper {
             align-items: center;
+            height: 100% !important;
+          }
+
+          .used-phone-swiper .swiper-slide {
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
           }
 
           /* 모바일에서 네비게이션 화살표 숨기기 */
