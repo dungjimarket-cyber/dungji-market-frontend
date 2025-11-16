@@ -2114,19 +2114,20 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           overflow: hidden !important;
         }
 
+        /* 이미지 크기 제한 - 모든 화면에 적용 */
+        .used-electronics-swiper .swiper-slide img {
+          max-width: 100% !important;
+          max-height: 100% !important;
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: contain !important;
+        }
+
         /* 모바일에서 네비게이션 화살표 숨기기 */
         @media (max-width: 768px) {
           .used-electronics-swiper {
             max-width: 100vw !important;
             contain: layout size style !important;
-          }
-
-          .used-electronics-swiper .swiper-slide img {
-            max-width: 100% !important;
-            max-height: 100% !important;
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: contain !important;
           }
 
           .used-electronics-swiper .swiper-button-prev,
