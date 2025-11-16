@@ -768,21 +768,20 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
                 {phone.images && phone.images.length > 0 ? (
                   <>
-                    <div className="w-full aspect-square relative">
-                      <Swiper
-                        modules={[Navigation, Thumbs]}
-                        navigation={{
-                          enabled: true,
-                        }}
-                        thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
-                        loop={phone.images.length > 1}
-                        speed={450}
-                        observer={true}
-                        observeParents={true}
-                        watchOverflow={true}
-                        className="w-full h-full used-phone-swiper !absolute !inset-0"
-                        onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
-                      >
+                    <Swiper
+                      modules={[Navigation, Thumbs]}
+                      navigation={{
+                        enabled: true,
+                      }}
+                      thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                      loop={phone.images.length > 1}
+                      speed={450}
+                      observer={true}
+                      observeParents={true}
+                      watchOverflow={true}
+                      className="w-full aspect-square used-phone-swiper"
+                      onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
+                    >
                       {phone.images.map((image, index) => (
                         <SwiperSlide key={index}>
                           <div
@@ -805,7 +804,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                         </SwiperSlide>
                       ))}
                     </Swiper>
-                    </div>
 
                     {/* 확대 버튼 */}
                     <button
@@ -2320,20 +2318,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         <style jsx global>{`
           /* Swiper 컨테이너 정렬 */
           .used-phone-swiper {
-            left: 0 !important;
-            right: 0 !important;
             width: 100% !important;
-            height: 100% !important;
-            margin: 0 !important;
           }
 
           .used-phone-swiper .swiper-wrapper {
             align-items: center;
-            height: 100% !important;
           }
 
           .used-phone-swiper .swiper-slide {
-            height: 100% !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
