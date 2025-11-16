@@ -768,7 +768,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
                 {phone.images && phone.images.length > 0 ? (
                   <>
-                    <div className="w-full aspect-[4/3] relative">
+                    <div className="w-full aspect-square relative">
                       <Swiper
                         modules={[Navigation, Thumbs]}
                         navigation={{
@@ -795,7 +795,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                             <img
                               src={image.imageUrl || '/images/phone-placeholder.png'}
                               alt={`${phone.model} - ${index + 1}`}
-                              className="w-full h-full object-contain"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 target.src = '/images/phone-placeholder.png';
@@ -823,7 +822,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     )}
                   </>
                 ) : (
-                  <div className="w-full aspect-[4/3] bg-gray-50 flex flex-col items-center justify-center">
+                  <div className="w-full aspect-square bg-gray-50 flex flex-col items-center justify-center">
                     <Smartphone className="w-24 h-24 mb-4 text-gray-300" />
                     <p className="text-gray-400">이미지가 없습니다</p>
                   </div>
@@ -2337,6 +2336,14 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+          }
+
+          .used-phone-swiper .swiper-slide img {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
           }
 
           /* 모바일에서 네비게이션 화살표 숨기기 */

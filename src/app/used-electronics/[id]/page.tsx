@@ -723,7 +723,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           <div className="w-full">
             {/* 메인 이미지 */}
             {electronics.images && electronics.images.length > 0 ? (
-              <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden">
+              <div className="relative w-full aspect-square rounded-xl overflow-hidden">
                 <Swiper
                   modules={[Navigation, Thumbs]}
                   navigation={{ enabled: true }}
@@ -748,7 +748,6 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                         <img
                           src={image.imageUrl || '/images/no-image.png'}
                           alt={`${electronics.model_name} - ${index + 1}`}
-                          className="w-full h-full object-contain"
                         />
 
                         {/* 거래중 오버레이 */}
@@ -782,7 +781,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                 </Swiper>
               </div>
             ) : (
-              <div className="w-full aspect-[4/3] bg-gray-50 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center">
+              <div className="w-full aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center">
                 <Package className="w-20 h-20 text-gray-400" />
               </div>
             )}
@@ -2108,6 +2107,14 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
+        }
+
+        .used-electronics-swiper .swiper-slide img {
+          max-width: 100% !important;
+          max-height: 100% !important;
+          width: auto !important;
+          height: auto !important;
+          object-fit: contain !important;
         }
 
         /* 모바일에서 네비게이션 화살표 숨기기 */
