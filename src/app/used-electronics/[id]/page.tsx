@@ -2116,6 +2116,11 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
         /* 모바일에서 네비게이션 화살표 숨기기 */
         @media (max-width: 768px) {
+          .used-electronics-swiper {
+            max-width: 100vw !important;
+            contain: layout size style !important;
+          }
+
           .used-electronics-swiper .swiper-button-prev,
           .used-electronics-swiper .swiper-button-next {
             display: none !important;
