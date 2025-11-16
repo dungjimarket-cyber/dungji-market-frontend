@@ -832,7 +832,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
 
               {/* 썸네일 네비게이션 - Swiper */}
               {phone.images && phone.images.length > 1 && (
-                <div className="px-1 overflow-x-auto">
+                <div className="px-1">
                   <Swiper
                     modules={[Thumbs]}
                     onSwiper={setThumbsSwiper}
@@ -842,7 +842,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                     observer={true}
                     observeParents={true}
                     className="w-full"
-                    style={{ width: 'max-content', maxWidth: '100%' }}
                   >
                     {phone.images.map((image, index) => (
                       <SwiperSlide key={index} className="!w-auto">
