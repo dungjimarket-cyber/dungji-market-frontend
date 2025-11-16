@@ -768,7 +768,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
                 {phone.images && phone.images.length > 0 ? (
                   <>
-                    <div className="w-full aspect-[4/3] relative">
+                    <div className="w-full aspect-square relative overflow-hidden">
                       <Swiper
                         modules={[Navigation, Thumbs]}
                         navigation={{
@@ -2334,6 +2334,13 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            overflow: hidden !important;
+          }
+
+          .used-phone-swiper .swiper-slide > div {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
           }
 
           /* 모바일에서 네비게이션 화살표 숨기기 */

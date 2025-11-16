@@ -723,7 +723,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           <div className="w-full">
             {/* 메인 이미지 */}
             {electronics.images && electronics.images.length > 0 ? (
-              <div className="w-full aspect-[4/3] relative rounded-xl overflow-hidden">
+              <div className="w-full aspect-square relative rounded-xl overflow-hidden">
                 <Swiper
                   modules={[Navigation, Thumbs]}
                   navigation={{ enabled: true }}
@@ -2105,6 +2105,13 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
+          overflow: hidden !important;
+        }
+
+        .used-electronics-swiper .swiper-slide > div {
+          max-width: 100% !important;
+          max-height: 100% !important;
+          overflow: hidden !important;
         }
 
         /* 모바일에서 네비게이션 화살표 숨기기 */
