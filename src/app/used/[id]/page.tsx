@@ -834,11 +834,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               {phone.images && phone.images.length > 1 && (
                 <div className="px-1">
                   <Swiper
-                    modules={[Thumbs, FreeMode]}
+                    modules={[Thumbs]}
                     onSwiper={setThumbsSwiper}
                     spaceBetween={10}
                     slidesPerView="auto"
-                    freeMode={true}
                     watchSlidesProgress
                     observer={true}
                     observeParents={true}

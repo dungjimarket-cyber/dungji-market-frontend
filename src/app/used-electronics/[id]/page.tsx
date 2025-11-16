@@ -791,11 +791,10 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         {electronics.images && electronics.images.length > 1 && (
           <div className="mt-4">
             <Swiper
-              modules={[Thumbs, FreeMode]}
+              modules={[Thumbs]}
               onSwiper={setThumbsSwiper}
               spaceBetween={10}
               slidesPerView="auto"
-              freeMode={true}
               watchSlidesProgress
               observer={true}
               observeParents={true}
