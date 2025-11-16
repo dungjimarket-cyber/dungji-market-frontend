@@ -789,17 +789,18 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
 
         {/* 썸네일 */}
         {electronics.images && electronics.images.length > 1 && (
-          <Swiper
-            modules={[Thumbs]}
-            onSwiper={setThumbsSwiper}
-            spaceBetween={10}
-            slidesPerView="auto"
-            freeMode={true}
-            watchSlidesProgress
-            observer={true}
-            observeParents={true}
-            className="w-full mt-4"
-          >
+          <div className="overflow-hidden mt-4">
+            <Swiper
+              modules={[Thumbs]}
+              onSwiper={setThumbsSwiper}
+              spaceBetween={10}
+              slidesPerView="auto"
+              freeMode={true}
+              watchSlidesProgress
+              observer={true}
+              observeParents={true}
+              className="w-full"
+            >
             {electronics.images.map((image, index) => (
               <SwiperSlide key={index} className="!w-auto !max-w-[80px]">
                 <div className="w-20 h-20 rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
@@ -818,6 +819,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
               </SwiperSlide>
             ))}
           </Swiper>
+          </div>
         )}
 
         {/* PC에서만 제품상태 및 설명을 사진 아래로 이동 */}
