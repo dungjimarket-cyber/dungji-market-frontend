@@ -1720,6 +1720,18 @@ export default function CustomDealDetailPage() {
 
       {/* Swiper Navigation Custom Styles */}
       <style jsx global>{`
+        /* Swiper 컨테이너 정렬 */
+        .custom-deal-swiper {
+          left: 0 !important;
+          right: 0 !important;
+          width: 100% !important;
+          margin: 0 !important;
+        }
+
+        .custom-deal-swiper .swiper-wrapper {
+          align-items: center;
+        }
+
         /* 모바일에서 커스텀 딜 네비게이션 화살표 숨기기 */
         @media (max-width: 768px) {
           .custom-deal-swiper .swiper-button-prev,
