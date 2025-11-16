@@ -2346,8 +2346,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           /* 모바일에서 네비게이션 화살표 숨기기 */
           @media (max-width: 768px) {
             .used-phone-swiper {
-              position: static !important;
-              inset: auto !important;
               max-width: 100vw !important;
               contain: layout size style !important;
             }
