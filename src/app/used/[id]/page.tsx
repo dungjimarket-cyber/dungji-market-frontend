@@ -768,44 +768,42 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
                 {phone.images && phone.images.length > 0 ? (
                   <>
-                    <div className="w-full aspect-square relative overflow-hidden">
-                      <Swiper
-                        modules={[Navigation, Thumbs]}
-                        navigation={{
-                          enabled: true,
-                        }}
-                        thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
-                        loop={phone.images.length > 1}
-                        speed={450}
-                        observer={true}
-                        observeParents={true}
-                        watchOverflow={true}
-                        className="w-full h-full used-phone-swiper !absolute !inset-0"
-                        onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
-                      >
-                        {phone.images.map((image, index) => (
-                          <SwiperSlide key={index}>
-                            <div
-                              className="w-full h-full flex items-center justify-center cursor-zoom-in bg-gray-50"
-                              onClick={() => {
-                                setLightboxImageIndex(index);
-                                setShowImageLightbox(true);
+                    <Swiper
+                      modules={[Navigation, Thumbs]}
+                      navigation={{
+                        enabled: true,
+                      }}
+                      thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                      loop={phone.images.length > 1}
+                      speed={450}
+                      observer={true}
+                      observeParents={true}
+                      watchOverflow={true}
+                      className="w-full aspect-square used-phone-swiper"
+                      onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
+                    >
+                      {phone.images.map((image, index) => (
+                        <SwiperSlide key={index}>
+                          <div
+                            className="w-full h-full flex items-center justify-center cursor-zoom-in bg-gray-50"
+                            onClick={() => {
+                              setLightboxImageIndex(index);
+                              setShowImageLightbox(true);
+                            }}
+                          >
+                            <img
+                              src={image.imageUrl || '/images/phone-placeholder.png'}
+                              alt={`${phone.model} - ${index + 1}`}
+                              className="w-full h-full object-contain"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/images/phone-placeholder.png';
                               }}
-                            >
-                              <img
-                                src={image.imageUrl || '/images/phone-placeholder.png'}
-                                alt={`${phone.model} - ${index + 1}`}
-                                className="object-contain max-w-full max-h-full"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = '/images/phone-placeholder.png';
-                                }}
-                              />
-                            </div>
-                          </SwiperSlide>
-                        ))}
-                      </Swiper>
-                    </div>
+                            />
+                          </div>
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
 
                     {/* 확대 버튼 */}
                     <button
@@ -2330,17 +2328,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           }
 
           .used-phone-swiper .swiper-slide {
-            height: 100% !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            overflow: hidden !important;
-          }
-
-          .used-phone-swiper .swiper-slide > div {
-            max-width: 100% !important;
-            max-height: 100% !important;
-            overflow: hidden !important;
           }
 
           /* 모바일에서 네비게이션 화살표 숨기기 */

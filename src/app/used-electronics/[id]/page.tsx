@@ -723,64 +723,62 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           <div className="w-full">
             {/* 메인 이미지 */}
             {electronics.images && electronics.images.length > 0 ? (
-              <div className="w-full aspect-square relative rounded-xl overflow-hidden">
-                <Swiper
-                  modules={[Navigation, Thumbs]}
-                  navigation={{ enabled: true }}
-                  thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
-                  loop={electronics.images.length > 1}
-                  speed={450}
-                  observer={true}
-                  observeParents={true}
-                  watchOverflow={true}
-                  className="w-full h-full used-electronics-swiper !absolute !inset-0"
-                  onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
-                >
-                  {electronics.images.map((image, index) => (
-                    <SwiperSlide key={index}>
-                      <div
-                        className="w-full h-full flex items-center justify-center cursor-zoom-in bg-gray-50 relative"
-                        onClick={() => {
-                          setLightboxImageIndex(index);
-                          setShowImageLightbox(true);
-                        }}
-                      >
-                        <img
-                          src={image.imageUrl || '/images/no-image.png'}
-                          alt={`${electronics.model_name} - ${index + 1}`}
-                          className="object-contain max-w-full max-h-full"
-                        />
+              <Swiper
+                modules={[Navigation, Thumbs]}
+                navigation={{ enabled: true }}
+                thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                loop={electronics.images.length > 1}
+                speed={450}
+                observer={true}
+                observeParents={true}
+                watchOverflow={true}
+                className="w-full aspect-square used-electronics-swiper rounded-xl overflow-hidden"
+                onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
+              >
+                {electronics.images.map((image, index) => (
+                  <SwiperSlide key={index}>
+                    <div
+                      className="w-full h-full flex items-center justify-center cursor-zoom-in bg-gray-50 relative"
+                      onClick={() => {
+                        setLightboxImageIndex(index);
+                        setShowImageLightbox(true);
+                      }}
+                    >
+                      <img
+                        src={image.imageUrl || '/images/no-image.png'}
+                        alt={`${electronics.model_name} - ${index + 1}`}
+                        className="w-full h-full object-contain"
+                      />
 
-                        {/* 거래중 오버레이 */}
-                        {electronics.status === 'trading' && (
-                          <>
-                            <div className="absolute inset-0 bg-black/30 z-10" />
-                            <div className="absolute top-4 left-4 bg-orange-500 text-white px-3 py-1.5 text-sm rounded font-medium z-20">
-                              거래중
-                            </div>
-                          </>
-                        )}
-
-                        {/* 거래완료 오버레이 */}
-                        {electronics.status === 'sold' && (
-                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 pointer-events-none">
-                            <span className="text-white text-2xl font-bold">거래완료</span>
+                      {/* 거래중 오버레이 */}
+                      {electronics.status === 'trading' && (
+                        <>
+                          <div className="absolute inset-0 bg-black/30 z-10" />
+                          <div className="absolute top-4 left-4 bg-orange-500 text-white px-3 py-1.5 text-sm rounded font-medium z-20">
+                            거래중
                           </div>
-                        )}
+                        </>
+                      )}
 
-                        {/* 판매중 상태 뱃지 */}
-                        {electronics.status === 'active' && (
-                          <div className="absolute top-4 left-4">
-                            <Badge variant="default">
-                              판매중
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
+                      {/* 거래완료 오버레이 */}
+                      {electronics.status === 'sold' && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 pointer-events-none">
+                          <span className="text-white text-2xl font-bold">거래완료</span>
+                        </div>
+                      )}
+
+                      {/* 판매중 상태 뱃지 */}
+                      {electronics.status === 'active' && (
+                        <div className="absolute top-4 left-4">
+                          <Badge variant="default">
+                            판매중
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             ) : (
               <div className="w-full aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center">
                 <Package className="w-20 h-20 text-gray-400" />
@@ -2101,17 +2099,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         }
 
         .used-electronics-swiper .swiper-slide {
-          height: 100% !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          overflow: hidden !important;
-        }
-
-        .used-electronics-swiper .swiper-slide > div {
-          max-width: 100% !important;
-          max-height: 100% !important;
-          overflow: hidden !important;
         }
 
         /* 모바일에서 네비게이션 화살표 숨기기 */
