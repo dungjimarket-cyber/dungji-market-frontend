@@ -723,7 +723,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           <div className="w-full">
             {/* 메인 이미지 */}
             {electronics.images && electronics.images.length > 0 ? (
-              <div className="w-full aspect-square relative rounded-xl overflow-hidden">
+              <div className="w-full aspect-[4/3] relative rounded-xl overflow-hidden">
                 <Swiper
                   modules={[Navigation, Thumbs]}
                   navigation={{ enabled: true }}

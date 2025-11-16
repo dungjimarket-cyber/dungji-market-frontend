@@ -768,7 +768,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
                 {phone.images && phone.images.length > 0 ? (
                   <>
-                    <div className="w-full aspect-square relative">
+                    <div className="w-full aspect-[4/3] relative">
                       <Swiper
                         modules={[Navigation, Thumbs]}
                         navigation={{
