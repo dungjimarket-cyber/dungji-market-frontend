@@ -748,7 +748,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
                         <img
                           src={image.imageUrl || '/images/no-image.png'}
                           alt={`${electronics.model_name} - ${index + 1}`}
-                          className="w-full h-full object-contain"
+                          className="object-contain max-w-full max-h-full"
                         />
 
                         {/* 거래중 오버레이 */}
@@ -2105,14 +2105,6 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-        }
-
-        .used-electronics-swiper .swiper-slide img {
-          max-width: 100%;
-          max-height: 100%;
-          width: auto;
-          height: auto;
-          object-fit: contain;
         }
 
         /* 모바일에서 네비게이션 화살표 숨기기 */

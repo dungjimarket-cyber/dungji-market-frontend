@@ -795,7 +795,7 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
                               <img
                                 src={image.imageUrl || '/images/phone-placeholder.png'}
                                 alt={`${phone.model} - ${index + 1}`}
-                                className="w-full h-full object-contain"
+                                className="object-contain max-w-full max-h-full"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
                                   target.src = '/images/phone-placeholder.png';
@@ -2334,14 +2334,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-          }
-
-          .used-phone-swiper .swiper-slide img {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            object-fit: contain;
           }
 
           /* 모바일에서 네비게이션 화살표 숨기기 */
