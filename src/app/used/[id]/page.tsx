@@ -2348,8 +2348,8 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
           .used-phone-swiper .swiper-slide img {
             max-width: 100% !important;
             max-height: 100% !important;
-            width: 100% !important;
-            height: 100% !important;
+            width: auto !important;
+            height: auto !important;
             object-fit: contain !important;
           }
 
