@@ -801,7 +801,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             className="w-full mt-4"
           >
             {electronics.images.map((image, index) => (
-              <SwiperSlide key={index} className="!w-20">
+              <SwiperSlide key={index} className="!w-auto !max-w-[80px]">
                 <div className="w-20 h-20 rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
                   <Image
                     src={image.imageUrl || '/images/no-image.png'}
