@@ -14,6 +14,13 @@ import {
   Check, X, Package, User, Edit3, Trash2, Banknote, Info, ZoomIn,
   CheckCircle2, MessageSquarePlus, Calendar, Tag, Box, FileCheck, Settings
 } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Thumbs } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/thumbs';
 import Link from 'next/link';
 import TradeCompleteModal from '@/components/used/TradeCompleteModal';
 import TradeReviewModal from '@/components/used/TradeReviewModal';
@@ -68,7 +75,9 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState<boolean | null>(null);
-  // 터치 스와이프 상태
+  // Swiper 상태
+  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
+  // 터치 스와이프 상태 (Swiper 사용으로 제거 예정)
   const [touchStartX, setTouchStartX] = useState<number>(0);
   const [touchEndX, setTouchEndX] = useState<number>(0);
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -713,119 +722,98 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           {/* 이미지 섹션 */}
           <div className="w-full">
             {/* 메인 이미지 */}
-            <div
-              className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden group shadow-sm border border-gray-200"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-          {electronics.images && electronics.images.length > 0 ? (
-            <>
-              <Image
-                src={electronics.images[currentImageIndex]?.imageUrl || '/images/no-image.png'}
-                alt={electronics.model_name}
-                fill
-                className="object-contain cursor-pointer"
-                onClick={() => {
-                  setLightboxImageIndex(currentImageIndex);
-                  setShowImageLightbox(true);
-                }}
-              />
-
-              {/* 이미지 네비게이션 */}
-              {electronics.images.length > 1 && (
-                <>
-                  <button
-                    onClick={handlePrevImage}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 hover:scale-110 transition-all bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm"
-                  >
-                    <ChevronLeft className="w-6 h-6 text-white/70" />
-                  </button>
-                  <button
-                    onClick={handleNextImage}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 hover:scale-110 transition-all bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm"
-                  >
-                    <ChevronRight className="w-6 h-6 text-white/70" />
-                  </button>
-
-                  {/* 인디케이터 */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1 z-20">
-                    {electronics.images.map((_, idx) => (
+            {electronics.images && electronics.images.length > 0 ? (
+              <div className="relative">
+                <Swiper
+                  modules={[Navigation, Thumbs]}
+                  navigation={{ enabled: true }}
+                  thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                  loop={electronics.images.length > 1}
+                  speed={450}
+                  className="w-full aspect-square used-electronics-swiper rounded-xl overflow-hidden"
+                  onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
+                >
+                  {electronics.images.map((image, index) => (
+                    <SwiperSlide key={index}>
                       <div
-                        key={idx}
-                        className={`w-2 h-2 rounded-full ${
-                          idx === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
+                        className="w-full h-full flex items-center justify-center cursor-zoom-in bg-gray-50 relative"
+                        onClick={() => {
+                          setLightboxImageIndex(index);
+                          setShowImageLightbox(true);
+                        }}
+                      >
+                        <Image
+                          src={image.imageUrl || '/images/no-image.png'}
+                          alt={`${electronics.model_name} - ${index + 1}`}
+                          fill
+                          className="object-contain"
+                          priority={index === 0}
+                        />
 
-              {/* 확대보기 버튼 */}
-              <button
-                onClick={() => {
-                  setLightboxImageIndex(currentImageIndex);
-                  setShowImageLightbox(true);
-                }}
-                className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white shadow-md transition-all group-hover:opacity-100 opacity-0 z-20"
-              >
-                <ZoomIn className="w-5 h-5" />
-              </button>
+                        {/* 거래중 오버레이 */}
+                        {electronics.status === 'trading' && (
+                          <>
+                            <div className="absolute inset-0 bg-black/30 z-10" />
+                            <div className="absolute top-4 left-4 bg-orange-500 text-white px-3 py-1.5 text-sm rounded font-medium z-20">
+                              거래중
+                            </div>
+                          </>
+                        )}
 
-              {/* 거래중 오버레이 */}
-              {electronics.status === 'trading' && (
-                <>
-                  <div className="absolute inset-0 bg-black/30 z-10" />
-                  <div className="absolute top-4 left-4 bg-orange-500 text-white px-3 py-1.5 text-sm rounded font-medium z-20">
-                    거래중
-                  </div>
-                </>
-              )}
+                        {/* 거래완료 오버레이 */}
+                        {electronics.status === 'sold' && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 pointer-events-none">
+                            <span className="text-white text-2xl font-bold">거래완료</span>
+                          </div>
+                        )}
 
-              {/* 거래완료 오버레이 */}
-              {electronics.status === 'sold' && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 pointer-events-none">
-                  <span className="text-white text-2xl font-bold">거래완료</span>
-                </div>
-              )}
-
-              {/* 판매중 상태 뱃지 */}
-              {electronics.status === 'active' && (
-                <div className="absolute top-4 left-4">
-                  <Badge variant="default">
-                    판매중
-                  </Badge>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Package className="w-20 h-20 text-gray-400" />
-            </div>
-          )}
-        </div>
+                        {/* 판매중 상태 뱃지 */}
+                        {electronics.status === 'active' && (
+                          <div className="absolute top-4 left-4">
+                            <Badge variant="default">
+                              판매중
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              </div>
+            ) : (
+              <div className="w-full aspect-square bg-gray-50 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center">
+                <Package className="w-20 h-20 text-gray-400" />
+              </div>
+            )}
 
         {/* 썸네일 */}
         {electronics.images && electronics.images.length > 1 && (
-          <div className="flex gap-2 mt-4 overflow-x-auto">
-            {electronics.images.map((image, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentImageIndex(idx)}
-                className={`relative w-16 h-16 rounded border-2 overflow-hidden flex-shrink-0 ${
-                  idx === currentImageIndex ? 'border-primary' : 'border-gray-200'
-                }`}
-              >
-                <Image
-                  src={image.imageUrl || '/images/no-image.png'}
-                  alt={`${electronics.model_name} ${idx + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </button>
+          <Swiper
+            modules={[Thumbs]}
+            onSwiper={setThumbsSwiper}
+            spaceBetween={10}
+            slidesPerView="auto"
+            watchSlidesProgress
+            className="w-full mt-4"
+          >
+            {electronics.images.map((image, index) => (
+              <SwiperSlide key={index} className="!w-auto">
+                <div className="w-20 h-20 rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
+                  <Image
+                    src={image.imageUrl || '/images/no-image.png'}
+                    alt={`썸네일 ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                  {index === 0 && (
+                    <div className="absolute top-1 left-1 bg-dungji-primary text-white text-xs px-1.5 py-0.5 rounded font-medium z-10">
+                      대표
+                    </div>
+                  )}
+                </div>
+              </SwiperSlide>
             ))}
-          </div>
+          </Swiper>
         )}
 
         {/* PC에서만 제품상태 및 설명을 사진 아래로 이동 */}
@@ -2015,47 +2003,29 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             <X className="w-8 h-8" />
           </button>
 
-          <div
-            className="relative w-full h-full flex items-center justify-center"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleLightboxTouchEnd}
+          <Swiper
+            modules={[Navigation, Pagination]}
+            navigation
+            pagination={{ type: 'fraction' }}
+            loop={true}
+            speed={450}
+            initialSlide={lightboxImageIndex}
+            className="w-full h-full"
           >
-            <Image
-              src={electronics.images[lightboxImageIndex]?.imageUrl || '/images/no-image.png'}
-              alt={electronics.model_name || '전자제품 이미지'}
-              width={1200}
-              height={1200}
-              className="object-contain max-w-full max-h-full"
-            />
-
-            {/* 라이트박스 네비게이션 */}
-            {electronics.images.length > 1 && (
-              <>
-                <button
-                  onClick={() => setLightboxImageIndex((prev) =>
-                    prev === 0 ? electronics.images!.length - 1 : prev - 1
-                  )}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-all hover:scale-110"
-                >
-                  <ChevronLeft className="w-6 h-6 text-white/70" />
-                </button>
-                <button
-                  onClick={() => setLightboxImageIndex((prev) =>
-                    prev === electronics.images!.length - 1 ? 0 : prev + 1
-                  )}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-all hover:scale-110"
-                >
-                  <ChevronRight className="w-6 h-6 text-white/70" />
-                </button>
-
-                {/* 이미지 카운터 */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
-                  {lightboxImageIndex + 1} / {electronics.images.length}
+            {electronics.images.map((image, index) => (
+              <SwiperSlide key={index}>
+                <div className="w-full h-full flex items-center justify-center p-4">
+                  <Image
+                    src={image.imageUrl || '/images/no-image.png'}
+                    alt={`${electronics.model_name} ${index + 1}`}
+                    width={1200}
+                    height={1200}
+                    className="object-contain max-w-full max-h-full"
+                  />
                 </div>
-              </>
-            )}
-          </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       )}
 
@@ -2113,6 +2083,48 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
           router.push('/mypage/settings');
         }}
       />
+
+      {/* Swiper Navigation Custom Styles */}
+      <style jsx global>{`
+        /* 모바일에서 네비게이션 화살표 숨기기 */
+        @media (max-width: 768px) {
+          .used-electronics-swiper .swiper-button-prev,
+          .used-electronics-swiper .swiper-button-next {
+            display: none !important;
+          }
+        }
+
+        /* 데스크톱 네비게이션 스타일 */
+        @media (min-width: 769px) {
+          .used-electronics-swiper .swiper-button-prev,
+          .used-electronics-swiper .swiper-button-next {
+            width: 40px !important;
+            height: 40px !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            backdrop-filter: blur(4px) !important;
+            border-radius: 50% !important;
+            transition: all 0.3s ease !important;
+          }
+
+          .used-electronics-swiper .swiper-button-prev:hover,
+          .used-electronics-swiper .swiper-button-next:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+            transform: scale(1.1) !important;
+          }
+
+          .used-electronics-swiper .swiper-button-prev::after,
+          .used-electronics-swiper .swiper-button-next::after {
+            font-size: 18px !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 900 !important;
+          }
+        }
+
+        /* Thumbnail active state */
+        .swiper-slide-thumb-active > div {
+          border-color: #ff6b35 !important;
+        }
+      `}</style>
     </div>
   );
 }

@@ -14,6 +14,13 @@ import {
   Check, X, Phone, User, Smartphone, Edit3, Trash2, Banknote, Info, ZoomIn,
   CheckCircle2, MessageSquarePlus
 } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Thumbs } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/thumbs';
 import Link from 'next/link';
 import TradeCompleteModal from '@/components/used/TradeCompleteModal';
 import TradeReviewModal from '@/components/used/TradeReviewModal';
@@ -68,7 +75,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState<boolean | null>(null); // null로 초기화하여 로딩 상태 표시
-  // 터치 스와이프 상태
+  // Swiper 상태
+  const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
+  // 터치 스와이프 상태 (Swiper 사용으로 제거 예정)
   const [touchStartX, setTouchStartX] = useState<number>(0);
   const [touchEndX, setTouchEndX] = useState<number>(0);
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -754,114 +763,102 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
           {/* 이미지 섹션 */}
           <div className="w-full">
-            {/* 메인 이미지 */}
-            <div
-              className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden group shadow-sm border border-gray-200"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              {phone.images && phone.images.length > 0 && phone.images[currentImageIndex]?.imageUrl ? (
-                <>
-                  <Image
-                    src={phone.images[currentImageIndex].imageUrl || '/images/phone-placeholder.png'}
-                    alt={phone.model || '중고폰 이미지'}
-                    fill
-                    className="object-contain"
-                    priority
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/images/phone-placeholder.png';
-                    }}
-                  />
-                  
-                  {/* 돋보기 버튼 */}
-                  <button
-                    onClick={() => {
-                      setLightboxImageIndex(currentImageIndex);
-                      setShowImageLightbox(true);
-                    }}
-                    className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-2 hover:bg-white shadow-md transition-all group-hover:opacity-100 opacity-0 z-20"
-                  >
-                    <ZoomIn className="w-5 h-5" />
-                  </button>
+            {/* 메인 이미지 갤러리 - Swiper */}
+            <div className="space-y-3">
+              <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
+                {phone.images && phone.images.length > 0 ? (
+                  <>
+                    <Swiper
+                      modules={[Navigation, Thumbs]}
+                      navigation={{
+                        enabled: true,
+                      }}
+                      thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                      loop={phone.images.length > 1}
+                      speed={450}
+                      className="w-full aspect-square used-phone-swiper"
+                      onSlideChange={(swiper) => setLightboxImageIndex(swiper.realIndex)}
+                    >
+                      {phone.images.map((image, index) => (
+                        <SwiperSlide key={index}>
+                          <div
+                            className="w-full h-full flex items-center justify-center cursor-zoom-in bg-gray-50"
+                            onClick={() => {
+                              setLightboxImageIndex(index);
+                              setShowImageLightbox(true);
+                            }}
+                          >
+                            <Image
+                              src={image.imageUrl || '/images/phone-placeholder.png'}
+                              alt={`${phone.model} - ${index + 1}`}
+                              fill
+                              className="object-contain"
+                              priority={index === 0}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/images/phone-placeholder.png';
+                              }}
+                            />
+                          </div>
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
 
-                  {/* 이미지 네비게이션 */}
-                  {phone.images.length > 1 && (
-                    <>
-                      <button
-                        onClick={handlePrevImage}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 hover:scale-110 transition-all bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm"
-                      >
-                        <ChevronLeft className="w-6 h-6 text-white/70" />
-                      </button>
-                      <button
-                        onClick={handleNextImage}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 hover:scale-110 transition-all bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm"
-                      >
-                        <ChevronRight className="w-6 h-6 text-white/70" />
-                      </button>
+                    {/* 확대 버튼 */}
+                    <button
+                      onClick={() => setShowImageLightbox(true)}
+                      className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    >
+                      <ZoomIn className="w-5 h-5" />
+                    </button>
 
-                      {/* 이미지 인디케이터 */}
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-                        {phone.images.map((_, index) => (
-                          <button
-                            key={index}
-                            onClick={() => setCurrentImageIndex(index)}
-                            className={`w-2 h-2 rounded-full transition-colors ${
-                              index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                            }`}
-                          />
-                        ))}
+                    {/* 상태 뱃지 */}
+                    {phone.status === 'sold' && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 pointer-events-none">
+                        <span className="text-white text-2xl font-bold">거래완료</span>
                       </div>
-                    </>
-                  )}
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                  <Smartphone className="w-24 h-24 mb-4 text-gray-300" />
-                  <p>이미지가 없습니다</p>
-                </div>
-              )}
+                    )}
+                  </>
+                ) : (
+                  <div className="w-full aspect-square bg-gray-50 flex flex-col items-center justify-center">
+                    <Smartphone className="w-24 h-24 mb-4 text-gray-300" />
+                    <p className="text-gray-400">이미지가 없습니다</p>
+                  </div>
+                )}
+              </div>
 
-              {/* 상태 뱃지 */}
-              {phone.status === 'sold' && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 pointer-events-none">
-                  <span className="text-white text-2xl font-bold">거래완료</span>
+              {/* 썸네일 네비게이션 - Swiper */}
+              {phone.images && phone.images.length > 1 && (
+                <div className="px-1">
+                  <Swiper
+                    modules={[Thumbs]}
+                    onSwiper={setThumbsSwiper}
+                    spaceBetween={10}
+                    slidesPerView="auto"
+                    watchSlidesProgress
+                    className="w-full"
+                  >
+                    {phone.images.map((image, index) => (
+                      <SwiperSlide key={index} className="!w-auto">
+                        <div className="w-20 h-20 rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
+                          <Image
+                            src={image.imageUrl || '/images/phone-placeholder.png'}
+                            alt={`썸네일 ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                          {index === 0 && (
+                            <div className="absolute top-1 left-1 bg-dungji-primary text-white text-xs px-1.5 py-0.5 rounded font-medium z-10">
+                              대표
+                            </div>
+                          )}
+                        </div>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
                 </div>
               )}
             </div>
-
-            {/* 썸네일 - 최대 10개까지 모두 표시 */}
-            {phone.images && phone.images.length > 1 && (
-              <div className="mt-4">
-                <div className="grid grid-cols-5 gap-2">
-                  {phone.images.slice(0, 10).map((img, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                        index === currentImageIndex 
-                          ? 'border-dungji-primary shadow-lg scale-105' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <Image
-                        src={img.imageUrl}
-                        alt={`${phone.model} ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                      {index === 0 && (
-                        <div className="absolute top-1 left-1 bg-dungji-primary text-white text-xs px-1.5 py-0.5 rounded font-medium">
-                          대표
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
             
             {/* 이미지가 1개만 있을 때 안내 */}
             {phone.images && phone.images.length === 1 && (
@@ -2008,9 +2005,9 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
       )}
 
 
-      {/* 이미지 라이트박스 */}
-      {showImageLightbox && phone.images && (
-        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[60] p-4">
+      {/* 이미지 라이트박스 - Swiper */}
+      {showImageLightbox && phone.images && phone.images.length > 0 && (
+        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[60]">
           <button
             onClick={() => setShowImageLightbox(false)}
             className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
@@ -2018,46 +2015,32 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             <X className="w-8 h-8" />
           </button>
 
-          <div
-            className="relative w-full h-full flex items-center justify-center"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleLightboxTouchEnd}
-          >
-            <Image
-              src={phone.images[lightboxImageIndex]?.imageUrl || '/images/phone-placeholder.png'}
-              alt={phone.model || '중고폰 이미지'}
-              width={1200}
-              height={1200}
-              className="object-contain max-w-full max-h-full"
-            />
-            
-            {/* 라이트박스 네비게이션 */}
-            {phone.images.length > 1 && (
-              <>
-                <button
-                  onClick={() => setLightboxImageIndex((prev) =>
-                    prev === 0 ? phone.images!.length - 1 : prev - 1
-                  )}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-all hover:scale-110"
-                >
-                  <ChevronLeft className="w-6 h-6 text-white/70" />
-                </button>
-                <button
-                  onClick={() => setLightboxImageIndex((prev) =>
-                    prev === phone.images!.length - 1 ? 0 : prev + 1
-                  )}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 rounded-full backdrop-blur-sm transition-all hover:scale-110"
-                >
-                  <ChevronRight className="w-6 h-6 text-white/70" />
-                </button>
-                
-                {/* 이미지 카운터 */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full">
-                  {lightboxImageIndex + 1} / {phone.images.length}
-                </div>
-              </>
-            )}
+          <div className="w-full h-full flex items-center justify-center">
+            <Swiper
+              modules={[Navigation, Pagination]}
+              navigation
+              pagination={{
+                type: 'fraction',
+              }}
+              loop={true}
+              speed={450}
+              initialSlide={lightboxImageIndex}
+              className="w-full h-full"
+            >
+              {phone.images.map((image, index) => (
+                <SwiperSlide key={index}>
+                  <div className="w-full h-full flex items-center justify-center p-4">
+                    <Image
+                      src={image.imageUrl || '/images/phone-placeholder.png'}
+                      alt={`${phone.model} ${index + 1}`}
+                      width={1200}
+                      height={1200}
+                      className="object-contain max-w-full max-h-full"
+                    />
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
         </div>
       )}
@@ -2328,6 +2311,63 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         }}
       />
 
+        {/* Swiper Navigation Custom Styles */}
+        <style jsx global>{`
+          /* 모바일에서 네비게이션 화살표 숨기기 */
+          @media (max-width: 768px) {
+            .used-phone-swiper .swiper-button-prev,
+            .used-phone-swiper .swiper-button-next {
+              display: none !important;
+            }
+          }
+
+          /* 데스크톱 네비게이션 스타일 */
+          @media (min-width: 769px) {
+            .used-phone-swiper .swiper-button-prev,
+            .used-phone-swiper .swiper-button-next {
+              width: 40px !important;
+              height: 40px !important;
+              background: rgba(255, 255, 255, 0.2) !important;
+              backdrop-filter: blur(4px) !important;
+              border-radius: 50% !important;
+              transition: all 0.3s ease !important;
+            }
+
+            .used-phone-swiper .swiper-button-prev:hover,
+            .used-phone-swiper .swiper-button-next:hover {
+              background: rgba(255, 255, 255, 0.3) !important;
+              transform: scale(1.1) !important;
+            }
+
+            .used-phone-swiper .swiper-button-prev::after,
+            .used-phone-swiper .swiper-button-next::after {
+              font-size: 20px !important;
+              font-weight: bold !important;
+              color: rgba(255, 255, 255, 0.7) !important;
+            }
+
+            .used-phone-swiper .swiper-button-prev {
+              left: 8px !important;
+            }
+
+            .used-phone-swiper .swiper-button-next {
+              right: 8px !important;
+            }
+          }
+
+          .swiper-pagination-bullet {
+            background: rgba(255, 255, 255, 0.5) !important;
+          }
+
+          .swiper-pagination-bullet-active {
+            background: rgba(255, 255, 255, 1) !important;
+          }
+
+          /* Thumbnail active state */
+          .swiper-slide-thumb-active > div {
+            border-color: #ff6b35 !important;
+          }
+        `}</style>
       </div>
     </div>
   );
