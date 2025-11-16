@@ -2121,9 +2121,23 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         .used-electronics-swiper .swiper-slide img {
           max-width: 100% !important;
           max-height: 100% !important;
-          width: 100% !important;
-          height: 100% !important;
           object-fit: contain !important;
+        }
+
+        /* 모바일에서 이미지 자동 크기 조절 */
+        @media (max-width: 640px) {
+          .used-electronics-swiper .swiper-slide img {
+            width: auto !important;
+            height: auto !important;
+          }
+        }
+
+        /* 데스크톱에서 이미지 100% 크기 */
+        @media (min-width: 641px) {
+          .used-electronics-swiper .swiper-slide img {
+            width: 100% !important;
+            height: 100% !important;
+          }
         }
 
         /* 모바일에서 네비게이션 화살표 숨기기 */
