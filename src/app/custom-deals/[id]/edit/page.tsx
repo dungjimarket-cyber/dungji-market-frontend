@@ -915,7 +915,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                 <div>
                   <h3 className="font-medium text-gray-900 mb-1">수정 제한 안내</h3>
                   <p className="text-sm text-gray-700">
-                    참여자가 있는 공구는 제목, 상품설명, 이용안내, 할인 정보, 부분 판매 옵션만 수정 가능합니다
+                    참여자가 있는 공구는 제목, 상품설명, 이용안내, 할인 정보, 부분 판매 옵션, 등록 기간만 수정 가능합니다
                   </p>
                 </div>
               </div>
@@ -1330,71 +1330,81 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       </div>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            )}
 
-                  {/* 등록 기간 설정 */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label>등록 기간 설정</Label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-slate-600">
-                          {formData.deadline_type === 'manual' ? '기간 설정' : '자동 마감 (인원 달성 시)'}
-                        </span>
-                        <Switch
-                          checked={formData.deadline_type === 'manual'}
-                          onCheckedChange={(checked) => {
-                            setFormData(prev => ({
-                              ...prev,
-                              deadline_type: checked ? 'manual' : 'auto'
-                            }));
-                          }}
-                        />
-                      </div>
+            {/* 인원모집형 - 등록 기간 설정 (참여자 있어도 수정 가능) */}
+            {originalData?.deal_type !== 'time_based' && (
+              <Card className="mb-6 border-slate-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    등록 기간 설정
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>등록 기간 설정</Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-slate-600">
+                        {formData.deadline_type === 'manual' ? '기간 설정' : '자동 마감 (인원 달성 시)'}
+                      </span>
+                      <Switch
+                        checked={formData.deadline_type === 'manual'}
+                        onCheckedChange={(checked) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            deadline_type: checked ? 'manual' : 'auto'
+                          }));
+                        }}
+                      />
                     </div>
-
-                    {formData.deadline_type === 'manual' && (
-                      <div className="space-y-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <Label className="text-sm">마감 날짜 *</Label>
-                            <Input
-                              type="date"
-                              value={formData.deadline_date}
-                              onChange={(e) => {
-                                const selectedDate = new Date(e.target.value);
-                                const today = new Date();
-                                today.setHours(0, 0, 0, 0);
-                                const maxDate = new Date(today);
-                                maxDate.setDate(maxDate.getDate() + 14);
-
-                                if (selectedDate < today) {
-                                  toast.error('오늘 이후 날짜를 선택해주세요');
-                                  return;
-                                }
-                                if (selectedDate > maxDate) {
-                                  toast.error('최대 2주(14일) 이내로 설정 가능합니다');
-                                  return;
-                                }
-                                setFormData(prev => ({ ...prev, deadline_date: e.target.value }));
-                              }}
-                              min={new Date().toISOString().split('T')[0]}
-                              max={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-sm">마감 시간 *</Label>
-                            <Input
-                              type="time"
-                              value={formData.deadline_time}
-                              onChange={(e) => setFormData(prev => ({ ...prev, deadline_time: e.target.value }))}
-                            />
-                          </div>
-                        </div>
-                        <p className="text-xs text-slate-500">
-                          💡 최대 2주(14일) 이내로 설정 가능하며, 기간 내 목표 인원 달성 시 조기 마감됩니다
-                        </p>
-                      </div>
-                    )}
                   </div>
+
+                  {formData.deadline_type === 'manual' && (
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-sm">마감 날짜 *</Label>
+                          <Input
+                            type="date"
+                            value={formData.deadline_date}
+                            onChange={(e) => {
+                              const selectedDate = new Date(e.target.value);
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              const maxDate = new Date(today);
+                              maxDate.setDate(maxDate.getDate() + 14);
+
+                              if (selectedDate < today) {
+                                toast.error('오늘 이후 날짜를 선택해주세요');
+                                return;
+                              }
+                              if (selectedDate > maxDate) {
+                                toast.error('최대 2주(14일) 이내로 설정 가능합니다');
+                                return;
+                              }
+                              setFormData(prev => ({ ...prev, deadline_date: e.target.value }));
+                            }}
+                            min={new Date().toISOString().split('T')[0]}
+                            max={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm">마감 시간 *</Label>
+                          <Input
+                            type="time"
+                            value={formData.deadline_time}
+                            onChange={(e) => setFormData(prev => ({ ...prev, deadline_time: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        💡 최대 2주(14일) 이내로 설정 가능하며, 기간 내 목표 인원 달성 시 조기 마감됩니다
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
