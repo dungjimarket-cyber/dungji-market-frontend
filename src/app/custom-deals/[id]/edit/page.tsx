@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, X, Plus, AlertCircle, Info, ArrowLeft, Clock, Users, Tag, MapPin, Phone, Link as LinkIcon, Ticket, Lock, Check } from 'lucide-react';
+import { Camera, X, Plus, AlertCircle, Info, ArrowLeft, Clock, Users, Tag, MapPin, Phone, Link as LinkIcon, Ticket, Lock, Check, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -1437,6 +1437,83 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         : '매장 행사 정보를 확인할 수 있는 링크를 입력해주세요 (선택사항)'}
                     </p>
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 기간행사 인원모집 - 등록 기간 설정 */}
+            {originalData?.deal_type === 'time_based' && (
+              <Card className="mb-6 border-orange-200 bg-orange-50/30">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <Calendar className="w-5 h-5" />
+                    등록 기간 설정
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>등록 기간 설정</Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-slate-600">
+                        {formData.deadline_type === 'manual' ? '기간 설정' : '자동 마감 (인원 달성 시)'}
+                      </span>
+                      <Switch
+                        checked={formData.deadline_type === 'manual'}
+                        onCheckedChange={(checked) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            deadline_type: checked ? 'manual' : 'auto'
+                          }));
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {formData.deadline_type === 'manual' && (
+                    <div className="space-y-3 p-4 bg-white rounded-lg border border-orange-200">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-sm">마감 날짜 *</Label>
+                          <Input
+                            type="date"
+                            value={formData.deadline_date}
+                            onChange={(e) => {
+                              const selectedDate = new Date(e.target.value);
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              const maxDate = new Date(today);
+                              maxDate.setDate(maxDate.getDate() + 14);
+
+                              if (selectedDate < today) {
+                                toast.error('오늘 이후 날짜를 선택해주세요');
+                                return;
+                              }
+                              if (selectedDate > maxDate) {
+                                toast.error('최대 2주(14일) 이내로 설정 가능합니다');
+                                return;
+                              }
+                              setFormData(prev => ({ ...prev, deadline_date: e.target.value }));
+                            }}
+                            min={new Date().toISOString().split('T')[0]}
+                            max={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                            className="bg-white"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm">마감 시간 *</Label>
+                          <Input
+                            type="time"
+                            value={formData.deadline_time}
+                            onChange={(e) => setFormData(prev => ({ ...prev, deadline_time: e.target.value }))}
+                            className="bg-white"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-orange-600">
+                        💡 최대 2주(14일) 이내로 설정 가능하며, 기간 내 목표 인원 달성 시 조기 마감됩니다
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
