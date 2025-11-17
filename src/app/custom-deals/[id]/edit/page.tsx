@@ -1425,7 +1425,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                               toast.error('최대 2주(14일) 이내로 설정 가능합니다');
                               return;
                             }
-                            handleInputChange('deadline_date', e.target.value);
+                            setFormData(prev => ({ ...prev, deadline_date: e.target.value }));
+                            setHasChanges(true);
                           }}
                           min={new Date().toISOString().split('T')[0]}
                           max={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
@@ -1437,7 +1438,10 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                         <Input
                           type="time"
                           value={formData.deadline_time}
-                          onChange={(e) => handleInputChange('deadline_time', e.target.value)}
+                          onChange={(e) => {
+                            setFormData(prev => ({ ...prev, deadline_time: e.target.value }));
+                            setHasChanges(true);
+                          }}
                           className="bg-white"
                         />
                       </div>
@@ -1911,7 +1915,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                           toast.error('최대 2주(14일) 이내로 설정 가능합니다');
                           return;
                         }
-                        handleInputChange('deadline_date', e.target.value);
+                        setFormData(prev => ({ ...prev, deadline_date: e.target.value }));
+                        setHasChanges(true);
                       }}
                       min={new Date().toISOString().split('T')[0]}
                       max={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
@@ -1922,7 +1927,10 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                     <Input
                       type="time"
                       value={formData.deadline_time}
-                      onChange={(e) => handleInputChange('deadline_time', e.target.value)}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, deadline_time: e.target.value }));
+                        setHasChanges(true);
+                      }}
                     />
                   </div>
                 </div>
