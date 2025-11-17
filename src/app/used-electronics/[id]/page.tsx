@@ -716,11 +716,10 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         </div>
       </div>
 
-      <div className="w-full">
-        <div className="container max-w-7xl mx-auto px-4 py-6 lg:py-8">
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* 이미지 섹션 */}
-          <div className="w-full">
+          <div>
             {/* 메인 이미지 */}
             {electronics.images && electronics.images.length > 0 ? (
               <div className="w-full aspect-square relative rounded-xl overflow-hidden">

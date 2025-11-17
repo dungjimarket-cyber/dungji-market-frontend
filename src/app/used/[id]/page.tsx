@@ -758,11 +758,10 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
         </div>
       </div>
 
-      <div className="w-full">
-        <div className="container max-w-7xl mx-auto px-4 py-6 lg:py-8">
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* 이미지 섹션 */}
-          <div className="w-full">
+          <div>
             {/* 메인 이미지 갤러리 - Swiper */}
             <div className="space-y-3">
               <div className="bg-white rounded-lg border border-slate-200 overflow-hidden relative group">
