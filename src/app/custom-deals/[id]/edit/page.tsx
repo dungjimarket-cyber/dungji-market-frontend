@@ -1284,22 +1284,36 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <Label>목표 인원 *</Label>
-                    <Select
-                      value={formData.target_participants}
-                      onValueChange={(value) => handleInputChange('target_participants', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: user?.username === 'seller10' ? 49 : 19 }, (_, i) => i + 2).map(num => (
-                          <SelectItem key={num} value={num.toString()}>{num}명</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {/* 목표 인원 - 참여자 없을 때만 수정 가능 */}
+                  {!hasParticipants && (
+                    <div>
+                      <Label>목표 인원 *</Label>
+                      <Select
+                        value={formData.target_participants}
+                        onValueChange={(value) => handleInputChange('target_participants', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: user?.username === 'seller10' ? 49 : 19 }, (_, i) => i + 2).map(num => (
+                            <SelectItem key={num} value={num.toString()}>{num}명</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* 참여자 있을 때 목표 인원 표시만 */}
+                  {hasParticipants && (
+                    <div>
+                      <Label>목표 인원</Label>
+                      <div className="p-3 bg-slate-100 rounded-lg border border-slate-200">
+                        <p className="text-sm text-slate-700 font-medium">{formData.target_participants}명</p>
+                        <p className="text-xs text-slate-500 mt-1">참여자가 있어 변경할 수 없습니다</p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* 등록 기간 설정 */}
                   <div className="space-y-3">
