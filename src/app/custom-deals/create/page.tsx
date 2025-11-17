@@ -1887,11 +1887,28 @@ export default function CreateCustomDealPage() {
 
               {(formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') && (
                 <div>
-                  <Label className="flex items-center gap-2">
-                    <Ticket className="w-4 h-4" />
-                    할인 코드 또는 링크 * {errors.discount_codes && <span className="text-red-600 text-sm">{errors.discount_codes}</span>}
-                  </Label>
-                  <div className="space-y-2 mt-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="flex items-center gap-2">
+                      <Ticket className="w-4 h-4" />
+                      할인 코드 또는 링크 * {errors.discount_codes && <span className="text-red-600 text-sm">{errors.discount_codes}</span>}
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-600">
+                        {discountCodes.filter(c => c.trim()).length}/{formData.target_participants}개
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={generateDiscountCodes}
+                        className="text-xs"
+                      >
+                        <Users className="w-3 h-3 mr-1" />
+                        인원 기준 자동생성 ({formData.target_participants}개)
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
                     {discountCodes.map((code, index) => (
                       <div key={index} className="flex gap-2">
                         <Input
@@ -1923,16 +1940,6 @@ export default function CreateCustomDealPage() {
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         코드 추가
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="default"
-                        size="sm"
-                        onClick={generateDiscountCodes}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700"
-                      >
-                        <Ticket className="w-4 h-4 mr-2" />
-                        자동 생성
                       </Button>
                     </div>
                   </div>
@@ -2109,8 +2116,28 @@ export default function CreateCustomDealPage() {
                   </div>
 
                 <div>
-                  <Label>할인 코드 또는 링크 * {errors.discount_codes && <span className="text-red-600 text-sm ml-2">{errors.discount_codes}</span>}</Label>
-                  <div className="space-y-2 mt-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="flex items-center gap-2">
+                      <Ticket className="w-4 h-4" />
+                      할인 코드 또는 링크 * {errors.discount_codes && <span className="text-red-600 text-sm">{errors.discount_codes}</span>}
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-600">
+                        {discountCodes.filter(c => c.trim()).length}/{formData.target_participants}개
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={generateDiscountCodes}
+                        className="text-xs"
+                      >
+                        <Users className="w-3 h-3 mr-1" />
+                        인원 기준 자동생성 ({formData.target_participants}개)
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
                     {discountCodes.map((code, index) => (
                       <div key={index} className="flex gap-2">
                         <Input
@@ -2142,16 +2169,6 @@ export default function CreateCustomDealPage() {
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         코드 추가
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="default"
-                        size="sm"
-                        onClick={generateDiscountCodes}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700"
-                      >
-                        <Ticket className="w-4 h-4 mr-2" />
-                        자동 생성
                       </Button>
                     </div>
                   </div>
