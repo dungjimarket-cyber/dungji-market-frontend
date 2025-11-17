@@ -1882,7 +1882,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           </>
         )}
 
-        {/* 인원모집형 - 등록 기간 설정 (참여자 있어도 수정 가능) */}
+        {/* 등록 기간 설정 (참여자 있어도 수정 가능) */}
         {originalData?.deal_type === 'participant_based' && (
           <Card className="mb-6 border-slate-200">
             <CardHeader>
