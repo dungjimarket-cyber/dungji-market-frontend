@@ -1622,7 +1622,6 @@ function UsedPhoneDetailClient({ phoneId }: { phoneId: string }) {
             </div>
           </div>
         </div>
-      </div>
 
       {/* 가격 제안 모달 - 컴팩트 버전 */}
       {showOfferModal && (

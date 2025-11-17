@@ -716,10 +716,11 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="w-full">
+        <div className="container max-w-7xl mx-auto px-4 py-6 lg:py-8">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
           {/* 이미지 섹션 */}
-          <div>
+          <div className="w-full">
             {/* 메인 이미지 */}
             {electronics.images && electronics.images.length > 0 ? (
               <div className="w-full aspect-square relative rounded-xl overflow-hidden">
@@ -801,7 +802,7 @@ function UsedElectronicsDetailClient({ electronicsId }: { electronicsId: string 
             >
             {electronics.images.map((image, index) => (
               <SwiperSlide key={index} className="!w-auto">
-                <div className="w-20 h-20 rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
+                <div className="min-w-[72px] max-w-[96px] w-[12vw] aspect-square rounded-md overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-dungji-primary transition-all relative">
                   <Image
                     src={image.imageUrl || '/images/no-image.png'}
                     alt={`썸네일 ${index + 1}`}
