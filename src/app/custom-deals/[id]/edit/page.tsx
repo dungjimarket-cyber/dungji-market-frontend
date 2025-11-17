@@ -755,14 +755,30 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
           submitFormData.append('discount_url', formData.discount_url);
         }
         if (formData.online_discount_type === 'code_only' || formData.online_discount_type === 'both') {
-          submitFormData.append('discount_codes', JSON.stringify(discountCodes.filter(code => code.trim())));
+          // 할인코드 개수 검증
+          const validCodes = discountCodes.filter(code => code.trim());
+          const targetCount = parseInt(formData.target_participants);
+          if (validCodes.length < targetCount) {
+            toast.error(`할인코드가 목표 인원(${targetCount}명)보다 부족합니다. ${targetCount - validCodes.length}개 더 추가해주세요.`);
+            setSubmitting(false);
+            return;
+          }
+          submitFormData.append('discount_codes', JSON.stringify(validCodes));
         }
         // 기간행사 쿠폰증정이 아닐 때만 할인 유효기간 전송
         if (!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only') && formData.discount_valid_days) {
           submitFormData.append('discount_valid_days', formData.discount_valid_days);
         }
       } else if (formData.type === 'offline') {
-        submitFormData.append('discount_codes', JSON.stringify(discountCodes.filter(code => code.trim())));
+        // 할인코드 개수 검증
+        const validCodes = discountCodes.filter(code => code.trim());
+        const targetCount = parseInt(formData.target_participants);
+        if (validCodes.length < targetCount) {
+          toast.error(`할인코드가 목표 인원(${targetCount}명)보다 부족합니다. ${targetCount - validCodes.length}개 더 추가해주세요.`);
+          setSubmitting(false);
+          return;
+        }
+        submitFormData.append('discount_codes', JSON.stringify(validCodes));
         // 기간행사 쿠폰증정이 아닐 때만 할인 유효기간 전송
         if (!(originalData?.deal_type === 'time_based' && originalData?.pricing_type === 'coupon_only')) {
           submitFormData.append('discount_valid_days', formData.offline_discount_valid_days);
