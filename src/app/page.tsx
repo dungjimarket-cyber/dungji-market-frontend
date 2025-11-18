@@ -140,8 +140,8 @@ function HomeContent() {
     const fetchGroupBuys = async () => {
       try {
         const [customDealsResponse, newResponse] = await Promise.all([
-          // 커공특가: 최신순 4개
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?status=recruiting&ordering=-created_at&limit=4`, {
+          // 커공특가: 최신순 7개
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-groupbuys/?status=recruiting&ordering=-created_at&limit=7`, {
             next: { revalidate: 60 } // 1분 캐시
           }),
           // 견적받기: recruiting,bidding 상태만, 시작시간 최신순으로 정렬
@@ -270,22 +270,22 @@ function HomeContent() {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="mb-6 flex items-center gap-3 flex-wrap">
             <h2 className={`${blackHanSans.className} text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600`}>
-              커공특가
+              커공/이벤트
             </h2>
             <span className="text-sm sm:text-base text-gray-600 font-medium">
-              차원이 다른 선착순 할인 혜택!
+              차원이 다른 혜택 정보!
             </span>
           </div>
           <div className="space-y-4">
             {loading ? (
               <div className="space-y-4">
-                {[...Array(4)].map((_, i) => (
+                {[...Array(7)].map((_, i) => (
                   <div key={i} className="animate-pulse bg-gray-200 h-40 rounded-lg"></div>
                 ))}
               </div>
             ) : customDeals.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-500">진행 중인 커공특가가 없습니다.</p>
+                <p className="text-gray-500">진행 중인 커공/이벤트가 없습니다.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-5">
@@ -432,7 +432,7 @@ function HomeContent() {
             )}
             <div className="text-center mt-6">
               <Link href="/custom-deals" className="text-green-600 hover:underline text-base font-medium">
-                더 많은 커공특가 보기 →
+                더 많은 커공/이벤트 보기 →
               </Link>
             </div>
           </div>
