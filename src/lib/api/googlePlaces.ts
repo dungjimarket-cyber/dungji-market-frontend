@@ -202,18 +202,33 @@ export async function fetchPlaceRankings(
 }
 
 /**
- * 인기도 점수 계산
+ * 인기도 점수 계산 (베이지안 평균 적용)
  *
- * 공식: rating × log10(userRatingCount + 1)
- * - 평점이 높을수록 점수 높음
- * - 리뷰가 많을수록 가중치 증가 (로그 스케일)
+ * 공식: adjustedRating × log10(userRatingCount + 1)
+ * - adjustedRating = (C×m + n×R) / (C + n)
+ *   - C: 신뢰도 기준 (최소 필요 리뷰 수)
+ *   - m: 전체 평균 평점 기준값
+ *   - n: 실제 리뷰 개수
+ *   - R: 실제 평점
+ *
+ * 효과:
+ * - 리뷰가 적으면 평균값(m)으로 당겨져서 과대평가 방지
+ * - 리뷰가 많으면 실제 평점(R)에 가까워져서 신뢰도 증가
+ * - 예: 4.7점 리뷰 3개 < 4.6점 리뷰 42개
  *
  * @param rating 평점 (0.0 ~ 5.0)
  * @param userRatingCount 리뷰 개수
  * @returns 인기도 점수
  */
 function calculatePopularityScore(rating: number, userRatingCount: number): number {
-  return rating * Math.log10(userRatingCount + 1);
+  const C = 10; // 신뢰도 기준: 최소 10개 리뷰 필요
+  const m = 4.0; // 전체 평균 평점 기준값 (구글 평균)
+
+  // 베이지안 평균으로 평점 보정
+  const adjustedRating = (C * m + userRatingCount * rating) / (C + userRatingCount);
+
+  // 보정된 평점 × 리뷰 개수 가중치
+  return adjustedRating * Math.log10(userRatingCount + 1);
 }
 
 /**
