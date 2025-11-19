@@ -2242,47 +2242,6 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         </Card>
         )}
 
-        {/* 등록기간 수정 (기간행사만) */}
-        {originalData?.deal_type === 'time_based' && (
-          <Card className="mb-6 border-orange-200 bg-orange-50/30">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-orange-900">
-                <Clock className="w-5 h-5" />
-                등록 기간 수정
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm text-slate-700">마감 날짜 *</Label>
-                  <Input
-                    type="date"
-                    value={formData.deadline_date}
-                    onChange={(e) => handleInputChange('deadline_date', e.target.value)}
-                    min={(() => {
-                      const tomorrow = new Date();
-                      tomorrow.setDate(tomorrow.getDate() + 1);
-                      return tomorrow.toISOString().split('T')[0];
-                    })()}
-                    className={errors.deadline_date ? 'border-red-300' : ''}
-                  />
-                  {errors.deadline_date && <p className="text-sm text-red-600 mt-1">{errors.deadline_date}</p>}
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-700">마감 시간 *</Label>
-                  <Input
-                    type="time"
-                    value={formData.deadline_time}
-                    onChange={(e) => handleInputChange('deadline_time', e.target.value)}
-                    className={errors.deadline_time ? 'border-red-300' : ''}
-                  />
-                  {errors.deadline_time && <p className="text-sm text-red-600 mt-1">{errors.deadline_time}</p>}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* 제출 버튼 */}
         <div className="flex gap-3">
           <Button

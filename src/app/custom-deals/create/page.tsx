@@ -717,9 +717,27 @@ export default function CreateCustomDealPage() {
       // 기간행사도 가격 정보 검증 계속 진행
     }
 
-    // 인원 모집 특가 전용 검증
-    // 마감시간 검증 (모집기간 설정 시에만)
-    if (useDeadline && formData.deadline_type === 'manual') {
+    // 기간행사 마감시간 검증 (필수)
+    if (formData.deal_type === 'time_based') {
+      if (!formData.deadline_date) newErrors.deadline_date = '마감 날짜를 선택해주세요';
+      if (!formData.deadline_time) newErrors.deadline_time = '마감 시간을 선택해주세요';
+
+      if (formData.deadline_date && formData.deadline_time) {
+        const deadline = new Date(`${formData.deadline_date}T${formData.deadline_time}`);
+        const now = new Date();
+        const minDeadline = new Date(now.getTime() + 60 * 60 * 1000); // 1시간 후
+        const maxDeadline = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14일 후
+
+        if (deadline < minDeadline) {
+          newErrors.deadline_time = '마감시간은 최소 1시간 이후로 설정해주세요';
+        }
+        if (deadline > maxDeadline) {
+          newErrors.deadline_date = '마감시간은 최대 14일 이내로 설정해주세요';
+        }
+      }
+    }
+    // 인원 모집 특가 마감시간 검증 (모집기간 설정 시에만)
+    else if (useDeadline && formData.deadline_type === 'manual') {
       if (!formData.deadline_date) newErrors.deadline_date = '마감 날짜를 선택해주세요';
       if (!formData.deadline_time) newErrors.deadline_time = '마감 시간을 선택해주세요';
 
