@@ -1420,40 +1420,37 @@ export default function CreateCustomDealPage() {
                   />
                   {errors.original_price && <p className="text-sm text-red-600 mt-1">{errors.original_price}</p>}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>할인율 (%) *</Label>
-                    <Input
-                      ref={discountRateRef}
-                      type="number"
-                      value={formData.discount_rate}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value) || 0;
-                        if (value <= 99) {
-                          handleDiscountRateChange(e.target.value);
-                        }
-                      }}
-                      placeholder="0"
-                      min="0"
-                      max="99"
-                      onKeyDown={(e) => {
-                        if (e.key === '.' || e.key === '-' || e.key === 'e') e.preventDefault();
-                      }}
-                      className={errors.discount_rate ? 'border-red-300' : ''}
-                    />
-                    {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
-                  </div>
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <Label className="text-blue-900">공구특가 *</Label>
-                    <Input
-                      value={formData.final_price}
-                      onChange={(e) => handleFinalPriceChange(e.target.value)}
-                      placeholder="0"
-                      className={`mt-1.5 bg-white ${errors.final_price ? 'border-red-300' : 'border-blue-300'}`}
-                    />
-                    {errors.final_price && <p className="text-sm text-red-600 mt-1">{errors.final_price}</p>}
-                    <p className="text-xs text-blue-600 mt-1">최대 1억원</p>
-                  </div>
+                <div>
+                  <Label>할인율 (%) *</Label>
+                  <Input
+                    ref={discountRateRef}
+                    type="number"
+                    value={formData.discount_rate}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 0;
+                      if (value <= 99) {
+                        handleDiscountRateChange(e.target.value);
+                      }
+                    }}
+                    placeholder="0"
+                    min="0"
+                    max="99"
+                    onKeyDown={(e) => {
+                      if (e.key === '.' || e.key === '-' || e.key === 'e') e.preventDefault();
+                    }}
+                    className={errors.discount_rate ? 'border-red-300' : ''}
+                  />
+                  {errors.discount_rate && <p className="text-sm text-red-600 mt-1">{errors.discount_rate}</p>}
+                </div>
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <Label className="text-blue-900">공구특가 *</Label>
+                  <Input
+                    value={formData.final_price}
+                    onChange={(e) => handleFinalPriceChange(e.target.value)}
+                    placeholder="0"
+                    className={`mt-1.5 bg-white ${errors.final_price ? 'border-red-300' : 'border-blue-300'}`}
+                  />
+                  {errors.final_price && <p className="text-sm text-red-600 mt-1">{errors.final_price}</p>}
                 </div>
               </>
             )}
