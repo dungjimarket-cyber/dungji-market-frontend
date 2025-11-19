@@ -805,10 +805,12 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
       // 부분 판매 옵션 (항상 수정 가능)
       submitFormData.append('allow_partial_sale', formData.allow_partial_sale.toString());
 
-      // 등록 기간 수정 (기간행사 + 일반 공구의 manual 타입)
-      if (formData.deadline_type === 'manual' && formData.deadline_date && formData.deadline_time) {
-        const deadlineDateTime = new Date(`${formData.deadline_date}T${formData.deadline_time}`);
-        submitFormData.append('expired_at', deadlineDateTime.toISOString());
+      // 등록 기간 수정 (기간행사 또는 일반 공구의 manual 타입)
+      if (formData.deadline_date && formData.deadline_time) {
+        // KST 시간대로 명시적 전송 (백엔드 USE_TZ=False이므로 로컬 시간 그대로)
+        const deadlineDateTime = `${formData.deadline_date}T${formData.deadline_time}:00`;
+        submitFormData.append('expired_at', deadlineDateTime);
+        console.log('[등록기간 수정] 전송할 시간:', deadlineDateTime);
       }
 
       // 참여자가 없을 때만 다른 필드 수정 가능 (단, type/target_participants는 제외)
