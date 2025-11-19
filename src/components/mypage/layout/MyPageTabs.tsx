@@ -712,7 +712,6 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <h4 className="font-medium truncate">{itemTitle}</h4>
-                              <Badge className="bg-green-100 text-green-700 flex-shrink-0">거래중</Badge>
                             </div>
                             <p className="text-sm text-gray-600">
                               거래가격: {(item.final_offer_price || item.price).toLocaleString()}원
@@ -929,7 +928,6 @@ const MyPageTabs = forwardRef<any, MyPageTabsProps>(({ onCountsUpdate }, ref) =>
                               >
                                 {itemTitle?.slice(0, 30)}
                               </h4>
-                              <Badge className="bg-green-100 text-green-700 flex-shrink-0">거래중</Badge>
                             </div>
                             <p className="text-sm text-gray-600">
                               거래가격: {(item.offered_price || item.offer_price || 0).toLocaleString()}원
