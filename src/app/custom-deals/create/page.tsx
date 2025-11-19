@@ -1363,10 +1363,10 @@ export default function CreateCustomDealPage() {
           </CardContent>
         </Card>
 
-        {/* 가격 정보 */}
+        {/* 혜택 정보 */}
         <Card className="mb-6 border-slate-200">
           <CardHeader>
-            <CardTitle>가격 정보</CardTitle>
+            <CardTitle>혜택 정보</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* 가격 유형 선택 */}
@@ -1389,7 +1389,7 @@ export default function CreateCustomDealPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="coupon_only" id="coupon" />
-                  <Label htmlFor="coupon" className="cursor-pointer">기간행사 (무료 이벤트/체험)</Label>
+                  <Label htmlFor="coupon" className="cursor-pointer">무료쿠폰, 이벤트, 행사 등</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -1524,8 +1524,8 @@ export default function CreateCustomDealPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
               <div>
-                <p className="font-medium text-orange-900">기간행사로 등록</p>
-                <p className="text-sm text-orange-700">인원 제한 없이 정해진 기간동안 제공되는 서비스(할인)혜택</p>
+                <p className="font-medium text-orange-900">선착순 이벤트로 등록</p>
+                <p className="text-sm text-orange-700">인원 제한 없이 정해진 기간동안 제공되는 할인쿠폰/이벤트 혜택</p>
               </div>
               <Switch
                 checked={formData.deal_type === 'time_based'}

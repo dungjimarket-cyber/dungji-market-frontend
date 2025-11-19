@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       if (deal.deal_type === 'time_based') {
         priceText = '기간행사';
       } else {
-        priceText = '커스텀 특가';
+        priceText = '선착순 이벤트';
       }
     } else if (deal.type === 'online') {
       // 온라인몰: 전품목 할인
