@@ -161,8 +161,8 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
         target_participants: data.target_participants?.toString() || '2',
         deadline_type: 'manual',
         deadline_days: '3',
-        deadline_date: data.expired_at ? new Date(data.expired_at).toISOString().split('T')[0] : '',
-        deadline_time: data.expired_at ? new Date(data.expired_at).toTimeString().slice(0, 5) : '',
+        deadline_date: data.expired_at ? data.expired_at.split('T')[0] : '',
+        deadline_time: data.expired_at ? data.expired_at.split('T')[1].slice(0, 5) : '',
         allow_partial_sale: data.allow_partial_sale || false,
         online_discount_type: data.online_discount_type || 'link_only',
         discount_url: data.discount_url || '',
@@ -257,10 +257,10 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
 
     // 등록 기간 변경 체크 (참여자 있어도 수정 가능)
     const originalDeadlineDate = originalData.expired_at
-      ? new Date(originalData.expired_at).toISOString().split('T')[0]
+      ? originalData.expired_at.split('T')[0]
       : '';
     const originalDeadlineTime = originalData.expired_at
-      ? new Date(originalData.expired_at).toTimeString().slice(0, 5)
+      ? originalData.expired_at.split('T')[1].slice(0, 5)
       : '';
 
     const deadlineChanged =
@@ -1414,22 +1414,15 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                             const selectedDate = new Date(e.target.value);
                             const today = new Date();
                             today.setHours(0, 0, 0, 0);
-                            const maxDate = new Date(today);
-                            maxDate.setDate(maxDate.getDate() + 14);
 
                             if (selectedDate < today) {
                               toast.error('오늘 이후 날짜를 선택해주세요');
-                              return;
-                            }
-                            if (selectedDate > maxDate) {
-                              toast.error('최대 2주(14일) 이내로 설정 가능합니다');
                               return;
                             }
                             setFormData(prev => ({ ...prev, deadline_date: e.target.value }));
                             setHasChanges(true);
                           }}
                           min={new Date().toISOString().split('T')[0]}
-                          max={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                           className="bg-white"
                         />
                       </div>
@@ -1447,7 +1440,7 @@ function CustomDealEditClient({ dealId }: { dealId: string }) {
                       </div>
                     </div>
                     <p className="text-xs text-orange-600">
-                      💡 최대 2주(14일) 이내로 설정 가능하며, 기간 내 목표 인원 달성 시 조기 마감됩니다
+                      💡 설정한 날짜/시간까지 기간행사가 진행됩니다
                     </p>
                   </div>
                 </CardContent>
