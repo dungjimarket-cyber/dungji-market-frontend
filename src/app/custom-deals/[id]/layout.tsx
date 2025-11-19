@@ -32,7 +32,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     // 가격 정보 생성 (상품 유형별 분기)
     let priceText = '';
-    if (deal.type === 'online') {
+
+    // discount_rate가 없는 경우 (쿠폰전용 등)
+    if (!deal.discount_rate) {
+      if (deal.deal_type === 'time_based') {
+        priceText = '기간행사';
+      } else {
+        priceText = '커스텀 특가';
+      }
+    } else if (deal.type === 'online') {
       // 온라인몰: 전품목 할인
       priceText = `전품목 ${deal.discount_rate}% 할인`;
     } else if (deal.type === 'offline') {
