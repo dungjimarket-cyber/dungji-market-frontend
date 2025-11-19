@@ -500,7 +500,7 @@ export default function CustomDealDetailPage() {
       }
     }
     // 단일품목 또는 복수품목
-    else if (deal.original_price && deal.final_price) {
+    else if (deal.original_price && deal.final_price && deal.discount_rate) {
       const finalPriceStr = typeof deal.final_price === 'object' && deal.final_price !== null
         ? ((deal.final_price as any).min || 0).toLocaleString()
         : deal.final_price.toLocaleString();
@@ -512,12 +512,20 @@ export default function CustomDealDetailPage() {
         shareText = `${deal.title} - ${finalPriceStr}원 (${deal.discount_rate}% 할인)`;
       }
     }
-    // 전품목 할인
-    else {
+    // 전품목 할인 (할인율이 있는 경우만)
+    else if (deal.discount_rate) {
       if (deal.deal_type === 'time_based') {
         shareText = `${deal.title} - 기간행사 전품목 ${deal.discount_rate}% 할인`;
       } else {
         shareText = `${deal.title} - 전품목 ${deal.discount_rate}% 할인`;
+      }
+    }
+    // 할인율도 없는 경우 (기간행사 기본)
+    else {
+      if (deal.deal_type === 'time_based') {
+        shareText = `${deal.title} - 기간행사`;
+      } else {
+        shareText = deal.title;
       }
     }
 
