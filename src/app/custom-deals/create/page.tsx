@@ -1524,8 +1524,8 @@ export default function CreateCustomDealPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
               <div>
-                <p className="font-medium text-orange-900">선착순 이벤트로 등록</p>
-                <p className="text-sm text-orange-700">인원 제한 없이 정해진 기간동안 제공되는 할인쿠폰/이벤트 혜택</p>
+                <p className="font-medium text-orange-900">기간행사로 등록</p>
+                <p className="text-sm text-orange-700">인원 제한 없이 정해진 기간동안 제공되는 혜택정보</p>
               </div>
               <Switch
                 checked={formData.deal_type === 'time_based'}
