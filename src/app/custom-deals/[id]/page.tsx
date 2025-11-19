@@ -494,7 +494,7 @@ export default function CustomDealDetailPage() {
     if (deal.pricing_type === 'coupon_only') {
       // 기간행사 쿠폰전용
       if (deal.deal_type === 'time_based') {
-        shareText = `${deal.title} - 기간행사 (선착순 이벤트)`;
+        shareText = `${deal.title} - 기간행사`;
       } else {
         shareText = `${deal.title} - 선착순 이벤트`;
       }
