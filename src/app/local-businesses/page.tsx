@@ -93,16 +93,30 @@ export default function LocalBusinessesPage() {
 
     setLoading(true);
     try {
+      // 지역명을 전체 형식으로 변환
+      // 예: "강남구" → "서울특별시 강남구"
+      const fullRegionName = `${selectedProvince === '서울' ? '서울특별시' : selectedProvince === '경기' ? '경기도' : selectedProvince} ${selectedCity}`;
+
+      console.log('🔍 검색 조건:', {
+        selectedProvince,
+        selectedCity,
+        fullRegionName,
+        category: selectedCategory.name
+      });
+
       const data = await fetchBusinesses({
-        // region 필터는 나중에 추가 (현재는 전체 조회 후 클라이언트 필터)
+        region_name: fullRegionName,
         category: selectedCategory.id,
         ordering: 'rank_in_region'
       });
 
-      // 클라이언트 사이드 필터링 (선택한 지역만)
+      console.log('📊 검색 결과:', {
+        count: Array.isArray(data) ? data.length : 0,
+        data: data
+      });
+
       if (Array.isArray(data)) {
-        const filtered = data.filter(b => b.region_name === selectedCity);
-        setBusinesses(filtered);
+        setBusinesses(data);
       } else {
         setBusinesses([]);
       }

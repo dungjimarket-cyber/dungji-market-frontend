@@ -26,6 +26,7 @@ export async function fetchCategories(): Promise<LocalBusinessCategory[]> {
 export async function fetchBusinesses(params?: {
   category?: number;
   region?: string;
+  region_name?: string;
   search?: string;
   ordering?: string;
   is_new?: boolean;
@@ -35,6 +36,7 @@ export async function fetchBusinesses(params?: {
 
   if (params?.category) searchParams.append('category', params.category.toString());
   if (params?.region) searchParams.append('region', params.region);
+  if (params?.region_name) searchParams.append('region_name', params.region_name);
   if (params?.search) searchParams.append('search', params.search);
   if (params?.ordering) searchParams.append('ordering', params.ordering);
   if (params?.is_new !== undefined) searchParams.append('is_new', params.is_new.toString());
