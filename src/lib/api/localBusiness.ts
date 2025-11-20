@@ -15,7 +15,9 @@ export async function fetchCategories(): Promise<LocalBusinessCategory[]> {
     throw new Error('카테고리 조회 실패');
   }
 
-  return response.json();
+  const data = await response.json();
+  // 페이지네이션 형식 처리
+  return data.results || data;
 }
 
 /**
@@ -45,7 +47,9 @@ export async function fetchBusinesses(params?: {
     throw new Error('업체 목록 조회 실패');
   }
 
-  return response.json();
+  const data = await response.json();
+  // 페이지네이션 형식 처리
+  return data.results || data;
 }
 
 /**
