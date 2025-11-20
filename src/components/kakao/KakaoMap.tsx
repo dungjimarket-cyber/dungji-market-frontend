@@ -74,7 +74,6 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
               infowindow.open(map, marker);
             }
 
-            isMapLoadedRef.current = true;
             setIsLoading(false);
             setError(null);
             console.log('[KakaoMap] Map loaded successfully');
