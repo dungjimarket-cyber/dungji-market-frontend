@@ -258,12 +258,16 @@ export default function LocalBusinessesPage() {
               {businesses.map((business, index) => (
                 <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-shadow h-full">
                     {/* 사진 */}
-                    {business.photo_url && (
+                    {business.has_photo && (
                       <div className="relative h-40 w-full">
                         <img
-                          src={business.photo_url}
+                          src={`${process.env.NEXT_PUBLIC_API_URL}/local-businesses/${business.id}/photo/`}
                           alt={business.name}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // 이미지 로드 실패 시 숨김
+                            e.currentTarget.parentElement!.style.display = 'none';
+                          }}
                         />
                         {/* 랭킹 배지 */}
                         <div className="absolute top-2 left-2">
@@ -295,7 +299,7 @@ export default function LocalBusinessesPage() {
                     {/* 정보 */}
                     <CardContent className="p-4 space-y-2">
                       {/* 사진 없을 때 랭킹 */}
-                      {!business.photo_url && (
+                      {!business.has_photo && (
                         <div className="flex items-center justify-between mb-2">
                           <Badge className={`
                             ${business.rank_in_region === 1 ? 'bg-yellow-500' : ''}

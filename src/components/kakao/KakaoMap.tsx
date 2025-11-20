@@ -19,18 +19,17 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const isMapLoadedRef = useRef(false);
   const retryCountRef = useRef(0);
   const maxRetries = 20; // 최대 2초 (100ms * 20)
 
   useEffect(() => {
+    // 컴포넌트 마운트 시 상태 초기화
+    setIsLoading(true);
+    setError(null);
+    retryCountRef.current = 0;
+
     // 스크립트가 로드되지 않았으면 대기
     if (!isScriptLoaded) {
-      return;
-    }
-
-    // 이미 지도가 로드되었으면 리턴
-    if (isMapLoadedRef.current) {
       return;
     }
 

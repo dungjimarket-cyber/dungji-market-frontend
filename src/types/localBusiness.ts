@@ -37,7 +37,7 @@ export interface LocalBusinessList {
   rank_in_region: number;
   is_verified: boolean;
   is_new: boolean;
-  photo_url: string | null;
+  has_photo: boolean;  // photo_url 대신 존재 여부만
   view_count: number;
   created_at: string;
 }
