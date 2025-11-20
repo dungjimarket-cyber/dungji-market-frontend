@@ -81,9 +81,10 @@ export default function LocalBusinessesPage() {
   const loadCategories = async () => {
     try {
       const data = await fetchCategories();
-      setCategories(data);
+      setCategories(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('카테고리 로드 실패:', error);
+      setCategories([]);
     }
   };
 
@@ -99,8 +100,12 @@ export default function LocalBusinessesPage() {
       });
 
       // 클라이언트 사이드 필터링 (선택한 지역만)
-      const filtered = data.filter(b => b.region_name === selectedCity);
-      setBusinesses(filtered);
+      if (Array.isArray(data)) {
+        const filtered = data.filter(b => b.region_name === selectedCity);
+        setBusinesses(filtered);
+      } else {
+        setBusinesses([]);
+      }
     } catch (error) {
       console.error('업체 로드 실패:', error);
       setBusinesses([]);
