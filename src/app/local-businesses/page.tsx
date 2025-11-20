@@ -8,8 +8,12 @@ import { fetchCategories, fetchBusinesses } from '@/lib/api/localBusiness';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Building2, MapPin, Star, Phone, ExternalLink, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Building2, MapPin, Star, Phone, ExternalLink, Sparkles, Copy, Map } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
+import KakaoMap from '@/components/kakao/KakaoMap';
 
 export default function LocalBusinessesPage() {
   const { user } = useAuth();
@@ -22,6 +26,8 @@ export default function LocalBusinessesPage() {
   const [cities, setCities] = useState<string[]>([]);
   const [businesses, setBusinesses] = useState<LocalBusinessList[]>([]);
   const [loading, setLoading] = useState(false);
+  const [mapDialogOpen, setMapDialogOpen] = useState(false);
+  const [selectedBusiness, setSelectedBusiness] = useState<LocalBusinessList | null>(null);
 
   // 카테고리 목록 로드
   useEffect(() => {
@@ -109,6 +115,29 @@ export default function LocalBusinessesPage() {
     const region = regions.find(r => r.name === province);
     setCities(region?.cities || []);
     setSelectedCity('');
+  };
+
+  // 주소 복사
+  const handleCopyAddress = (address: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(address);
+    toast.success('주소가 복사되었습니다');
+  };
+
+  // 전화걸기
+  const handleCall = (phone: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.location.href = `tel:${phone}`;
+  };
+
+  // 지도 보기
+  const handleShowMap = (business: LocalBusinessList, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedBusiness(business);
+    setMapDialogOpen(true);
   };
 
   return (
@@ -208,11 +237,7 @@ export default function LocalBusinessesPage() {
             {/* 업체 카드 그리드 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {businesses.map((business, index) => (
-                <Link
-                  key={business.id}
-                  href={`/local-businesses/${business.id}`}
-                >
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-shadow h-full">
                     {/* 사진 */}
                     {business.photo_url && (
                       <div className="relative h-40 w-full">
@@ -301,14 +326,109 @@ export default function LocalBusinessesPage() {
                           {business.phone_number}
                         </p>
                       )}
+
+                      {/* 액션 버튼 */}
+                      <div className="flex gap-2 pt-2 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={(e) => handleShowMap(business, e)}
+                        >
+                          <Map className="w-3 h-3 mr-1" />
+                          지도
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs"
+                          onClick={(e) => handleCopyAddress(business.address, e)}
+                        >
+                          <Copy className="w-3 h-3 mr-1" />
+                          주소
+                        </Button>
+                        {business.phone_number && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-xs"
+                            onClick={(e) => handleCall(business.phone_number!, e)}
+                          >
+                            <Phone className="w-3 h-3 mr-1" />
+                            전화
+                          </Button>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
-                </Link>
               ))}
             </div>
           </div>
         )}
       </div>
+
+      {/* 지도 다이얼로그 */}
+      <Dialog open={mapDialogOpen} onOpenChange={setMapDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Map className="w-5 h-5" />
+              {selectedBusiness?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="text-sm text-muted-foreground">
+              <MapPin className="w-4 h-4 inline mr-1" />
+              {selectedBusiness?.address}
+            </div>
+            {selectedBusiness && (
+              <KakaoMap
+                address={selectedBusiness.address}
+                placeName={selectedBusiness.name}
+              />
+            )}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  if (selectedBusiness) {
+                    handleCopyAddress(selectedBusiness.address, {} as React.MouseEvent);
+                  }
+                }}
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                주소 복사
+              </Button>
+              {selectedBusiness?.phone_number && (
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    if (selectedBusiness?.phone_number) {
+                      handleCall(selectedBusiness.phone_number, {} as React.MouseEvent);
+                    }
+                  }}
+                >
+                  <Phone className="w-4 h-4 mr-2" />
+                  전화하기
+                </Button>
+              )}
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  if (selectedBusiness) {
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedBusiness.name + ' ' + selectedBusiness.address)}`, '_blank');
+                  }
+                }}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Google 지도
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
