@@ -16,11 +16,21 @@ interface KakaoMapProps {
 
 export default function KakaoMap({ address, placeName }: KakaoMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const retryCountRef = useRef(0);
   const maxRetries = 20; // 최대 2초 (100ms * 20)
+
+  // 기존 지도 정리
+  useEffect(() => {
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // 컴포넌트 마운트 시 상태 초기화
@@ -57,10 +67,18 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
           if (status === window.kakao.maps.services.Status.OK) {
             const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
 
+            // 기존 지도 인스턴스 정리
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current = null;
+            }
+
             const map = new window.kakao.maps.Map(mapRef.current, {
               center: coords,
               level: 3,
             });
+
+            // 새 지도 인스턴스 저장
+            mapInstanceRef.current = map;
 
             const marker = new window.kakao.maps.Marker({
               map: map,

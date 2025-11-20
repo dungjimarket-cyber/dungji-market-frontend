@@ -257,73 +257,75 @@ export default function LocalBusinessesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {businesses.map((business, index) => (
                 <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-shadow h-full">
-                    {/* 사진 */}
-                    {business.has_photo && (
-                      <div className="relative h-40 w-full">
+                    {/* 사진 또는 대체 이미지 */}
+                    <div className="relative h-40 w-full">
+                      {business.has_photo ? (
                         <img
                           src={`${process.env.NEXT_PUBLIC_API_URL}/local-businesses/${business.id}/photo/`}
                           alt={business.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            // 이미지 로드 실패 시 숨김
-                            e.currentTarget.parentElement!.style.display = 'none';
+                            // 이미지 로드 실패 시 대체 UI로 전환
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              e.currentTarget.style.display = 'none';
+                              const fallback = parent.querySelector('.fallback-image');
+                              if (fallback) {
+                                (fallback as HTMLElement).style.display = 'flex';
+                              }
+                            }
                           }}
                         />
-                        {/* 랭킹 배지 */}
-                        <div className="absolute top-2 left-2">
-                          <Badge className={`
-                            ${business.rank_in_region === 1 ? 'bg-yellow-500' : ''}
-                            ${business.rank_in_region === 2 ? 'bg-gray-400' : ''}
-                            ${business.rank_in_region === 3 ? 'bg-orange-500' : ''}
-                            ${business.rank_in_region >= 4 ? 'bg-muted' : ''}
-                            text-white font-bold
-                          `}>
-                            {business.rank_in_region}위
-                          </Badge>
-                        </div>
-                        {/* 신규/인증 배지 */}
-                        <div className="absolute top-2 right-2 flex gap-1">
-                          {business.is_new && (
-                            <Badge className="bg-green-500 text-white">
-                              <Sparkles className="w-3 h-3 mr-1" />
-                              신규
-                            </Badge>
-                          )}
-                          {business.is_verified && (
-                            <Badge className="bg-blue-500 text-white">인증</Badge>
-                          )}
+                      ) : null}
+
+                      {/* 대체 이미지 (사진 없을 때) */}
+                      <div
+                        className={`fallback-image w-full h-full bg-gradient-to-br ${
+                          business.category_name === '변호사' ? 'from-blue-400 to-blue-600' :
+                          business.category_name === '세무사' ? 'from-green-400 to-green-600' :
+                          business.category_name === '법무사' ? 'from-indigo-400 to-indigo-600' :
+                          business.category_name === '부동산' ? 'from-orange-400 to-orange-600' :
+                          business.category_name === '인테리어' ? 'from-purple-400 to-purple-600' :
+                          business.category_name === '휴대폰매장' ? 'from-pink-400 to-pink-600' :
+                          business.category_name === '자동차정비' ? 'from-gray-400 to-gray-600' :
+                          'from-slate-400 to-slate-600'
+                        } flex items-center justify-center`}
+                        style={{ display: business.has_photo ? 'none' : 'flex' }}
+                      >
+                        <div className="text-center text-white">
+                          <div className="text-6xl mb-2">{business.category_icon}</div>
+                          <div className="text-sm font-medium opacity-90">{business.category_name}</div>
                         </div>
                       </div>
-                    )}
+
+                      {/* 랭킹 배지 */}
+                      <div className="absolute top-2 left-2">
+                        <Badge className={`
+                          ${business.rank_in_region === 1 ? 'bg-yellow-500' : ''}
+                          ${business.rank_in_region === 2 ? 'bg-gray-400' : ''}
+                          ${business.rank_in_region === 3 ? 'bg-orange-500' : ''}
+                          ${business.rank_in_region >= 4 ? 'bg-muted' : ''}
+                          text-white font-bold
+                        `}>
+                          {business.rank_in_region}위
+                        </Badge>
+                      </div>
+                      {/* 신규/인증 배지 */}
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        {business.is_new && (
+                          <Badge className="bg-green-500 text-white">
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            신규
+                          </Badge>
+                        )}
+                        {business.is_verified && (
+                          <Badge className="bg-blue-500 text-white">인증</Badge>
+                        )}
+                      </div>
+                    </div>
 
                     {/* 정보 */}
                     <CardContent className="p-4 space-y-2">
-                      {/* 사진 없을 때 랭킹 */}
-                      {!business.has_photo && (
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge className={`
-                            ${business.rank_in_region === 1 ? 'bg-yellow-500' : ''}
-                            ${business.rank_in_region === 2 ? 'bg-gray-400' : ''}
-                            ${business.rank_in_region === 3 ? 'bg-orange-500' : ''}
-                            ${business.rank_in_region >= 4 ? 'bg-muted' : ''}
-                            text-white font-bold
-                          `}>
-                            {business.rank_in_region}위
-                          </Badge>
-                          <div className="flex gap-1">
-                            {business.is_new && (
-                              <Badge className="bg-green-500 text-white text-xs">
-                                <Sparkles className="w-3 h-3 mr-1" />
-                                신규
-                              </Badge>
-                            )}
-                            {business.is_verified && (
-                              <Badge className="bg-blue-500 text-white text-xs">인증</Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
                       <h3 className="font-bold text-base line-clamp-1">{business.name}</h3>
 
                       {business.rating && (
