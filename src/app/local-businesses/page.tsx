@@ -310,18 +310,12 @@ export default function LocalBusinessesPage() {
                           {business.rank_in_region}위
                         </Badge>
                       </div>
-                      {/* 신규/인증 배지 */}
-                      <div className="absolute top-2 right-2 flex gap-1">
-                        {business.is_new && (
-                          <Badge className="bg-green-500 text-white">
-                            <Sparkles className="w-3 h-3 mr-1" />
-                            신규
-                          </Badge>
-                        )}
-                        {business.is_verified && (
+                      {/* 인증 배지 */}
+                      {business.is_verified && (
+                        <div className="absolute top-2 right-2">
                           <Badge className="bg-blue-500 text-white">인증</Badge>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* 정보 */}
