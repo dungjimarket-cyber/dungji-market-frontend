@@ -567,44 +567,49 @@ export default function LocalBusinessesPage() {
         )}
       </div>
 
-      {/* 지도 다이얼로그 - mapKey로 강제 재생성 */}
-      <Dialog
-        open={mapDialogOpen}
-        onOpenChange={(open) => {
-          setMapDialogOpen(open);
-          if (!open) {
-            setShouldRenderMap(false);
-            setSelectedBusiness(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <Map className="w-4 h-4 sm:w-5 sm:h-5" />
-              {selectedBusiness?.name}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="text-xs sm:text-sm text-muted-foreground">
-              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 inline mr-1" />
-              {selectedBusiness?.address.replace('대한민국 ', '')}
-            </div>
-            {selectedBusiness && shouldRenderMap && (
-              <KakaoMap
-                key={mapKey}
-                address={selectedBusiness.address}
-                placeName={selectedBusiness.name}
-              />
-            )}
-            {selectedBusiness && !shouldRenderMap && (
-              <div className="w-full h-64 flex items-center justify-center bg-slate-100 rounded-lg">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  <div className="text-sm text-slate-600">지도를 불러오는 중...</div>
-                </div>
+      {/* 지도 다이얼로그 - 완전히 언마운트/마운트 */}
+      {mapDialogOpen && (
+        <Dialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) {
+              // Dialog 닫기 시작
+              setShouldRenderMap(false);
+              // Dialog 애니메이션 후 완전히 언마운트
+              setTimeout(() => {
+                setMapDialogOpen(false);
+                setSelectedBusiness(null);
+              }, 200);
+            }
+          }}
+        >
+          <DialogContent className="max-w-[95vw] sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Map className="w-4 h-4 sm:w-5 sm:h-5" />
+                {selectedBusiness?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="text-xs sm:text-sm text-muted-foreground">
+                <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 inline mr-1" />
+                {selectedBusiness?.address.replace('대한민국 ', '')}
               </div>
-            )}
+              {selectedBusiness && shouldRenderMap && (
+                <KakaoMap
+                  key={mapKey}
+                  address={selectedBusiness.address}
+                  placeName={selectedBusiness.name}
+                />
+              )}
+              {selectedBusiness && !shouldRenderMap && (
+                <div className="w-full h-64 flex items-center justify-center bg-slate-100 rounded-lg">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <div className="text-sm text-slate-600">지도를 불러오는 중...</div>
+                  </div>
+                </div>
+              )}
             <div className="grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
@@ -655,7 +660,8 @@ export default function LocalBusinessesPage() {
             </div>
           </div>
         </DialogContent>
-      </Dialog>
+        </Dialog>
+      )}
     </div>
   );
 }

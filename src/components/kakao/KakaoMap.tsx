@@ -48,6 +48,11 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
     if (mapInstanceRef.current) {
       mapInstanceRef.current = null;
     }
+
+    // DOM 완전히 비우기
+    if (mapContainerRef.current) {
+      mapContainerRef.current.innerHTML = '';
+    }
   };
 
   // 컴포넌트 언마운트 시 cleanup
