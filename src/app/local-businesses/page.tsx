@@ -215,7 +215,12 @@ export default function LocalBusinessesPage() {
       const response = await fetch(nextUrlRef.current);
       const data = await response.json();
 
-      setBusinesses(prev => [...prev, ...(data.results || [])]);
+      // 중복 제거: 기존 ID와 비교하여 새로운 것만 추가
+      setBusinesses(prev => {
+        const existingIds = new Set(prev.map(b => b.id));
+        const newBusinesses = (data.results || []).filter((b: LocalBusinessList) => !existingIds.has(b.id));
+        return [...prev, ...newBusinesses];
+      });
       setNextUrl(data.next || null);
       setHasMore(!!data.next);
     } catch (error) {
