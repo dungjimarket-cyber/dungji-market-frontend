@@ -124,10 +124,14 @@ export default function MobileNavbar() {
           <span className="text-[10px] font-black-han-sans">오픈마켓</span>
         </button>
 
-        {/* 3. 견적서비스 */}
-        <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
+        {/* 3. 우리동네 전문가 (견적서비스 대체) */}
+        {/* <Link href="/group-purchases" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
           <FaList className="text-lg mb-1" />
           <span className="text-[10px] font-black-han-sans">견적서비스</span>
+        </Link> */}
+        <Link href="/local-businesses" className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-500 flex-1 py-2">
+          <FaStore className="text-lg mb-1" />
+          <span className="text-[10px] font-black-han-sans">동네전문가</span>
         </Link>
 
         {/* 4. 커공 (큰 버튼) */}

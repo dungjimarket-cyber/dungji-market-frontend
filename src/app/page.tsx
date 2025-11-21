@@ -232,11 +232,18 @@ function HomeContent() {
             <span className="text-xs sm:text-base">커스텀공구</span>
           </Link>
 
-          <Link
+          {/* <Link
             href="/group-purchases"
             className="btn-animated btn-secondary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
           >
             <span className="text-xs sm:text-base">지원금 견적서비스</span>
+          </Link> */}
+
+          <Link
+            href="/local-businesses"
+            className="btn-animated btn-secondary whitespace-nowrap px-3 py-4 sm:px-6 sm:py-2 flex items-center justify-center w-full sm:w-auto"
+          >
+            <span className="text-xs sm:text-base">우리동네 전문가</span>
           </Link>
 
           <Link

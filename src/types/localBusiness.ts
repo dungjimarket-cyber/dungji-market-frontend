@@ -39,6 +39,7 @@ export interface LocalBusinessList {
   is_new: boolean;
   has_photo: boolean;  // photo_url 대신 존재 여부만
   view_count: number;
+  editorial_summary: string | null;  // AI/Google 요약
   created_at: string;
 }
 

@@ -120,8 +120,11 @@ export default function DesktopNavbar() {
             <Link href="/custom-deals" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
               커공/이벤트
             </Link>
-            <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
+            {/* <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
               견적서비스
+            </Link> */}
+            <Link href="/local-businesses" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
+              우리동네 전문가
             </Link>
 
             {/* 비로그인 시 */}
