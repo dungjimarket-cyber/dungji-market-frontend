@@ -14,6 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ❌ **파일 기반 설정 금지** - Vercel은 파일 시스템 없음, 환경변수만 사용
 ❌ **로컬 마이그레이션 실행 금지** - 서버에서 직접 실행해야 함
 ❌ **docker-compose 관련 작업 금지** - 배포 환경에 Docker 없음
+❌ **deploy.yml 파일 수정 금지** - 배포 워크플로우는 안정적으로 작동 중, 절대 건드리지 말 것
 
 ### 환경변수 설정 위치
 - **프론트엔드 환경변수**: Vercel 대시보드 → 프론트엔드 프로젝트 → Settings → Environment Variables

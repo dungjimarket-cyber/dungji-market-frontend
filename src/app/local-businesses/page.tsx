@@ -504,8 +504,8 @@ export default function LocalBusinessesPage() {
 
                     {/* AI/Google 요약 - 별점 바로 아래 */}
                     {business.editorial_summary && (
-                      <div className="inline-block px-2.5 py-1.5 bg-white border border-slate-300 rounded-md shadow-sm">
-                        <p className="text-xs font-bold text-black italic underline decoration-slate-400 decoration-1 underline-offset-2 leading-relaxed line-clamp-2">
+                      <div className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-md shadow-sm">
+                        <p className="text-xs font-bold text-black italic underline decoration-slate-400 decoration-1 underline-offset-2 leading-relaxed line-clamp-2 break-words">
                           "{business.editorial_summary}"
                         </p>
                       </div>
@@ -513,16 +513,18 @@ export default function LocalBusinessesPage() {
 
                     {/* 주소 - 클릭하면 복사 */}
                     <div
-                      className="text-xs text-slate-700 line-clamp-1 cursor-pointer hover:bg-slate-50 p-1.5 -mx-1.5 rounded transition-colors flex items-center justify-between group"
+                      className="text-xs text-slate-700 cursor-pointer hover:bg-slate-50 p-1.5 -mx-1.5 rounded transition-colors group"
                       onClick={(e) => handleCopyAddress(business.address, e)}
                     >
-                      <div className="flex items-center gap-1 min-w-0">
-                        <MapPin className="w-3 h-3 flex-shrink-0" />
-                        <span className="truncate">{business.address.replace('대한민국 ', '')}</span>
+                      <div className="flex items-start gap-1">
+                        <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <span className="break-words">{business.address.replace('대한민국 ', '')}</span>
+                          <span className="text-[10px] text-primary ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            복사
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-[10px] text-primary ml-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        복사
-                      </span>
                     </div>
 
                     {business.phone_number && (
