@@ -30,6 +30,7 @@ export default function LocalBusinessesPage() {
   const [hasMore, setHasMore] = useState(false);
   const [mapDialogOpen, setMapDialogOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<LocalBusinessList | null>(null);
+  const [shouldRenderMap, setShouldRenderMap] = useState(false);
 
   // IntersectionObserver용 ref
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -232,13 +233,32 @@ export default function LocalBusinessesPage() {
     toast.success('복사 완료');
   };
 
+  // 전화번호 포맷팅 (+82 제거하고 필요시 0 추가)
+  const formatPhoneNumber = (phone: string): string => {
+    if (!phone) return '';
+
+    // +82 제거
+    let formatted = phone.replace('+82 ', '').replace('+82', '');
+
+    // 10으로 시작하면 010으로, 2로 시작하면 02로 변환
+    // 1566, 1588 등 대표번호는 그대로 유지
+    if (formatted.startsWith('10-') || formatted.startsWith('10 ')) {
+      formatted = '0' + formatted;
+    } else if (formatted.startsWith('2-') || formatted.startsWith('2 ')) {
+      formatted = '0' + formatted;
+    }
+
+    return formatted;
+  };
+
   // 전화걸기
   const handleCall = (phone: string, e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    window.location.href = `tel:${phone}`;
+    const formattedPhone = formatPhoneNumber(phone);
+    window.location.href = `tel:${formattedPhone}`;
   };
 
   // 지도 보기
@@ -246,7 +266,13 @@ export default function LocalBusinessesPage() {
     e.preventDefault();
     e.stopPropagation();
     setSelectedBusiness(business);
+    setShouldRenderMap(false); // 먼저 초기화
     setMapDialogOpen(true);
+
+    // Dialog 열린 후 지도 렌더링 (300ms 딜레이)
+    setTimeout(() => {
+      setShouldRenderMap(true);
+    }, 300);
   };
 
   return (
@@ -427,6 +453,15 @@ export default function LocalBusinessesPage() {
                       </div>
                     )}
 
+                    {/* AI/Google 요약 - 별점 바로 아래 */}
+                    {business.editorial_summary && (
+                      <div className="inline-block px-2.5 py-1.5 bg-white border border-slate-300 rounded-md shadow-sm">
+                        <p className="text-xs font-bold text-black italic underline decoration-slate-400 decoration-1 underline-offset-2 leading-relaxed line-clamp-2">
+                          "{business.editorial_summary}"
+                        </p>
+                      </div>
+                    )}
+
                     <p className="text-xs text-slate-700 line-clamp-1">
                       <MapPin className="w-3 h-3 inline mr-1" />
                       {business.address.replace('대한민국 ', '')}
@@ -437,15 +472,6 @@ export default function LocalBusinessesPage() {
                         <Phone className="w-3 h-3 inline mr-1" />
                         {business.phone_number}
                       </p>
-                    )}
-
-                    {/* AI/Google 요약 */}
-                    {business.editorial_summary && (
-                      <div className="mt-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
-                        <p className="text-xs text-slate-700 leading-relaxed line-clamp-2">
-                          💡 {business.editorial_summary}
-                        </p>
-                      </div>
                     )}
 
                     {/* 액션 버튼 */}
@@ -507,7 +533,12 @@ export default function LocalBusinessesPage() {
       </div>
 
       {/* 지도 다이얼로그 */}
-      <Dialog open={mapDialogOpen} onOpenChange={setMapDialogOpen}>
+      <Dialog open={mapDialogOpen} onOpenChange={(open) => {
+        setMapDialogOpen(open);
+        if (!open) {
+          setShouldRenderMap(false); // Dialog 닫힐 때 지도 제거
+        }
+      }}>
         <DialogContent className="max-w-[95vw] sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -520,52 +551,66 @@ export default function LocalBusinessesPage() {
               <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 inline mr-1" />
               {selectedBusiness?.address.replace('대한민국 ', '')}
             </div>
-            {selectedBusiness && (
+            {selectedBusiness && shouldRenderMap && (
               <KakaoMap
                 address={selectedBusiness.address}
                 placeName={selectedBusiness.name}
               />
             )}
-            <div className="flex flex-col sm:flex-row gap-2">
+            {selectedBusiness && !shouldRenderMap && (
+              <div className="w-full h-64 flex items-center justify-center bg-slate-100 rounded-lg">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <div className="text-sm text-slate-600">지도를 불러오는 중...</div>
+                </div>
+              </div>
+            )}
+            <div className="grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
-                size="sm"
-                className="flex-1 h-9"
+                className="h-12 flex flex-col items-center justify-center gap-1 text-xs font-medium"
                 onClick={() => {
                   if (selectedBusiness) {
                     handleCopyAddress(selectedBusiness.address);
                   }
                 }}
               >
-                <Copy className="w-3.5 h-3.5 mr-1.5" />
-                주소복사
+                <Copy className="w-4 h-4" />
+                <span>주소복사</span>
               </Button>
-              {selectedBusiness?.phone_number && (
+              {selectedBusiness?.phone_number ? (
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="flex-1 h-9"
+                  className="h-12 flex flex-col items-center justify-center gap-1 text-xs font-medium"
                   onClick={() => {
                     if (selectedBusiness?.phone_number) {
                       handleCall(selectedBusiness.phone_number);
                     }
                   }}
                 >
-                  <Phone className="w-3.5 h-3.5 mr-1.5" />
-                  전화하기
+                  <Phone className="w-4 h-4" />
+                  <span>전화하기</span>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  disabled
+                  className="h-12 flex flex-col items-center justify-center gap-1 text-xs font-medium opacity-50"
+                >
+                  <Phone className="w-4 h-4" />
+                  <span>전화없음</span>
                 </Button>
               )}
               <Button
-                size="sm"
-                className="flex-1 h-9"
+                className="h-12 flex flex-col items-center justify-center gap-1 text-xs font-medium"
                 onClick={() => {
                   if (selectedBusiness) {
                     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedBusiness.name + ' ' + selectedBusiness.address)}`, '_blank');
                   }
                 }}
               >
-                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                Google 지도
+                <ExternalLink className="w-4 h-4" />
+                <span>지도보기</span>
               </Button>
             </div>
           </div>
