@@ -53,8 +53,10 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
   // 컴포넌트 언마운트 시 cleanup
   useEffect(() => {
     return () => {
+      console.log('[KakaoMap] Component unmounting, cleanup');
       cleanup();
       isInitializingRef.current = false;
+      initAttemptRef.current = 0;
     };
   }, []);
 
