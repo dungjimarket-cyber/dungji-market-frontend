@@ -79,10 +79,8 @@ export default function LocalBusinessesPage() {
 
     initializeRegion();
 
-    // 로그인한 사용자만 첫 번째 카테고리 선택 (비로그인은 전체 보기)
-    if (!selectedCategory && categories.length > 0 && user) {
-      setSelectedCategory(categories[0]);
-    }
+    // 카테고리는 선택하지 않음 (전체 보기가 기본)
+    // selectedCategory가 null이면 전체 카테고리 표시
   }, [categories, user]);
 
   // 지역 변경 시 검색 (카테고리는 선택사항)
@@ -343,6 +341,21 @@ export default function LocalBusinessesPage() {
               <span>업종 선택</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              {/* 전체 버튼 */}
+              <Button
+                variant={!selectedCategory ? 'default' : 'outline'}
+                size="sm"
+                className={`h-auto py-3 px-2 flex flex-col items-center gap-1 transition-all ${
+                  !selectedCategory
+                    ? 'ring-2 ring-primary ring-offset-2'
+                    : 'hover:border-primary'
+                }`}
+                onClick={() => setSelectedCategory(null)}
+              >
+                <span className="text-2xl">📋</span>
+                <span className="text-xs font-medium whitespace-nowrap">전체</span>
+              </Button>
+
               {categories.map((cat) => (
                 <Button
                   key={cat.id}
