@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { regions } from '@/lib/regions';
 import { LocalBusinessCategory, LocalBusinessList } from '@/types/localBusiness';
@@ -25,8 +25,17 @@ export default function LocalBusinessesPage() {
   const [cities, setCities] = useState<string[]>([]);
   const [businesses, setBusinesses] = useState<LocalBusinessList[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [mapDialogOpen, setMapDialogOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<LocalBusinessList | null>(null);
+
+  // IntersectionObserver용 ref
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadingMoreRef = useRef(false);
+  const nextUrlRef = useRef<string | null>(null);
 
   // 카테고리 목록 로드
   useEffect(() => {
@@ -53,12 +62,12 @@ export default function LocalBusinessesPage() {
         }
       }
 
-      // 기본값: 서울 강남구
+      // 기본값: 서울 (시/구 선택 안 함 = 서울 전체)
       const seoul = regions.find(r => r.name === '서울');
       if (seoul) {
         setSelectedProvince('서울');
         setCities(seoul.cities);
-        setSelectedCity('강남구');
+        setSelectedCity(''); // 빈값 = 전체
       }
     };
 
@@ -72,10 +81,42 @@ export default function LocalBusinessesPage() {
 
   // 지역 또는 카테고리 변경 시 검색
   useEffect(() => {
-    if (selectedCity && selectedCategory) {
+    if (selectedProvince && selectedCategory) {
       loadBusinesses();
     }
-  }, [selectedCity, selectedCategory]);
+  }, [selectedProvince, selectedCity, selectedCategory]);
+
+  // 무한스크롤 IntersectionObserver 설정
+  useEffect(() => {
+    nextUrlRef.current = nextUrl;
+  }, [nextUrl]);
+
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+
+    // 기존 observer 정리
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (target.isIntersecting && nextUrlRef.current && !loadingMoreRef.current) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    observerRef.current.observe(loadMoreRef.current);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore]);
 
   const loadCategories = async () => {
     try {
@@ -88,38 +129,80 @@ export default function LocalBusinessesPage() {
   };
 
   const loadBusinesses = async () => {
-    if (!selectedCity || !selectedCategory) return;
+    if (!selectedProvince || !selectedCategory) return;
 
     setLoading(true);
     try {
       // 지역명을 전체 형식으로 변환
-      const fullRegionName = `${selectedProvince === '서울' ? '서울특별시' : selectedProvince === '경기' ? '경기도' : selectedProvince} ${selectedCity}`;
+      // selectedCity가 비어있으면 시/도만 검색 (전체)
+      let regionParam: string;
+      if (selectedCity) {
+        // 특정 시/군/구 선택
+        const fullRegionName = `${selectedProvince === '서울' ? '서울특별시' : selectedProvince === '경기' ? '경기도' : selectedProvince} ${selectedCity}`;
+        regionParam = fullRegionName;
+      } else {
+        // 시/도만 선택 (전체 검색)
+        regionParam = selectedProvince === '서울' ? '서울특별시' : selectedProvince === '경기' ? '경기도' : selectedProvince;
+      }
 
-      const data = await fetchBusinesses({
-        region_name: fullRegionName,
-        category: selectedCategory.id,
-        ordering: 'rank_in_region'
+      console.log('🔍 검색 조건:', {
+        selectedProvince,
+        selectedCity: selectedCity || '전체',
+        regionParam,
+        category: selectedCategory.name
       });
 
-      if (Array.isArray(data)) {
-        setBusinesses(data);
-      } else {
-        setBusinesses([]);
-      }
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/local-businesses/?region_name__icontains=${encodeURIComponent(regionParam)}&category=${selectedCategory.id}&ordering=rank_in_region&page_size=12`
+      );
+      const data = await response.json();
+
+      console.log('📊 검색 결과:', {
+        count: data.results?.length || 0,
+        next: data.next,
+        previous: data.previous
+      });
+
+      setBusinesses(data.results || []);
+      setNextUrl(data.next || null);
+      setHasMore(!!data.next);
     } catch (error) {
       console.error('업체 로드 실패:', error);
       setBusinesses([]);
+      setNextUrl(null);
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
   };
+
+  const loadMore = useCallback(async () => {
+    if (!nextUrlRef.current || loadingMoreRef.current) return;
+
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+
+    try {
+      const response = await fetch(nextUrlRef.current);
+      const data = await response.json();
+
+      setBusinesses(prev => [...prev, ...(data.results || [])]);
+      setNextUrl(data.next || null);
+      setHasMore(!!data.next);
+    } catch (error) {
+      console.error('추가 로드 실패:', error);
+    } finally {
+      loadingMoreRef.current = false;
+      setLoadingMore(false);
+    }
+  }, []);
 
   // 시/도 선택 핸들러
   const handleProvinceChange = (province: string) => {
     setSelectedProvince(province);
     const region = regions.find(r => r.name === province);
     setCities(region?.cities || []);
-    setSelectedCity('');
+    setSelectedCity(''); // 시/도 변경 시 시/군/구는 초기화 (전체로)
   };
 
   // 주소 복사
@@ -128,7 +211,7 @@ export default function LocalBusinessesPage() {
       e.preventDefault();
       e.stopPropagation();
     }
-    navigator.clipboard.writeText(address);
+    navigator.clipboard.writeText(address.replace('대한민국 ', ''));
     toast.success('복사 완료');
   };
 
@@ -194,9 +277,10 @@ export default function LocalBusinessesPage() {
                 disabled={!selectedProvince}
               >
                 <SelectTrigger className="h-9 sm:h-10">
-                  <SelectValue placeholder="시/군/구" />
+                  <SelectValue placeholder="전체" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="">전체</SelectItem>
                   {cities.map((city) => (
                     <SelectItem key={city} value={city}>
                       {city}
@@ -254,7 +338,7 @@ export default function LocalBusinessesPage() {
             {/* 상위 정보 */}
             <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground px-1">
               <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span>{selectedCity} {selectedCategory?.name}</span>
+              <span>{selectedCity || selectedProvince} {selectedCategory?.name}</span>
               <span className="text-primary font-medium">• 총 {businesses.length}개</span>
             </div>
 
@@ -302,18 +386,6 @@ export default function LocalBusinessesPage() {
                       </div>
                     </div>
 
-                    {/* 랭킹 배지 */}
-                    <div className="absolute top-2 left-2">
-                      <Badge className={`
-                        ${business.rank_in_region === 1 ? 'bg-yellow-500 hover:bg-yellow-500' : ''}
-                        ${business.rank_in_region === 2 ? 'bg-gray-400 hover:bg-gray-400' : ''}
-                        ${business.rank_in_region === 3 ? 'bg-orange-500 hover:bg-orange-500' : ''}
-                        ${business.rank_in_region >= 4 ? 'bg-slate-600 hover:bg-slate-600' : ''}
-                        text-white font-bold text-xs shadow-md
-                      `}>
-                        {business.rank_in_region}위
-                      </Badge>
-                    </div>
                     {/* 인증 배지 */}
                     {business.is_verified && (
                       <div className="absolute top-2 right-2">
@@ -338,13 +410,13 @@ export default function LocalBusinessesPage() {
                       </div>
                     )}
 
-                    <p className="text-xs text-muted-foreground line-clamp-1">
+                    <p className="text-xs text-slate-700 line-clamp-1">
                       <MapPin className="w-3 h-3 inline mr-1" />
-                      {business.address}
+                      {business.address.replace('대한민국 ', '')}
                     </p>
 
                     {business.phone_number && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-slate-700">
                         <Phone className="w-3 h-3 inline mr-1" />
                         {business.phone_number}
                       </p>
@@ -386,6 +458,24 @@ export default function LocalBusinessesPage() {
                 </Card>
               ))}
             </div>
+
+            {/* 무한스크롤 트리거 */}
+            {hasMore && (
+              <div ref={loadMoreRef} className="flex justify-center py-8">
+                {loadingMore && (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <p className="text-sm text-muted-foreground">더 불러오는 중...</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!hasMore && businesses.length > 0 && (
+              <div className="text-center py-8 text-sm text-muted-foreground">
+                모든 업체를 불러왔습니다
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -402,7 +492,7 @@ export default function LocalBusinessesPage() {
           <div className="space-y-3">
             <div className="text-xs sm:text-sm text-muted-foreground">
               <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 inline mr-1" />
-              {selectedBusiness?.address}
+              {selectedBusiness?.address.replace('대한민국 ', '')}
             </div>
             {selectedBusiness && (
               <KakaoMap

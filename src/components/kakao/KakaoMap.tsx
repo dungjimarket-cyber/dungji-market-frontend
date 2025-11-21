@@ -15,124 +15,172 @@ interface KakaoMapProps {
 }
 
 export default function KakaoMap({ address, placeName }: KakaoMapProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const infoWindowRef = useRef<any>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const retryCountRef = useRef(0);
-  const maxRetries = 20; // 최대 2초 (100ms * 20)
+  const initAttemptRef = useRef(0);
+  const isInitializingRef = useRef(false);
 
-  // 기존 지도 정리
+  // Cleanup 함수
+  const cleanup = () => {
+    if (infoWindowRef.current) {
+      try {
+        infoWindowRef.current.close();
+      } catch (e) {
+        console.warn('[KakaoMap] Error closing infowindow:', e);
+      }
+      infoWindowRef.current = null;
+    }
+
+    if (markerRef.current) {
+      try {
+        markerRef.current.setMap(null);
+      } catch (e) {
+        console.warn('[KakaoMap] Error removing marker:', e);
+      }
+      markerRef.current = null;
+    }
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current = null;
+    }
+  };
+
+  // 컴포넌트 언마운트 시 cleanup
   useEffect(() => {
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current = null;
-      }
+      cleanup();
+      isInitializingRef.current = false;
     };
   }, []);
 
+  // 지도 초기화
   useEffect(() => {
-    // 컴포넌트 마운트 시 상태 초기화
-    setIsLoading(true);
-    setError(null);
-    retryCountRef.current = 0;
-
-    // 스크립트가 로드되지 않았으면 대기
-    if (!isScriptLoaded) {
+    // 이미 초기화 중이면 중복 실행 방지
+    if (isInitializingRef.current) {
+      console.log('[KakaoMap] Already initializing, skipping...');
       return;
     }
 
-    const initMap = () => {
-      if (!mapRef.current) {
-        console.log('[KakaoMap] Map ref not ready');
-        return;
-      }
+    // 스크립트가 로드되지 않았으면 대기
+    if (!isScriptLoaded) {
+      console.log('[KakaoMap] Script not loaded yet');
+      return;
+    }
 
-      if (!window.kakao?.maps?.services) {
-        console.log('[KakaoMap] Kakao services not ready');
-        return;
-      }
+    // 주소가 없으면 초기화 안 함
+    if (!address) {
+      console.log('[KakaoMap] No address provided');
+      setError('주소 정보가 없습니다');
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        const geocoder = new window.kakao.maps.services.Geocoder();
+    console.log('[KakaoMap] Starting initialization for address:', address);
+    isInitializingRef.current = true;
+    setIsLoading(true);
+    setError(null);
+    initAttemptRef.current = 0;
 
-        geocoder.addressSearch(address, (result: any, status: any) => {
-          if (!mapRef.current) {
-            console.log('[KakaoMap] Map ref disappeared during geocoding');
-            setIsLoading(false);
-            return;
-          }
+    const initializeMap = () => {
+      initAttemptRef.current += 1;
 
-          if (status === window.kakao.maps.services.Status.OK) {
-            const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
-
-            // 기존 지도 인스턴스 정리
-            if (mapInstanceRef.current) {
-              mapInstanceRef.current = null;
-            }
-
-            const map = new window.kakao.maps.Map(mapRef.current, {
-              center: coords,
-              level: 3,
-            });
-
-            // 새 지도 인스턴스 저장
-            mapInstanceRef.current = map;
-
-            const marker = new window.kakao.maps.Marker({
-              map: map,
-              position: coords,
-            });
-
-            if (placeName) {
-              const infowindow = new window.kakao.maps.InfoWindow({
-                content: `<div style="padding:5px;font-size:12px;text-align:center;white-space:nowrap;">${placeName}</div>`,
-              });
-              infowindow.open(map, marker);
-            }
-
-            setIsLoading(false);
-            setError(null);
-            console.log('[KakaoMap] Map loaded successfully');
-          } else {
-            console.error('[KakaoMap] Geocoding failed:', status);
-            setError('주소를 찾을 수 없습니다');
-            setIsLoading(false);
-          }
-        });
-      } catch (err) {
-        console.error('[KakaoMap] Error loading map:', err);
-        setError('지도를 불러오는 중 오류가 발생했습니다');
+      // 최대 재시도 횟수 체크
+      if (initAttemptRef.current > 30) {
+        console.error('[KakaoMap] Max initialization attempts reached');
+        setError('지도를 불러올 수 없습니다');
         setIsLoading(false);
-      }
-    };
-
-    const tryLoadMap = () => {
-      // window.kakao가 없으면 재시도
-      if (!window.kakao || !window.kakao.maps) {
-        retryCountRef.current += 1;
-
-        if (retryCountRef.current >= maxRetries) {
-          console.error('[KakaoMap] Max retries reached');
-          setError('지도를 불러올 수 없습니다');
-          setIsLoading(false);
-          return;
-        }
-
-        console.log(`[KakaoMap] Kakao SDK not ready, retrying... (${retryCountRef.current}/${maxRetries})`);
-        setTimeout(tryLoadMap, 100);
+        isInitializingRef.current = false;
         return;
       }
 
-      // kakao.maps.load 사용
+      // Kakao SDK 체크
+      if (!window.kakao || !window.kakao.maps) {
+        console.log(`[KakaoMap] Waiting for Kakao SDK... (attempt ${initAttemptRef.current})`);
+        setTimeout(initializeMap, 100);
+        return;
+      }
+
+      // 지도 컨테이너 체크
+      if (!mapContainerRef.current) {
+        console.log('[KakaoMap] Map container not ready');
+        setTimeout(initializeMap, 100);
+        return;
+      }
+
+      // kakao.maps.load로 API 준비 완료 후 실행
       window.kakao.maps.load(() => {
-        console.log('[KakaoMap] Kakao maps loaded, initializing...');
-        initMap();
+        console.log('[KakaoMap] Kakao maps loaded, creating map...');
+
+        try {
+          // 기존 지도 정리
+          cleanup();
+
+          // Geocoder로 주소 검색
+          const geocoder = new window.kakao.maps.services.Geocoder();
+
+          geocoder.addressSearch(address, (result: any, status: any) => {
+            // 컨테이너가 사라진 경우
+            if (!mapContainerRef.current) {
+              console.log('[KakaoMap] Container disappeared during geocoding');
+              setIsLoading(false);
+              isInitializingRef.current = false;
+              return;
+            }
+
+            if (status === window.kakao.maps.services.Status.OK) {
+              console.log('[KakaoMap] Geocoding successful:', result[0]);
+
+              const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
+
+              // 지도 생성
+              const map = new window.kakao.maps.Map(mapContainerRef.current, {
+                center: coords,
+                level: 3,
+              });
+              mapInstanceRef.current = map;
+
+              // 마커 생성
+              const marker = new window.kakao.maps.Marker({
+                map: map,
+                position: coords,
+              });
+              markerRef.current = marker;
+
+              // 인포윈도우 생성 (placeName이 있는 경우)
+              if (placeName) {
+                const infowindow = new window.kakao.maps.InfoWindow({
+                  content: `<div style="padding:5px 10px;font-size:12px;text-align:center;white-space:nowrap;">${placeName}</div>`,
+                });
+                infowindow.open(map, marker);
+                infoWindowRef.current = infowindow;
+              }
+
+              setIsLoading(false);
+              setError(null);
+              isInitializingRef.current = false;
+              console.log('[KakaoMap] Map initialized successfully');
+            } else {
+              console.error('[KakaoMap] Geocoding failed with status:', status);
+              setError('주소를 찾을 수 없습니다');
+              setIsLoading(false);
+              isInitializingRef.current = false;
+            }
+          });
+        } catch (err) {
+          console.error('[KakaoMap] Error initializing map:', err);
+          setError('지도를 불러오는 중 오류가 발생했습니다');
+          setIsLoading(false);
+          isInitializingRef.current = false;
+        }
       });
     };
 
-    tryLoadMap();
+    initializeMap();
   }, [address, placeName, isScriptLoaded]);
 
   return (
@@ -140,21 +188,47 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
       <Script
         src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`}
         strategy="afterInteractive"
-        onLoad={() => setIsScriptLoaded(true)}
+        onLoad={() => {
+          console.log('[KakaoMap] Script loaded');
+          setIsScriptLoaded(true);
+        }}
+        onError={(e) => {
+          console.error('[KakaoMap] Script load error:', e);
+          setError('지도 스크립트를 불러올 수 없습니다');
+          setIsLoading(false);
+        }}
       />
       <div className="relative w-full h-64">
         <div
-          ref={mapRef}
+          ref={mapContainerRef}
           className="w-full h-64 rounded-lg border border-slate-200 bg-slate-100"
         />
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-100 rounded-lg">
-            <div className="text-sm text-slate-600">지도를 불러오는 중...</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-100/90 rounded-lg backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="text-sm text-slate-600">지도를 불러오는 중...</div>
+            </div>
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-100 rounded-lg">
-            <div className="text-sm text-red-600">{error}</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-100/90 rounded-lg backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-2 px-4 text-center">
+              <div className="text-sm text-red-600">{error}</div>
+              <button
+                onClick={() => {
+                  setError(null);
+                  setIsLoading(true);
+                  isInitializingRef.current = false;
+                  initAttemptRef.current = 0;
+                  // 재시도를 위해 강제로 리렌더링
+                  setIsScriptLoaded(prev => prev);
+                }}
+                className="text-xs text-primary hover:underline"
+              >
+                다시 시도
+              </button>
+            </div>
           </div>
         )}
       </div>
