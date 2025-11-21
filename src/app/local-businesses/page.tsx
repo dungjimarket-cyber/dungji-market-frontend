@@ -19,7 +19,7 @@ export default function LocalBusinessesPage() {
 
   // 상태
   const [selectedProvince, setSelectedProvince] = useState<string>('');
-  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedCity, setSelectedCity] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<LocalBusinessCategory | null>(null);
   const [categories, setCategories] = useState<LocalBusinessCategory[]>([]);
   const [cities, setCities] = useState<string[]>([]);
@@ -67,7 +67,7 @@ export default function LocalBusinessesPage() {
       if (seoul) {
         setSelectedProvince('서울');
         setCities(seoul.cities);
-        setSelectedCity(''); // 빈값 = 전체
+        setSelectedCity('all'); // 'all' = 전체
       }
     };
 
@@ -134,9 +134,9 @@ export default function LocalBusinessesPage() {
     setLoading(true);
     try {
       // 지역명을 전체 형식으로 변환
-      // selectedCity가 비어있으면 시/도만 검색 (전체)
+      // selectedCity가 'all'이면 시/도만 검색 (전체)
       let regionParam: string;
-      if (selectedCity) {
+      if (selectedCity && selectedCity !== 'all') {
         // 특정 시/군/구 선택
         const fullRegionName = `${selectedProvince === '서울' ? '서울특별시' : selectedProvince === '경기' ? '경기도' : selectedProvince} ${selectedCity}`;
         regionParam = fullRegionName;
@@ -147,7 +147,7 @@ export default function LocalBusinessesPage() {
 
       console.log('🔍 검색 조건:', {
         selectedProvince,
-        selectedCity: selectedCity || '전체',
+        selectedCity: selectedCity === 'all' ? '전체' : selectedCity,
         regionParam,
         category: selectedCategory.name
       });
@@ -202,7 +202,7 @@ export default function LocalBusinessesPage() {
     setSelectedProvince(province);
     const region = regions.find(r => r.name === province);
     setCities(region?.cities || []);
-    setSelectedCity(''); // 시/도 변경 시 시/군/구는 초기화 (전체로)
+    setSelectedCity('all'); // 시/도 변경 시 시/군/구는 초기화 (전체로)
   };
 
   // 주소 복사
@@ -280,7 +280,7 @@ export default function LocalBusinessesPage() {
                   <SelectValue placeholder="전체" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">전체</SelectItem>
+                  <SelectItem value="all">전체</SelectItem>
                   {cities.map((city) => (
                     <SelectItem key={city} value={city}>
                       {city}
@@ -420,6 +420,15 @@ export default function LocalBusinessesPage() {
                         <Phone className="w-3 h-3 inline mr-1" />
                         {business.phone_number}
                       </p>
+                    )}
+
+                    {/* AI/Google 요약 */}
+                    {business.editorial_summary && (
+                      <div className="mt-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+                        <p className="text-xs text-slate-700 leading-relaxed line-clamp-2">
+                          💡 {business.editorial_summary}
+                        </p>
+                      </div>
                     )}
 
                     {/* 액션 버튼 */}
