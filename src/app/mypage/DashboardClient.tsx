@@ -110,26 +110,26 @@ export default function DashboardClient() {
   const services = [
     {
       id: 'custom',
-      title: '커공 특가',
-      description: '특별 할인 공동구매',
+      title: '커공/이벤트 관리',
+      description: '',
       icon: Sparkles,
       color: 'bg-purple-50 border-purple-200',
       iconColor: 'text-purple-600',
       path: '/custom-deals/my'
     },
-    {
-      id: 'groupbuy',
-      title: '견적 서비스 내역',
-      description: '통신상품 공동구매 서비스',
-      icon: ShoppingCart,
-      color: 'bg-blue-50 border-blue-200',
-      iconColor: 'text-blue-600',
-      path: isSeller ? '/mypage/seller/groupbuy' : '/mypage/groupbuy'
-    },
+    // {
+    //   id: 'groupbuy',
+    //   title: '견적 서비스 내역',
+    //   description: '통신상품 공동구매 서비스',
+    //   icon: ShoppingCart,
+    //   color: 'bg-blue-50 border-blue-200',
+    //   iconColor: 'text-blue-600',
+    //   path: isSeller ? '/mypage/seller/groupbuy' : '/mypage/groupbuy'
+    // },
     {
       id: 'used',
       title: '중고거래 내역',
-      description: '지역기반 직거래',
+      description: '',
       icon: Smartphone,
       color: 'bg-green-50 border-green-200',
       iconColor: 'text-green-600',

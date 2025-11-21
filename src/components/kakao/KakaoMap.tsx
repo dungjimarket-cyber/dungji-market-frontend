@@ -60,12 +60,6 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
 
   // 지도 초기화
   useEffect(() => {
-    // 이미 초기화 중이면 중복 실행 방지
-    if (isInitializingRef.current) {
-      console.log('[KakaoMap] Already initializing, skipping...');
-      return;
-    }
-
     // 스크립트가 로드되지 않았으면 대기
     if (!isScriptLoaded) {
       console.log('[KakaoMap] Script not loaded yet');
@@ -80,7 +74,18 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
       return;
     }
 
+    // 이미 초기화 중이면 중복 실행 방지
+    if (isInitializingRef.current) {
+      console.log('[KakaoMap] Already initializing, skipping...');
+      return;
+    }
+
     console.log('[KakaoMap] Starting initialization for address:', address);
+
+    // 기존 지도 완전히 정리
+    cleanup();
+
+    // 초기화 상태 리셋
     isInitializingRef.current = true;
     setIsLoading(true);
     setError(null);
@@ -120,10 +125,13 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
           // 기존 지도 정리
           cleanup();
 
-          // Geocoder로 주소 검색
+          // Geocoder로 주소 검색 ("대한민국" 제거)
           const geocoder = new window.kakao.maps.services.Geocoder();
+          const searchAddress = address.replace('대한민국 ', '').trim();
 
-          geocoder.addressSearch(address, (result: any, status: any) => {
+          console.log('[KakaoMap] Searching for address:', searchAddress);
+
+          geocoder.addressSearch(searchAddress, (result: any, status: any) => {
             // 컨테이너가 사라진 경우
             if (!mapContainerRef.current) {
               console.log('[KakaoMap] Container disappeared during geocoding');

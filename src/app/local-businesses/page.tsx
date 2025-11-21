@@ -50,19 +50,24 @@ export default function LocalBusinessesPage() {
       // 사용자 활동지역이 있으면 사용
       const userRegion = user?.address_region?.name || user?.region;
 
+      console.log('[LocalBusinesses] User region:', userRegion);
+
       if (userRegion) {
         // regions 배열에서 해당 지역 찾기
         for (const region of regions) {
           if (region.cities.includes(userRegion)) {
+            console.log('[LocalBusinesses] Found region:', region.name, 'City:', userRegion);
             setSelectedProvince(region.name);
             setCities(region.cities);
             setSelectedCity(userRegion);
             return;
           }
         }
+        console.log('[LocalBusinesses] User region not found in regions array');
       }
 
       // 기본값: 서울 (시/구 선택 안 함 = 서울 전체)
+      console.log('[LocalBusinesses] Using default: Seoul');
       const seoul = regions.find(r => r.name === '서울');
       if (seoul) {
         setSelectedProvince('서울');
@@ -73,15 +78,15 @@ export default function LocalBusinessesPage() {
 
     initializeRegion();
 
-    // 첫 번째 카테고리 선택
-    if (!selectedCategory && categories.length > 0) {
+    // 로그인한 사용자만 첫 번째 카테고리 선택 (비로그인은 전체 보기)
+    if (!selectedCategory && categories.length > 0 && user) {
       setSelectedCategory(categories[0]);
     }
   }, [categories, user]);
 
-  // 지역 또는 카테고리 변경 시 검색
+  // 지역 변경 시 검색 (카테고리는 선택사항)
   useEffect(() => {
-    if (selectedProvince && selectedCategory) {
+    if (selectedProvince) {
       loadBusinesses();
     }
   }, [selectedProvince, selectedCity, selectedCategory]);
@@ -129,7 +134,7 @@ export default function LocalBusinessesPage() {
   };
 
   const loadBusinesses = async () => {
-    if (!selectedProvince || !selectedCategory) return;
+    if (!selectedProvince) return;
 
     setLoading(true);
     try {
@@ -149,11 +154,23 @@ export default function LocalBusinessesPage() {
         selectedProvince,
         selectedCity: selectedCity === 'all' ? '전체' : selectedCity,
         regionParam,
-        category: selectedCategory.name
+        category: selectedCategory?.name || '전체'
       });
 
+      // URL 파라미터 구성 (카테고리는 선택사항)
+      const params = new URLSearchParams({
+        region_name__icontains: regionParam,
+        ordering: 'rank_in_region',
+        page_size: '12'
+      });
+
+      // 카테고리가 선택되어 있으면 추가
+      if (selectedCategory) {
+        params.append('category', selectedCategory.id.toString());
+      }
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/local-businesses/?region_name__icontains=${encodeURIComponent(regionParam)}&category=${selectedCategory.id}&ordering=rank_in_region&page_size=12`
+        `${process.env.NEXT_PUBLIC_API_URL}/local-businesses/?${params.toString()}`
       );
       const data = await response.json();
 
