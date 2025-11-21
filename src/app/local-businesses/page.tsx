@@ -260,9 +260,9 @@ export default function LocalBusinessesPage() {
           <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
             지역 전문업체 정보
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          {/* <p className="text-xs sm:text-sm text-muted-foreground">
             Google 리뷰 기반 우리 동네 전문가 찾기
-          </p>
+          </p> */}
         </div>
 
         {/* 지역 선택 */}
