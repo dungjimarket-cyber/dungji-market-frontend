@@ -386,11 +386,11 @@ export default function LocalBusinessesPage() {
             </div>
 
             {/* 업체 카드 그리드 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
               {businesses.map((business) => (
                 <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-all duration-200 h-full">
                   {/* 사진 또는 대체 이미지 */}
-                  <div className="relative h-44 sm:h-48 w-full bg-slate-100">
+                  <div className="relative h-32 sm:h-48 w-full bg-slate-100">
                     {business.has_photo ? (
                       <img
                         src={`${process.env.NEXT_PUBLIC_API_URL}/local-businesses/${business.id}/photo/`}
@@ -475,34 +475,34 @@ export default function LocalBusinessesPage() {
                     )}
 
                     {/* 액션 버튼 */}
-                    <div className="flex gap-1.5 pt-2 border-t">
+                    <div className="flex gap-1 sm:gap-1.5 pt-2 border-t">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 text-xs h-8 px-2"
+                        className="flex-1 text-[10px] sm:text-xs h-9 px-1.5 sm:px-2 flex items-center justify-center gap-0.5 sm:gap-1"
                         onClick={(e) => handleShowMap(business, e)}
                       >
-                        <Map className="w-3 h-3 sm:mr-1" />
-                        <span className="hidden sm:inline">지도</span>
+                        <Map className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">지도</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 text-xs h-8 px-2"
+                        className="flex-1 text-[10px] sm:text-xs h-9 px-1.5 sm:px-2 flex items-center justify-center gap-0.5 sm:gap-1"
                         onClick={(e) => handleCopyAddress(business.address, e)}
                       >
-                        <Copy className="w-3 h-3 sm:mr-1" />
-                        <span className="hidden sm:inline">주소복사</span>
+                        <Copy className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">복사</span>
                       </Button>
                       {business.phone_number && (
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 text-xs h-8 px-2"
+                          className="flex-1 text-[10px] sm:text-xs h-9 px-1.5 sm:px-2 flex items-center justify-center gap-0.5 sm:gap-1"
                           onClick={(e) => handleCall(business.phone_number!, e)}
                         >
-                          <Phone className="w-3 h-3 sm:mr-1" />
-                          <span className="hidden sm:inline">전화</span>
+                          <Phone className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">전화</span>
                         </Button>
                       )}
                     </div>
