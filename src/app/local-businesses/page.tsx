@@ -272,16 +272,15 @@ export default function LocalBusinessesPage() {
     e.preventDefault();
     e.stopPropagation();
 
-    // 완전히 새로운 지도를 위해 key 증가
-    setMapKey(prev => prev + 1);
     setSelectedBusiness(business);
-    setShouldRenderMap(false);
     setMapDialogOpen(true);
+    setShouldRenderMap(false);
 
-    // Dialog 열린 후 지도 렌더링
+    // Dialog 열린 직후 지도 새로 렌더링
     setTimeout(() => {
+      setMapKey(prev => prev + 1); // key 변경으로 완전히 새로운 컴포넌트 생성
       setShouldRenderMap(true);
-    }, 300);
+    }, 100);
   };
 
   return (
@@ -567,22 +566,17 @@ export default function LocalBusinessesPage() {
         )}
       </div>
 
-      {/* 지도 다이얼로그 - 완전히 언마운트/마운트 */}
-      {mapDialogOpen && (
-        <Dialog
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) {
-              // Dialog 닫기 시작
-              setShouldRenderMap(false);
-              // Dialog 애니메이션 후 완전히 언마운트
-              setTimeout(() => {
-                setMapDialogOpen(false);
-                setSelectedBusiness(null);
-              }, 200);
-            }
-          }}
-        >
+      {/* 지도 다이얼로그 */}
+      <Dialog
+        open={mapDialogOpen}
+        onOpenChange={(open) => {
+          setMapDialogOpen(open);
+          if (!open) {
+            setShouldRenderMap(false);
+            setSelectedBusiness(null);
+          }
+        }}
+      >
           <DialogContent className="max-w-[95vw] sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -660,8 +654,7 @@ export default function LocalBusinessesPage() {
             </div>
           </div>
         </DialogContent>
-        </Dialog>
-      )}
+      </Dialog>
     </div>
   );
 }
