@@ -18,8 +18,8 @@ import KakaoMap from '@/components/kakao/KakaoMap';
 export default function LocalBusinessesPage() {
   const { user } = useAuth();
 
-  // 상태
-  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  // 상태 - 초기값을 서울로 설정
+  const [selectedProvince, setSelectedProvince] = useState<string>('서울');
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<LocalBusinessCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -33,6 +33,8 @@ export default function LocalBusinessesPage() {
   const [mapDialogOpen, setMapDialogOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<LocalBusinessList | null>(null);
   const [shouldRenderMap, setShouldRenderMap] = useState(false);
+  const [mapKey, setMapKey] = useState(0); // 지도 강제 재생성용
+  const [isInitialized, setIsInitialized] = useState(false); // 초기화 완료 플래그
 
   // IntersectionObserver용 ref
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -45,15 +47,22 @@ export default function LocalBusinessesPage() {
     loadCategories();
   }, []);
 
-  // 초기 지역 설정 (카테고리 로드와 무관하게 즉시 실행)
+  // 초기 지역 설정 (한 번만 실행)
   useEffect(() => {
+    if (isInitialized) return;
+
     const initializeRegion = () => {
-      // 사용자 활동지역이 있으면 사용
+      // 서울 지역 데이터 설정
+      const seoul = regions.find(r => r.name === '서울');
+      if (seoul) {
+        setCities(seoul.cities);
+      }
+
+      // 사용자 활동지역이 있으면 사용 (로그인 사용자)
       const userRegion = user?.address_region?.name || user?.region;
 
-      console.log('[LocalBusinesses] User region:', userRegion);
-
       if (userRegion) {
+        console.log('[LocalBusinesses] User region:', userRegion);
         // regions 배열에서 해당 지역 찾기
         for (const region of regions) {
           if (region.cities.includes(userRegion)) {
@@ -61,24 +70,21 @@ export default function LocalBusinessesPage() {
             setSelectedProvince(region.name);
             setCities(region.cities);
             setSelectedCity(userRegion);
+            setIsInitialized(true);
             return;
           }
         }
-        console.log('[LocalBusinesses] User region not found in regions array');
       }
 
-      // 기본값: 서울 전체 (모든 경우에 서울 전체로 시작)
+      // 기본값: 서울 전체 (비로그인 또는 지역 설정 없음)
       console.log('[LocalBusinesses] Using default: Seoul (전체)');
-      const seoul = regions.find(r => r.name === '서울');
-      if (seoul) {
-        setSelectedProvince('서울');
-        setCities(seoul.cities);
-        setSelectedCity('all'); // 'all' = 전체
-      }
+      setSelectedProvince('서울');
+      setSelectedCity('all');
+      setIsInitialized(true);
     };
 
     initializeRegion();
-  }, [user]);
+  }, [user, isInitialized]);
 
   // 지역/카테고리/검색어 변경 시 검색
   useEffect(() => {
@@ -265,11 +271,14 @@ export default function LocalBusinessesPage() {
   const handleShowMap = (business: LocalBusinessList, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // 완전히 새로운 지도를 위해 key 증가
+    setMapKey(prev => prev + 1);
     setSelectedBusiness(business);
-    setShouldRenderMap(false); // 먼저 초기화
+    setShouldRenderMap(false);
     setMapDialogOpen(true);
 
-    // Dialog 열린 후 지도 렌더링 (300ms 딜레이)
+    // Dialog 열린 후 지도 렌더링
     setTimeout(() => {
       setShouldRenderMap(true);
     }, 300);
@@ -558,9 +567,8 @@ export default function LocalBusinessesPage() {
         )}
       </div>
 
-      {/* 지도 다이얼로그 - key로 완전히 재생성 */}
+      {/* 지도 다이얼로그 - mapKey로 강제 재생성 */}
       <Dialog
-        key={selectedBusiness?.id || 'map-dialog'}
         open={mapDialogOpen}
         onOpenChange={(open) => {
           setMapDialogOpen(open);
@@ -584,7 +592,7 @@ export default function LocalBusinessesPage() {
             </div>
             {selectedBusiness && shouldRenderMap && (
               <KakaoMap
-                key={selectedBusiness.id}
+                key={mapKey}
                 address={selectedBusiness.address}
                 placeName={selectedBusiness.name}
               />
