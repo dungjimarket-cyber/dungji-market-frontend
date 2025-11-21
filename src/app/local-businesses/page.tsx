@@ -284,11 +284,8 @@ export default function LocalBusinessesPage() {
             <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            지역 전문업체 정보
+            우리동네 전문가를 만나보세요
           </h1>
-          {/* <p className="text-xs sm:text-sm text-muted-foreground">
-            Google 리뷰 기반 우리 동네 전문가 찾기
-          </p> */}
         </div>
 
         {/* 검색 */}
