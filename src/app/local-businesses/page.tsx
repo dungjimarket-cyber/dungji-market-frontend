@@ -31,6 +31,7 @@ export default function LocalBusinessesPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextUrl, setNextUrl] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0); // 전체 업체 개수
   const [mapDialogOpen, setMapDialogOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<LocalBusinessList | null>(null);
   const [shouldRenderMap, setShouldRenderMap] = useState(false);
@@ -184,12 +185,14 @@ export default function LocalBusinessesPage() {
       const data = await response.json();
 
       console.log('📊 검색 결과:', {
-        count: data.results?.length || 0,
+        count: data.count || 0,
+        results: data.results?.length || 0,
         next: data.next,
         previous: data.previous
       });
 
       setBusinesses(data.results || []);
+      setTotalCount(data.count || 0); // 전체 개수 저장
       setNextUrl(data.next || null);
       setHasMore(!!data.next);
     } catch (error) {
@@ -300,42 +303,42 @@ export default function LocalBusinessesPage() {
         }}
       />
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-20">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl">
+      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 max-w-7xl">
         {/* 헤더 */}
         <div className="text-center mb-4 sm:mb-6">
-          <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary to-primary/70 rounded-xl mb-2 sm:mb-3">
+          <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-slate-800 rounded-xl mb-2 sm:mb-3">
             <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 text-slate-900">
             우리동네 전문가를 만나보세요
           </h1>
         </div>
 
         {/* 검색 */}
-        <Card className="mb-4 p-3 sm:p-4">
+        <Card className="mb-3 p-2 sm:p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
             <Input
               type="text"
               placeholder="업체명 또는 주소로 검색..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 sm:h-11"
+              className="pl-9 sm:pl-10 h-9 sm:h-11 text-sm"
             />
           </div>
         </Card>
 
         {/* 지역 선택 */}
-        <Card className="mb-4 p-3 sm:p-4">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-              <MapPin className="w-4 h-4" />
+        <Card className="mb-3 p-2 sm:p-4">
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700">
+              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>지역 선택</span>
             </div>
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 gap-1.5 sm:gap-3">
               {/* 시/도 */}
-              <Select value={selectedProvince} onValueChange={handleProvinceChange}>
-                <SelectTrigger className="h-9 sm:h-10">
+              <Select value={selectedProvince || "서울"} onValueChange={handleProvinceChange}>
+                <SelectTrigger className="h-8 sm:h-10">
                   <SelectValue placeholder="시/도" />
                 </SelectTrigger>
                 <SelectContent>
@@ -353,7 +356,7 @@ export default function LocalBusinessesPage() {
                 onValueChange={setSelectedCity}
                 disabled={!selectedProvince}
               >
-                <SelectTrigger className="h-9 sm:h-10">
+                <SelectTrigger className="h-8 sm:h-10">
                   <SelectValue placeholder="전체" />
                 </SelectTrigger>
                 <SelectContent>
@@ -370,26 +373,26 @@ export default function LocalBusinessesPage() {
         </Card>
 
         {/* 업종 선택 (버튼식) */}
-        <Card className="mb-4 p-3 sm:p-4">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-              <Building2 className="w-4 h-4" />
+        <Card className="mb-3 p-2 sm:p-4">
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700">
+              <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>업종 선택</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5 sm:gap-2">
               {/* 전체 버튼 */}
               <Button
                 variant={!selectedCategory ? 'default' : 'outline'}
                 size="sm"
-                className={`h-auto py-3 px-2 flex flex-col items-center gap-1 transition-all ${
+                className={`h-auto py-2 sm:py-3 px-1.5 sm:px-2 flex flex-col items-center gap-0.5 sm:gap-1 transition-all ${
                   !selectedCategory
-                    ? 'ring-2 ring-primary ring-offset-2'
-                    : 'hover:border-primary'
+                    ? 'bg-slate-800 text-white hover:bg-slate-700 ring-2 ring-slate-400 ring-offset-2'
+                    : 'border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400'
                 }`}
                 onClick={() => setSelectedCategory(null)}
               >
-                <span className="text-2xl">📋</span>
-                <span className="text-xs font-medium whitespace-nowrap">전체</span>
+                <span className="text-xl sm:text-2xl">📋</span>
+                <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">전체</span>
               </Button>
 
               {categories.map((cat) => (
@@ -397,15 +400,15 @@ export default function LocalBusinessesPage() {
                   key={cat.id}
                   variant={selectedCategory?.id === cat.id ? 'default' : 'outline'}
                   size="sm"
-                  className={`h-auto py-3 px-2 flex flex-col items-center gap-1 transition-all ${
+                  className={`h-auto py-2 sm:py-3 px-1.5 sm:px-2 flex flex-col items-center gap-0.5 sm:gap-1 transition-all ${
                     selectedCategory?.id === cat.id
-                      ? 'ring-2 ring-primary ring-offset-2'
-                      : 'hover:border-primary'
+                      ? 'bg-slate-800 text-white hover:bg-slate-700 ring-2 ring-slate-400 ring-offset-2'
+                      : 'border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400'
                   }`}
                   onClick={() => setSelectedCategory(cat)}
                 >
-                  <span className="text-2xl">{cat.icon}</span>
-                  <span className="text-xs font-medium whitespace-nowrap">{cat.name}</span>
+                  <span className="text-xl sm:text-2xl">{cat.icon}</span>
+                  <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">{cat.name}</span>
                 </Button>
               ))}
             </div>
@@ -415,7 +418,7 @@ export default function LocalBusinessesPage() {
         {/* 결과 */}
         {loading ? (
           <div className="text-center py-16 sm:py-20">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-slate-700"></div>
             <p className="mt-4 text-sm text-muted-foreground">검색 중...</p>
           </div>
         ) : businesses.length === 0 ? (
@@ -431,7 +434,7 @@ export default function LocalBusinessesPage() {
             <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground px-1">
               <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>{selectedCity || selectedProvince} {selectedCategory?.name}</span>
-              <span className="text-primary font-medium">• 총 {businesses.length}개</span>
+              <span className="text-slate-900 font-semibold">• 총 {totalCount.toLocaleString()}개</span>
             </div>
 
             {/* 업체 카드 그리드 */}
@@ -461,13 +464,13 @@ export default function LocalBusinessesPage() {
                     {/* 대체 이미지 (사진 없을 때) */}
                     <div
                       className={`fallback-image w-full h-full bg-gradient-to-br ${
-                        business.category_name === '변호사' ? 'from-blue-400 to-blue-600' :
-                        business.category_name === '세무사' ? 'from-green-400 to-green-600' :
-                        business.category_name === '법무사' ? 'from-indigo-400 to-indigo-600' :
-                        business.category_name === '부동산' ? 'from-orange-400 to-orange-600' :
-                        business.category_name === '인테리어' ? 'from-purple-400 to-purple-600' :
-                        business.category_name === '휴대폰매장' ? 'from-pink-400 to-pink-600' :
-                        business.category_name === '자동차정비' ? 'from-gray-400 to-gray-600' :
+                        business.category_name === '변호사' ? 'from-slate-400 to-slate-600' :
+                        business.category_name === '세무사' ? 'from-slate-400 to-slate-600' :
+                        business.category_name === '법무사' ? 'from-slate-400 to-slate-600' :
+                        business.category_name === '부동산' ? 'from-slate-400 to-slate-600' :
+                        business.category_name === '인테리어' ? 'from-slate-400 to-slate-600' :
+                        business.category_name === '휴대폰매장' ? 'from-slate-400 to-slate-600' :
+                        business.category_name === '자동차정비' ? 'from-slate-400 to-slate-600' :
                         'from-slate-400 to-slate-600'
                       } flex items-center justify-center`}
                       style={{ display: (business.custom_photo_url || business.has_photo) ? 'none' : 'flex' }}
@@ -481,7 +484,7 @@ export default function LocalBusinessesPage() {
                     {/* 인증 배지 */}
                     {business.is_verified && (
                       <div className="absolute top-2 right-2">
-                        <Badge className="bg-blue-500 hover:bg-blue-500 text-white shadow-md">인증</Badge>
+                        <Badge className="bg-slate-100 text-slate-900 border border-slate-300 shadow-sm">인증</Badge>
                       </div>
                     )}
                   </div>
@@ -520,7 +523,7 @@ export default function LocalBusinessesPage() {
                         <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />
                         <div className="flex-1 min-w-0">
                           <span className="break-words">{business.address.replace('대한민국 ', '')}</span>
-                          <span className="text-[10px] text-primary ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-[10px] text-slate-600 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             복사
                           </span>
                         </div>
@@ -539,20 +542,20 @@ export default function LocalBusinessesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 text-[10px] sm:text-xs h-9 px-1.5 sm:px-2 flex items-center justify-center gap-0.5 sm:gap-1"
+                        className="flex-1 text-[10px] sm:text-xs h-9 px-1.5 sm:px-2 flex items-center justify-center gap-0.5 sm:gap-1 border-slate-300 text-slate-700 hover:bg-slate-50"
                         onClick={(e) => handleShowMap(business, e)}
                       >
-                        <Map className="w-3 h-3 flex-shrink-0" />
+                        <Map className="w-3 h-3 flex-shrink-0 text-slate-600" />
                         <span className="truncate">지도</span>
                       </Button>
                       {business.phone_number && (
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 text-[10px] sm:text-xs h-9 px-1.5 sm:px-2 flex items-center justify-center gap-0.5 sm:gap-1"
+                          className="flex-1 text-[10px] sm:text-xs h-9 px-1.5 sm:px-2 flex items-center justify-center gap-0.5 sm:gap-1 border-slate-300 text-slate-700 hover:bg-slate-50"
                           onClick={(e) => handleCall(business.phone_number!, e)}
                         >
-                          <Phone className="w-3 h-3 flex-shrink-0" />
+                          <Phone className="w-3 h-3 flex-shrink-0 text-slate-600" />
                           <span className="truncate">전화</span>
                         </Button>
                       )}
@@ -567,7 +570,7 @@ export default function LocalBusinessesPage() {
               <div ref={loadMoreRef} className="flex justify-center py-8">
                 {loadingMore && (
                   <div className="flex flex-col items-center gap-2">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-700"></div>
                     <p className="text-sm text-muted-foreground">더 불러오는 중...</p>
                   </div>
                 )}
@@ -617,7 +620,7 @@ export default function LocalBusinessesPage() {
               {selectedBusiness && !shouldRenderMap && (
                 <div className="w-full h-64 flex items-center justify-center bg-slate-100 rounded-lg">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-700"></div>
                     <div className="text-sm text-slate-600">지도를 불러오는 중...</div>
                   </div>
                 </div>
@@ -625,27 +628,27 @@ export default function LocalBusinessesPage() {
             <div className="grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
-                className="h-12 flex flex-col items-center justify-center gap-1 text-xs font-medium"
+                className="h-12 flex flex-col items-center justify-center gap-1 text-xs font-medium border-slate-300 text-slate-700 hover:bg-slate-50"
                 onClick={() => {
                   if (selectedBusiness) {
                     handleCopyAddress(selectedBusiness.address);
                   }
                 }}
               >
-                <Copy className="w-4 h-4" />
+                <Copy className="w-4 h-4 text-slate-600" />
                 <span>주소복사</span>
               </Button>
               {selectedBusiness?.phone_number ? (
                 <Button
                   variant="outline"
-                  className="h-12 flex flex-col items-center justify-center gap-1 text-xs font-medium"
+                  className="h-12 flex flex-col items-center justify-center gap-1 text-xs font-medium border-slate-300 text-slate-700 hover:bg-slate-50"
                   onClick={() => {
                     if (selectedBusiness?.phone_number) {
                       handleCall(selectedBusiness.phone_number);
                     }
                   }}
                 >
-                  <Phone className="w-4 h-4" />
+                  <Phone className="w-4 h-4 text-slate-600" />
                   <span>전화하기</span>
                 </Button>
               ) : (
@@ -659,7 +662,7 @@ export default function LocalBusinessesPage() {
                 </Button>
               )}
               <Button
-                className="h-12 flex flex-col items-center justify-center gap-1 text-xs font-medium"
+                className="h-12 flex flex-col items-center justify-center gap-1 text-xs font-medium bg-slate-800 text-white hover:bg-slate-700"
                 onClick={() => {
                   if (selectedBusiness) {
                     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedBusiness.name + ' ' + selectedBusiness.address)}`, '_blank');
