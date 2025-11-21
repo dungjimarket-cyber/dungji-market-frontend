@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import KakaoMap from '@/components/kakao/KakaoMap';
 
@@ -21,6 +22,7 @@ export default function LocalBusinessesPage() {
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<LocalBusinessCategory | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [categories, setCategories] = useState<LocalBusinessCategory[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const [businesses, setBusinesses] = useState<LocalBusinessList[]>([]);
@@ -43,10 +45,8 @@ export default function LocalBusinessesPage() {
     loadCategories();
   }, []);
 
-  // 초기 지역 설정
+  // 초기 지역 설정 (카테고리 로드와 무관하게 즉시 실행)
   useEffect(() => {
-    if (categories.length === 0) return;
-
     const initializeRegion = () => {
       // 사용자 활동지역이 있으면 사용
       const userRegion = user?.address_region?.name || user?.region;
@@ -67,8 +67,8 @@ export default function LocalBusinessesPage() {
         console.log('[LocalBusinesses] User region not found in regions array');
       }
 
-      // 기본값: 서울 (시/구 선택 안 함 = 서울 전체)
-      console.log('[LocalBusinesses] Using default: Seoul');
+      // 기본값: 서울 전체 (모든 경우에 서울 전체로 시작)
+      console.log('[LocalBusinesses] Using default: Seoul (전체)');
       const seoul = regions.find(r => r.name === '서울');
       if (seoul) {
         setSelectedProvince('서울');
@@ -78,17 +78,14 @@ export default function LocalBusinessesPage() {
     };
 
     initializeRegion();
+  }, [user]);
 
-    // 카테고리는 선택하지 않음 (전체 보기가 기본)
-    // selectedCategory가 null이면 전체 카테고리 표시
-  }, [categories, user]);
-
-  // 지역 변경 시 검색 (카테고리는 선택사항)
+  // 지역/카테고리/검색어 변경 시 검색
   useEffect(() => {
     if (selectedProvince) {
       loadBusinesses();
     }
-  }, [selectedProvince, selectedCity, selectedCategory]);
+  }, [selectedProvince, selectedCity, selectedCategory, searchQuery]);
 
   // 무한스크롤 IntersectionObserver 설정
   useEffect(() => {
@@ -156,7 +153,7 @@ export default function LocalBusinessesPage() {
         category: selectedCategory?.name || '전체'
       });
 
-      // URL 파라미터 구성 (카테고리는 선택사항)
+      // URL 파라미터 구성 (카테고리와 검색어는 선택사항)
       const params = new URLSearchParams({
         region_name__icontains: regionParam,
         ordering: 'rank_in_region',
@@ -166,6 +163,11 @@ export default function LocalBusinessesPage() {
       // 카테고리가 선택되어 있으면 추가
       if (selectedCategory) {
         params.append('category', selectedCategory.id.toString());
+      }
+
+      // 검색어가 있으면 추가
+      if (searchQuery.trim()) {
+        params.append('search', searchQuery.trim());
       }
 
       const response = await fetch(
@@ -288,6 +290,20 @@ export default function LocalBusinessesPage() {
             Google 리뷰 기반 우리 동네 전문가 찾기
           </p> */}
         </div>
+
+        {/* 검색 */}
+        <Card className="mb-4 p-3 sm:p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              type="text"
+              placeholder="업체명 또는 주소로 검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-10 sm:h-11"
+            />
+          </div>
+        </Card>
 
         {/* 지역 선택 */}
         <Card className="mb-4 p-3 sm:p-4">
@@ -475,10 +491,19 @@ export default function LocalBusinessesPage() {
                       </div>
                     )}
 
-                    <p className="text-xs text-slate-700 line-clamp-1">
-                      <MapPin className="w-3 h-3 inline mr-1" />
-                      {business.address.replace('대한민국 ', '')}
-                    </p>
+                    {/* 주소 - 클릭하면 복사 */}
+                    <div
+                      className="text-xs text-slate-700 line-clamp-1 cursor-pointer hover:bg-slate-50 p-1.5 -mx-1.5 rounded transition-colors flex items-center justify-between group"
+                      onClick={(e) => handleCopyAddress(business.address, e)}
+                    >
+                      <div className="flex items-center gap-1 min-w-0">
+                        <MapPin className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{business.address.replace('대한민국 ', '')}</span>
+                      </div>
+                      <span className="text-[10px] text-primary ml-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        복사
+                      </span>
+                    </div>
 
                     {business.phone_number && (
                       <p className="text-xs text-slate-700">
@@ -497,15 +522,6 @@ export default function LocalBusinessesPage() {
                       >
                         <Map className="w-3 h-3 flex-shrink-0" />
                         <span className="truncate">지도</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 text-[10px] sm:text-xs h-9 px-1.5 sm:px-2 flex items-center justify-center gap-0.5 sm:gap-1"
-                        onClick={(e) => handleCopyAddress(business.address, e)}
-                      >
-                        <Copy className="w-3 h-3 flex-shrink-0" />
-                        <span className="truncate">복사</span>
                       </Button>
                       {business.phone_number && (
                         <Button
@@ -545,13 +561,18 @@ export default function LocalBusinessesPage() {
         )}
       </div>
 
-      {/* 지도 다이얼로그 */}
-      <Dialog open={mapDialogOpen} onOpenChange={(open) => {
-        setMapDialogOpen(open);
-        if (!open) {
-          setShouldRenderMap(false); // Dialog 닫힐 때 지도 제거
-        }
-      }}>
+      {/* 지도 다이얼로그 - key로 완전히 재생성 */}
+      <Dialog
+        key={selectedBusiness?.id || 'map-dialog'}
+        open={mapDialogOpen}
+        onOpenChange={(open) => {
+          setMapDialogOpen(open);
+          if (!open) {
+            setShouldRenderMap(false);
+            setSelectedBusiness(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-[95vw] sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -566,6 +587,7 @@ export default function LocalBusinessesPage() {
             </div>
             {selectedBusiness && shouldRenderMap && (
               <KakaoMap
+                key={selectedBusiness.id}
                 address={selectedBusiness.address}
                 placeName={selectedBusiness.name}
               />
@@ -623,7 +645,7 @@ export default function LocalBusinessesPage() {
                 }}
               >
                 <ExternalLink className="w-4 h-4" />
-                <span>지도보기</span>
+                <span>추가정보</span>
               </Button>
             </div>
           </div>
