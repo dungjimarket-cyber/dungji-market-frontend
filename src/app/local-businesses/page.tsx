@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Script from 'next/script';
 import { useAuth } from '@/contexts/AuthContext';
 import { regions } from '@/lib/regions';
 import { LocalBusinessCategory, LocalBusinessList } from '@/types/localBusiness';
@@ -35,6 +36,7 @@ export default function LocalBusinessesPage() {
   const [shouldRenderMap, setShouldRenderMap] = useState(false);
   const [mapKey, setMapKey] = useState(0); // 지도 강제 재생성용
   const [isInitialized, setIsInitialized] = useState(false); // 초기화 완료 플래그
+  const [kakaoScriptLoaded, setKakaoScriptLoaded] = useState(false); // Kakao Script 로드 상태
 
   // IntersectionObserver용 ref
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -284,7 +286,20 @@ export default function LocalBusinessesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-20">
+    <>
+      {/* Kakao Map Script - 페이지 전체에서 한 번만 로드 */}
+      <Script
+        src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`}
+        strategy="afterInteractive"
+        onLoad={() => {
+          console.log('[Page] Kakao Map Script loaded');
+          setKakaoScriptLoaded(true);
+        }}
+        onError={(e) => {
+          console.error('[Page] Kakao Map Script load error:', e);
+        }}
+      />
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-20">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl">
         {/* 헤더 */}
         <div className="text-center mb-4 sm:mb-6">
@@ -594,6 +609,7 @@ export default function LocalBusinessesPage() {
                   key={mapKey}
                   address={selectedBusiness.address}
                   placeName={selectedBusiness.name}
+                  scriptLoaded={kakaoScriptLoaded}
                 />
               )}
               {selectedBusiness && !shouldRenderMap && (
@@ -655,6 +671,7 @@ export default function LocalBusinessesPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 }

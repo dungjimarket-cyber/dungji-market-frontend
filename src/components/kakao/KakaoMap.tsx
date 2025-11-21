@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Script from 'next/script';
 
 declare global {
   interface Window {
@@ -12,14 +11,14 @@ declare global {
 interface KakaoMapProps {
   address: string;
   placeName?: string;
+  scriptLoaded?: boolean; // 스크립트 로드 상태를 prop으로 받음
 }
 
-export default function KakaoMap({ address, placeName }: KakaoMapProps) {
+export default function KakaoMap({ address, placeName, scriptLoaded = true }: KakaoMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const infoWindowRef = useRef<any>(null);
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const initAttemptRef = useRef(0);
@@ -65,10 +64,10 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
     };
   }, []);
 
-  // 지도 초기화
+  // 지도 초기화 (address나 placeName이 변경될 때만)
   useEffect(() => {
     // 스크립트가 로드되지 않았으면 대기
-    if (!isScriptLoaded) {
+    if (!scriptLoaded) {
       console.log('[KakaoMap] Script not loaded yet');
       return;
     }
@@ -81,19 +80,13 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
       return;
     }
 
-    // 이미 초기화 중이면 중복 실행 방지
-    if (isInitializingRef.current) {
-      console.log('[KakaoMap] Already initializing, skipping...');
-      return;
-    }
-
     console.log('[KakaoMap] Starting initialization for address:', address);
 
     // 기존 지도 완전히 정리
     cleanup();
 
     // 초기화 상태 리셋
-    isInitializingRef.current = true;
+    isInitializingRef.current = false; // 초기화 중 플래그 해제
     setIsLoading(true);
     setError(null);
     initAttemptRef.current = 0;
@@ -196,24 +189,10 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
     };
 
     initializeMap();
-  }, [address, placeName, isScriptLoaded]);
+  }, [address, placeName, scriptLoaded]);
 
   return (
-    <>
-      <Script
-        src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services&autoload=false`}
-        strategy="afterInteractive"
-        onLoad={() => {
-          console.log('[KakaoMap] Script loaded');
-          setIsScriptLoaded(true);
-        }}
-        onError={(e) => {
-          console.error('[KakaoMap] Script load error:', e);
-          setError('지도 스크립트를 불러올 수 없습니다');
-          setIsLoading(false);
-        }}
-      />
-      <div className="relative w-full h-64">
+    <div className="relative w-full h-64">
         <div
           ref={mapContainerRef}
           className="w-full h-64 rounded-lg border border-slate-200 bg-slate-100"
@@ -236,8 +215,6 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
                   setIsLoading(true);
                   isInitializingRef.current = false;
                   initAttemptRef.current = 0;
-                  // 재시도를 위해 강제로 리렌더링
-                  setIsScriptLoaded(prev => prev);
                 }}
                 className="text-xs text-primary hover:underline"
               >
@@ -246,7 +223,6 @@ export default function KakaoMap({ address, placeName }: KakaoMapProps) {
             </div>
           </div>
         )}
-      </div>
-    </>
+    </div>
   );
 }
