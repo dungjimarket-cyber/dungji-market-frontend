@@ -440,9 +440,9 @@ export default function LocalBusinessesPage() {
                 <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-all duration-200 h-full">
                   {/* 사진 또는 대체 이미지 */}
                   <div className="relative h-32 sm:h-48 w-full bg-slate-100">
-                    {business.has_photo ? (
+                    {(business.custom_photo_url || business.has_photo) ? (
                       <img
-                        src={`${process.env.NEXT_PUBLIC_API_URL}/local-businesses/${business.id}/photo/`}
+                        src={business.custom_photo_url || `${process.env.NEXT_PUBLIC_API_URL}/local-businesses/${business.id}/photo/`}
                         alt={business.name}
                         className="w-full h-full object-contain"
                         onError={(e) => {
@@ -470,7 +470,7 @@ export default function LocalBusinessesPage() {
                         business.category_name === '자동차정비' ? 'from-gray-400 to-gray-600' :
                         'from-slate-400 to-slate-600'
                       } flex items-center justify-center`}
-                      style={{ display: business.has_photo ? 'none' : 'flex' }}
+                      style={{ display: (business.custom_photo_url || business.has_photo) ? 'none' : 'flex' }}
                     >
                       <div className="text-center text-white">
                         <div className="text-5xl sm:text-6xl mb-2">{business.category_icon}</div>

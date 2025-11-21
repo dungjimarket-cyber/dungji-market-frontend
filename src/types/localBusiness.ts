@@ -37,7 +37,9 @@ export interface LocalBusinessList {
   rank_in_region: number;
   is_verified: boolean;
   is_new: boolean;
-  has_photo: boolean;  // photo_url 대신 존재 여부만
+  has_photo: boolean;  // photo_url 존재 여부
+  photo_url: string | null;  // Google Places 이미지 URL
+  custom_photo_url: string | null;  // 커스텀 업로드 이미지 URL (우선순위 높음)
   view_count: number;
   editorial_summary: string | null;  // AI/Google 요약
   created_at: string;
