@@ -315,13 +315,15 @@ export default function LocalBusinessesPage() {
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-20">
       <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 max-w-7xl">
         {/* 헤더 */}
-        <div className="text-center mb-4 sm:mb-6">
-          <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-slate-800 rounded-xl mb-2 sm:mb-3">
-            <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <div className="mb-4 sm:mb-6">
+          <div className="flex sm:flex-col items-center sm:justify-center gap-2 sm:gap-0">
+            <div className="flex-shrink-0 w-8 h-8 sm:w-12 sm:h-12 bg-slate-800 rounded-xl flex items-center justify-center sm:mb-3">
+              <Building2 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <h1 className="text-lg sm:text-3xl font-bold text-slate-900">
+              우리동네 전문가를 만나보세요
+            </h1>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 text-slate-900">
-            우리동네 전문가를 만나보세요
-          </h1>
         </div>
 
         {/* 검색 */}
@@ -330,7 +332,7 @@ export default function LocalBusinessesPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
             <Input
               type="text"
-              placeholder="업체명 또는 주소로 검색..."
+              placeholder="업체명 검색"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 sm:pl-10 h-9 sm:h-11 text-sm"
