@@ -109,14 +109,36 @@ export default function LocalBusinessesPage() {
       observerRef.current.disconnect();
     }
 
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        const target = entries[0];
-        if (target.isIntersecting && nextUrlRef.current && !loadingMoreRef.current) {
-          console.log('🔄 무한스크롤 트리거:', nextUrlRef.current);
-          loadMore();
+    const handleIntersection = async (entries: IntersectionObserverEntry[]) => {
+      const target = entries[0];
+      if (target.isIntersecting && nextUrlRef.current && !loadingMoreRef.current) {
+        console.log('🔄 무한스크롤 트리거:', nextUrlRef.current);
+
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
+
+        try {
+          const response = await fetch(nextUrlRef.current);
+          const data = await response.json();
+
+          setBusinesses(prev => {
+            const existingIds = new Set(prev.map(b => b.id));
+            const newBusinesses = (data.results || []).filter((b: LocalBusinessList) => !existingIds.has(b.id));
+            return [...prev, ...newBusinesses];
+          });
+          setNextUrl(data.next || null);
+          setHasMore(!!data.next);
+        } catch (error) {
+          console.error('추가 로드 실패:', error);
+        } finally {
+          loadingMoreRef.current = false;
+          setLoadingMore(false);
         }
-      },
+      }
+    };
+
+    observerRef.current = new IntersectionObserver(
+      handleIntersection,
       { threshold: 0.1, rootMargin: '100px' }
     );
 
@@ -127,7 +149,7 @@ export default function LocalBusinessesPage() {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, loadMore]);
+  }, [hasMore]);
 
   const loadCategories = async () => {
     try {
@@ -209,31 +231,6 @@ export default function LocalBusinessesPage() {
     }
   };
 
-  const loadMore = useCallback(async () => {
-    if (!nextUrlRef.current || loadingMoreRef.current) return;
-
-    loadingMoreRef.current = true;
-    setLoadingMore(true);
-
-    try {
-      const response = await fetch(nextUrlRef.current);
-      const data = await response.json();
-
-      // 중복 제거: 기존 ID와 비교하여 새로운 것만 추가
-      setBusinesses(prev => {
-        const existingIds = new Set(prev.map(b => b.id));
-        const newBusinesses = (data.results || []).filter((b: LocalBusinessList) => !existingIds.has(b.id));
-        return [...prev, ...newBusinesses];
-      });
-      setNextUrl(data.next || null);
-      setHasMore(!!data.next);
-    } catch (error) {
-      console.error('추가 로드 실패:', error);
-    } finally {
-      loadingMoreRef.current = false;
-      setLoadingMore(false);
-    }
-  }, []);
 
   // 시/도 선택 핸들러
   const handleProvinceChange = (province: string) => {
