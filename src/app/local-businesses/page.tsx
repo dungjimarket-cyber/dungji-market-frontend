@@ -19,8 +19,8 @@ import KakaoMap from '@/components/kakao/KakaoMap';
 export default function LocalBusinessesPage() {
   const { user } = useAuth();
 
-  // 상태 - 초기값을 서울특별시로 설정
-  const [selectedProvince, setSelectedProvince] = useState<string>('서울특별시');
+  // 상태 - 초기값을 빈 문자열로 설정 (사용자 지역 로드 전까지 대기)
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<LocalBusinessCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -55,21 +55,13 @@ export default function LocalBusinessesPage() {
     if (isInitialized) return;
 
     const initializeRegion = () => {
-      // 서울특별시 지역 데이터 설정
-      const seoul = regions.find(r => r.name === '서울특별시');
-      if (seoul) {
-        setCities(seoul.cities);
-      }
-
       // 사용자 활동지역이 있으면 사용 (로그인 사용자)
       const userRegion = user?.address_region?.name || user?.region;
 
       if (userRegion) {
-        console.log('[LocalBusinesses] User region:', userRegion);
         // regions 배열에서 해당 지역 찾기
         for (const region of regions) {
           if (region.cities.includes(userRegion)) {
-            console.log('[LocalBusinesses] Found region:', region.name, 'City:', userRegion);
             setSelectedProvince(region.name);
             setCities(region.cities);
             setSelectedCity(userRegion);
@@ -80,8 +72,11 @@ export default function LocalBusinessesPage() {
       }
 
       // 기본값: 서울특별시 전체 (비로그인 또는 지역 설정 없음)
-      console.log('[LocalBusinesses] Using default: 서울특별시 (전체)');
+      const seoul = regions.find(r => r.name === '서울특별시');
       setSelectedProvince('서울특별시');
+      if (seoul) {
+        setCities(seoul.cities);
+      }
       setSelectedCity('all');
       setIsInitialized(true);
     };
@@ -102,40 +97,19 @@ export default function LocalBusinessesPage() {
   }, [nextUrl]);
 
   useEffect(() => {
-    console.log('🔧 Observer useEffect 실행:', {
-      hasMore,
-      businessesLength: businesses.length,
-      hasLoadMoreRef: !!loadMoreRef.current,
-      nextUrl: nextUrlRef.current
-    });
-
     // 기존 observer 정리
     if (observerRef.current) {
-      console.log('🗑️ 기존 Observer 정리');
       observerRef.current.disconnect();
     }
 
-    if (!hasMore) {
-      console.log('⚠️ hasMore=false, Observer 등록 안 함');
-      return;
-    }
-
-    if (!loadMoreRef.current) {
-      console.log('⚠️ loadMoreRef.current 없음, Observer 등록 안 함');
+    if (!hasMore || !loadMoreRef.current) {
       return;
     }
 
     const handleIntersection = async (entries: IntersectionObserverEntry[]) => {
       const target = entries[0];
-      console.log('👀 Observer 감지:', {
-        isIntersecting: target.isIntersecting,
-        hasNextUrl: !!nextUrlRef.current,
-        isLoading: loadingMoreRef.current
-      });
 
       if (target.isIntersecting && nextUrlRef.current && !loadingMoreRef.current) {
-        console.log('🔄 무한스크롤 트리거:', nextUrlRef.current);
-
         loadingMoreRef.current = true;
         setLoadingMore(true);
 
@@ -143,15 +117,9 @@ export default function LocalBusinessesPage() {
           const response = await fetch(nextUrlRef.current);
           const data = await response.json();
 
-          console.log('📦 추가 데이터 로드:', {
-            newResults: data.results?.length || 0,
-            nextUrl: data.next
-          });
-
           setBusinesses(prev => {
             const existingIds = new Set(prev.map(b => b.id));
             const newBusinesses = (data.results || []).filter((b: LocalBusinessList) => !existingIds.has(b.id));
-            console.log('➕ 추가된 업체:', newBusinesses.length, '(중복 제외)', '총:', prev.length + newBusinesses.length);
             return [...prev, ...newBusinesses];
           });
           setNextUrl(data.next || null);
@@ -165,7 +133,6 @@ export default function LocalBusinessesPage() {
       }
     };
 
-    console.log('✅ IntersectionObserver 등록 완료');
     observerRef.current = new IntersectionObserver(
       handleIntersection,
       { threshold: 0.1, rootMargin: '100px' }
@@ -175,7 +142,6 @@ export default function LocalBusinessesPage() {
 
     return () => {
       if (observerRef.current) {
-        console.log('🧹 Observer cleanup');
         observerRef.current.disconnect();
       }
     };
@@ -208,12 +174,6 @@ export default function LocalBusinessesPage() {
         regionParam = selectedProvince === '서울' ? '서울특별시' : selectedProvince === '경기' ? '경기도' : selectedProvince;
       }
 
-      console.log('🔍 검색 조건:', {
-        selectedProvince,
-        selectedCity: selectedCity === 'all' ? '전체' : selectedCity,
-        regionParam,
-        category: selectedCategory?.name || '전체'
-      });
 
       // URL 파라미터 구성 (카테고리와 검색어는 선택사항)
       const params = new URLSearchParams({
@@ -237,20 +197,10 @@ export default function LocalBusinessesPage() {
       );
       const data = await response.json();
 
-      console.log('📊 검색 결과:', {
-        count: data.count || 0,
-        results: data.results?.length || 0,
-        next: data.next,
-        previous: data.previous,
-        hasMore: !!data.next
-      });
-
       setBusinesses(data.results || []);
       setTotalCount(data.count || 0); // 전체 개수 저장
       setNextUrl(data.next || null);
       setHasMore(!!data.next);
-
-      console.log('✅ hasMore 상태 업데이트:', !!data.next);
     } catch (error) {
       console.error('업체 로드 실패:', error);
       setBusinesses([]);
