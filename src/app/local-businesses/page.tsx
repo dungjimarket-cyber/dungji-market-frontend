@@ -102,7 +102,7 @@ export default function LocalBusinessesPage() {
   }, [nextUrl]);
 
   useEffect(() => {
-    if (!loadMoreRef.current) return;
+    if (!loadMoreRef.current || !hasMore) return;
 
     // 기존 observer 정리
     if (observerRef.current) {
@@ -113,6 +113,7 @@ export default function LocalBusinessesPage() {
       (entries) => {
         const target = entries[0];
         if (target.isIntersecting && nextUrlRef.current && !loadingMoreRef.current) {
+          console.log('🔄 무한스크롤 트리거:', nextUrlRef.current);
           loadMore();
         }
       },
@@ -126,7 +127,7 @@ export default function LocalBusinessesPage() {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore]);
+  }, [hasMore, loadMore]);
 
   const loadCategories = async () => {
     try {
@@ -188,13 +189,16 @@ export default function LocalBusinessesPage() {
         count: data.count || 0,
         results: data.results?.length || 0,
         next: data.next,
-        previous: data.previous
+        previous: data.previous,
+        hasMore: !!data.next
       });
 
       setBusinesses(data.results || []);
       setTotalCount(data.count || 0); // 전체 개수 저장
       setNextUrl(data.next || null);
       setHasMore(!!data.next);
+
+      console.log('✅ hasMore 상태 업데이트:', !!data.next);
     } catch (error) {
       console.error('업체 로드 실패:', error);
       setBusinesses([]);
