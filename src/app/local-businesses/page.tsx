@@ -102,15 +102,20 @@ export default function LocalBusinessesPage() {
   }, [nextUrl]);
 
   useEffect(() => {
-    if (!loadMoreRef.current || !hasMore) return;
-
     // 기존 observer 정리
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
 
+    if (!loadMoreRef.current || !hasMore) {
+      console.log('⚠️ Observer 등록 안 함:', { hasLoadMoreRef: !!loadMoreRef.current, hasMore });
+      return;
+    }
+
     const handleIntersection = async (entries: IntersectionObserverEntry[]) => {
       const target = entries[0];
+      console.log('👀 Observer 감지:', { isIntersecting: target.isIntersecting, hasNextUrl: !!nextUrlRef.current, isLoading: loadingMoreRef.current });
+
       if (target.isIntersecting && nextUrlRef.current && !loadingMoreRef.current) {
         console.log('🔄 무한스크롤 트리거:', nextUrlRef.current);
 
@@ -121,9 +126,15 @@ export default function LocalBusinessesPage() {
           const response = await fetch(nextUrlRef.current);
           const data = await response.json();
 
+          console.log('📦 추가 데이터 로드:', {
+            newResults: data.results?.length || 0,
+            nextUrl: data.next
+          });
+
           setBusinesses(prev => {
             const existingIds = new Set(prev.map(b => b.id));
             const newBusinesses = (data.results || []).filter((b: LocalBusinessList) => !existingIds.has(b.id));
+            console.log('➕ 추가된 업체:', newBusinesses.length, '(중복 제외)');
             return [...prev, ...newBusinesses];
           });
           setNextUrl(data.next || null);
@@ -137,6 +148,7 @@ export default function LocalBusinessesPage() {
       }
     };
 
+    console.log('✅ IntersectionObserver 등록');
     observerRef.current = new IntersectionObserver(
       handleIntersection,
       { threshold: 0.1, rootMargin: '100px' }
@@ -149,7 +161,7 @@ export default function LocalBusinessesPage() {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore]);
+  }, [hasMore, businesses.length]);
 
   const loadCategories = async () => {
     try {
