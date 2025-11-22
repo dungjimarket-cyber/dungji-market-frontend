@@ -102,19 +102,36 @@ export default function LocalBusinessesPage() {
   }, [nextUrl]);
 
   useEffect(() => {
+    console.log('🔧 Observer useEffect 실행:', {
+      hasMore,
+      businessesLength: businesses.length,
+      hasLoadMoreRef: !!loadMoreRef.current,
+      nextUrl: nextUrlRef.current
+    });
+
     // 기존 observer 정리
     if (observerRef.current) {
+      console.log('🗑️ 기존 Observer 정리');
       observerRef.current.disconnect();
     }
 
-    if (!loadMoreRef.current || !hasMore) {
-      console.log('⚠️ Observer 등록 안 함:', { hasLoadMoreRef: !!loadMoreRef.current, hasMore });
+    if (!hasMore) {
+      console.log('⚠️ hasMore=false, Observer 등록 안 함');
+      return;
+    }
+
+    if (!loadMoreRef.current) {
+      console.log('⚠️ loadMoreRef.current 없음, Observer 등록 안 함');
       return;
     }
 
     const handleIntersection = async (entries: IntersectionObserverEntry[]) => {
       const target = entries[0];
-      console.log('👀 Observer 감지:', { isIntersecting: target.isIntersecting, hasNextUrl: !!nextUrlRef.current, isLoading: loadingMoreRef.current });
+      console.log('👀 Observer 감지:', {
+        isIntersecting: target.isIntersecting,
+        hasNextUrl: !!nextUrlRef.current,
+        isLoading: loadingMoreRef.current
+      });
 
       if (target.isIntersecting && nextUrlRef.current && !loadingMoreRef.current) {
         console.log('🔄 무한스크롤 트리거:', nextUrlRef.current);
@@ -134,7 +151,7 @@ export default function LocalBusinessesPage() {
           setBusinesses(prev => {
             const existingIds = new Set(prev.map(b => b.id));
             const newBusinesses = (data.results || []).filter((b: LocalBusinessList) => !existingIds.has(b.id));
-            console.log('➕ 추가된 업체:', newBusinesses.length, '(중복 제외)');
+            console.log('➕ 추가된 업체:', newBusinesses.length, '(중복 제외)', '총:', prev.length + newBusinesses.length);
             return [...prev, ...newBusinesses];
           });
           setNextUrl(data.next || null);
@@ -148,7 +165,7 @@ export default function LocalBusinessesPage() {
       }
     };
 
-    console.log('✅ IntersectionObserver 등록');
+    console.log('✅ IntersectionObserver 등록 완료');
     observerRef.current = new IntersectionObserver(
       handleIntersection,
       { threshold: 0.1, rootMargin: '100px' }
@@ -158,10 +175,11 @@ export default function LocalBusinessesPage() {
 
     return () => {
       if (observerRef.current) {
+        console.log('🧹 Observer cleanup');
         observerRef.current.disconnect();
       }
     };
-  }, [hasMore, businesses.length]);
+  }, [hasMore, businesses.length, nextUrl]);
 
   const loadCategories = async () => {
     try {
