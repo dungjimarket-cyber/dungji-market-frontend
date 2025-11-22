@@ -76,9 +76,9 @@ export async function fetchPlaceRankings(
     console.log('🏷️ placeType:', placeType);
 
     const requestBody = {
-      textQuery: searchQuery,
+      includedTypes: [placeType], // 업종 필터링
       languageCode: 'ko',
-      locationBias: {
+      locationRestriction: {
         circle: {
           center: {
             latitude: coordinates.latitude,
@@ -87,13 +87,12 @@ export async function fetchPlaceRankings(
           radius: 5000.0 // 5km 반경
         }
       },
-      minRating,
       maxResultCount: 20 // 최대 20개 결과
     };
 
     console.log('📤 API 요청 Body:', JSON.stringify(requestBody, null, 2));
 
-    const apiUrl = 'https://places.googleapis.com/v1/places:searchText';
+    const apiUrl = 'https://places.googleapis.com/v1/places:searchNearby';
     console.log('🌐 API URL:', apiUrl);
 
     const headers = {
