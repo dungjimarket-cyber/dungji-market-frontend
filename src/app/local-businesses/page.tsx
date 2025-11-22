@@ -239,13 +239,37 @@ export default function LocalBusinessesPage() {
     setSelectedCity('all'); // 시/도 변경 시 시/군/구는 초기화 (전체로)
   };
 
+  // 주소 정제 (대한민국 제거, 영어 주소 제거)
+  const cleanAddress = (address: string): string => {
+    if (!address) return '';
+
+    let cleaned = address;
+
+    // 앞뒤 "대한민국" 제거
+    cleaned = cleaned.replace(/^대한민국\s*/g, '').replace(/,?\s*대한민국$/g, '');
+
+    // 앞뒤 "South Korea" 제거
+    cleaned = cleaned.replace(/^South Korea,?\s*/gi, '').replace(/,?\s*South Korea$/gi, '');
+
+    // 영어 주소 부분 제거 (한글 주소만 남김)
+    // 예: "서울 강남구 테헤란로 123, Teheran-ro, Gangnam-gu, Seoul" → "서울 강남구 테헤란로 123"
+    const parts = cleaned.split(',');
+    const koreanParts = parts.filter(part => /[가-힣]/.test(part));
+
+    if (koreanParts.length > 0) {
+      cleaned = koreanParts.join(',').trim();
+    }
+
+    return cleaned;
+  };
+
   // 주소 복사
   const handleCopyAddress = (address: string, e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    navigator.clipboard.writeText(address.replace('대한민국 ', ''));
+    navigator.clipboard.writeText(cleanAddress(address));
     toast.success('복사 완료');
   };
 
@@ -527,7 +551,7 @@ export default function LocalBusinessesPage() {
                       <div className="flex items-start gap-1">
                         <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />
                         <div className="flex-1 min-w-0">
-                          <span className="break-words">{business.address.replace('대한민국 ', '')}</span>
+                          <span className="break-words">{cleanAddress(business.address)}</span>
                           <span className="text-[10px] text-slate-600 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             복사
                           </span>
@@ -612,7 +636,7 @@ export default function LocalBusinessesPage() {
             <div className="space-y-3">
               <div className="text-xs sm:text-sm text-muted-foreground">
                 <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 inline mr-1" />
-                {selectedBusiness?.address.replace('대한민국 ', '')}
+                {cleanAddress(selectedBusiness?.address || '')}
               </div>
               {selectedBusiness && shouldRenderMap && (
                 <KakaoMap
