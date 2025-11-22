@@ -166,7 +166,7 @@ export default function LocalBusinessesPage() {
       const params = new URLSearchParams({
         region_name__icontains: regionParam,
         ordering: 'rank_in_region',
-        page_size: '12'
+        limit: '12'  // LimitOffsetPagination uses 'limit' not 'page_size'
       });
 
       // 카테고리가 선택되어 있으면 추가
@@ -342,9 +342,9 @@ export default function LocalBusinessesPage() {
             </div>
             <div className="grid grid-cols-2 gap-1.5 sm:gap-3">
               {/* 시/도 */}
-              <Select value={selectedProvince || "서울"} onValueChange={handleProvinceChange}>
+              <Select value={selectedProvince} onValueChange={handleProvinceChange}>
                 <SelectTrigger className="h-8 sm:h-10">
-                  <SelectValue placeholder="시/도" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {regions.map((region) => (
