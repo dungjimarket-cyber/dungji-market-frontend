@@ -19,8 +19,8 @@ import KakaoMap from '@/components/kakao/KakaoMap';
 export default function LocalBusinessesPage() {
   const { user } = useAuth();
 
-  // 상태 - 초기값을 서울로 설정
-  const [selectedProvince, setSelectedProvince] = useState<string>('서울');
+  // 상태 - 초기값을 서울특별시로 설정
+  const [selectedProvince, setSelectedProvince] = useState<string>('서울특별시');
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<LocalBusinessCategory | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -55,8 +55,8 @@ export default function LocalBusinessesPage() {
     if (isInitialized) return;
 
     const initializeRegion = () => {
-      // 서울 지역 데이터 설정
-      const seoul = regions.find(r => r.name === '서울');
+      // 서울특별시 지역 데이터 설정
+      const seoul = regions.find(r => r.name === '서울특별시');
       if (seoul) {
         setCities(seoul.cities);
       }
@@ -79,9 +79,9 @@ export default function LocalBusinessesPage() {
         }
       }
 
-      // 기본값: 서울 전체 (비로그인 또는 지역 설정 없음)
-      console.log('[LocalBusinesses] Using default: Seoul (전체)');
-      setSelectedProvince('서울');
+      // 기본값: 서울특별시 전체 (비로그인 또는 지역 설정 없음)
+      console.log('[LocalBusinesses] Using default: 서울특별시 (전체)');
+      setSelectedProvince('서울특별시');
       setSelectedCity('all');
       setIsInitialized(true);
     };
