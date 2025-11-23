@@ -42,6 +42,7 @@ export interface LocalBusinessList {
   custom_photo_url: string | null;  // 커스텀 업로드 이미지 URL (우선순위 높음)
   view_count: number;
   editorial_summary: string | null;  // AI/Google 요약
+  website_url: string | null;  // 업체 웹사이트 URL
   created_at: string;
 }
 

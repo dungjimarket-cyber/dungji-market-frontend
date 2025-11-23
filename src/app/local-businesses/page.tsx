@@ -542,6 +542,22 @@ export default function LocalBusinessesPage() {
                       </div>
                     </div>
 
+                    {/* 웹사이트 - 클릭하면 새 탭에서 열기 */}
+                    {business.website_url && (
+                      <div className="text-xs text-slate-700">
+                        <a
+                          href={business.website_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 hover:text-blue-600 transition-colors whitespace-nowrap overflow-hidden"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">{business.website_url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span>
+                        </a>
+                      </div>
+                    )}
+
                     {business.phone_number && (
                       <p className="text-xs text-slate-700">
                         <Phone className="w-3 h-3 inline mr-1" />
