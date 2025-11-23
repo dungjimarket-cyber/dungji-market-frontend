@@ -462,14 +462,29 @@ function LocalBusinessesContent() {
         {/* 헤더 */}
         <div className="mb-4 sm:mb-6">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex sm:flex-col items-center gap-2 sm:gap-0 flex-1">
-              <div className="flex-shrink-0 w-8 h-8 sm:w-12 sm:h-12 bg-slate-800 rounded-xl flex items-center justify-center sm:mb-3">
-                <Building2 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+            {/* 모바일: 가로 배치, PC: 세로 배치 with 이모지 왼쪽 */}
+            <div className="flex items-center gap-2 flex-1">
+              {/* 모바일용 아이콘 (sm 이하에서만) */}
+              <div className="flex-shrink-0 w-8 h-8 bg-slate-800 rounded-xl flex items-center justify-center sm:hidden">
+                <Building2 className="w-4 h-4 text-white" />
               </div>
-              <h1 className="text-lg sm:text-3xl font-bold text-slate-900">
+
+              {/* PC용 레이아웃 (sm 이상) */}
+              <div className="hidden sm:flex sm:items-center sm:gap-3">
+                <div className="flex-shrink-0 w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+                <h1 className="text-3xl font-bold text-slate-900">
+                  우리동네 전문가를 만나보세요
+                </h1>
+              </div>
+
+              {/* 모바일용 텍스트 */}
+              <h1 className="text-lg font-bold text-slate-900 sm:hidden">
                 우리동네 전문가를 만나보세요
               </h1>
             </div>
+
             <Button
               variant="outline"
               size="sm"
@@ -485,12 +500,17 @@ function LocalBusinessesContent() {
 
         {/* 지역 선택 및 검색 (한 줄) */}
         <Card className="mb-3 p-2 sm:p-4">
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <div className="flex gap-2 sm:gap-3">
+            {/* 지역 아이콘 */}
+            <div className="flex items-center justify-center flex-shrink-0">
+              <span className="text-xl sm:text-2xl">📍</span>
+            </div>
+
             {/* 지역 선택 영역 */}
             <div className="flex gap-1.5 sm:gap-2 flex-shrink-0">
-              {/* 시/도 - 가장 긴 텍스트 "서울특별시" 기준 */}
+              {/* 시/도 */}
               <Select value={selectedProvince} onValueChange={handleProvinceChange}>
-                <SelectTrigger className="h-9 sm:h-10 w-[110px] sm:w-[130px]">
+                <SelectTrigger className="h-9 sm:h-10 w-[85px] sm:w-[120px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -508,7 +528,7 @@ function LocalBusinessesContent() {
                 onValueChange={setSelectedCity}
                 disabled={!selectedProvince}
               >
-                <SelectTrigger className="h-9 sm:h-10 w-[90px] sm:w-[110px]">
+                <SelectTrigger className="h-9 sm:h-10 w-[70px] sm:w-[100px]">
                   <SelectValue placeholder="전체" />
                 </SelectTrigger>
                 <SelectContent>
@@ -523,11 +543,11 @@ function LocalBusinessesContent() {
             </div>
 
             {/* 검색 영역 */}
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
               <Input
                 type="text"
-                placeholder="업체명 검색"
+                placeholder="업체명"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 sm:pl-10 h-9 sm:h-10 text-sm"
