@@ -352,10 +352,59 @@ export default function LocalBusinessesPage() {
     e.preventDefault();
     e.stopPropagation();
 
+    // 메타 태그 업데이트 함수
+    const updateMetaTag = (property: string, content: string) => {
+      let tag = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', property);
+        document.head.appendChild(tag);
+      }
+      tag.content = content;
+    };
+
+    const updateTwitterTag = (name: string, content: string) => {
+      let tag = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement;
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('name', name);
+        document.head.appendChild(tag);
+      }
+      tag.content = content;
+    };
+
+    // 간결한 설명 생성
+    const description = business.rating
+      ? `${business.category_name} | ⭐ ${business.rating.toFixed(1)}`
+      : business.category_name;
+
+    const shareUrl = `${window.location.origin}/local-businesses?name=${encodeURIComponent(business.name)}`;
+
+    // Open Graph 메타태그 설정
+    updateMetaTag('og:title', business.name);
+    updateMetaTag('og:description', description);
+    updateMetaTag('og:url', shareUrl);
+
+    // 대표 이미지 설정 (custom_photo_url 우선, 없으면 photo_url)
+    const businessImage = business.custom_photo_url ||
+      (business.has_photo ? `${process.env.NEXT_PUBLIC_API_URL}/local-businesses/${business.id}/photo/` : null);
+
+    if (businessImage) {
+      updateMetaTag('og:image', businessImage);
+    }
+
+    // Twitter Card 메타태그 설정
+    updateTwitterTag('twitter:card', 'summary_large_image');
+    updateTwitterTag('twitter:title', business.name);
+    updateTwitterTag('twitter:description', description);
+    if (businessImage) {
+      updateTwitterTag('twitter:image', businessImage);
+    }
+
     const shareData = {
-      title: `${business.name} - 둥지마켓`,
-      text: `${business.category_name} | ${cleanAddress(business.address)}${business.rating ? ` | ⭐ ${business.rating.toFixed(1)}` : ''}`,
-      url: `${window.location.origin}/local-businesses?name=${encodeURIComponent(business.name)}`
+      title: business.name,
+      text: description,
+      url: shareUrl
     };
 
     try {
