@@ -461,39 +461,45 @@ function LocalBusinessesContent() {
       <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 max-w-7xl">
         {/* 헤더 */}
         <div className="mb-4 sm:mb-6">
-          <div className="flex items-center justify-between mb-3">
-            {/* 모바일: 가로 배치, PC: 세로 배치 with 이모지 왼쪽 */}
+          {/* 모바일 헤더 */}
+          <div className="flex items-center justify-between mb-3 sm:hidden">
             <div className="flex items-center gap-2 flex-1">
-              {/* 모바일용 아이콘 (sm 이하에서만) */}
-              <div className="flex-shrink-0 w-8 h-8 bg-slate-800 rounded-xl flex items-center justify-center sm:hidden">
+              <div className="flex-shrink-0 w-8 h-8 bg-slate-800 rounded-xl flex items-center justify-center">
                 <Building2 className="w-4 h-4 text-white" />
               </div>
-
-              {/* PC용 레이아웃 (sm 이상) */}
-              <div className="hidden sm:flex sm:items-center sm:gap-3">
-                <div className="flex-shrink-0 w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-white" />
-                </div>
-                <h1 className="text-3xl font-bold text-slate-900">
-                  우리동네 전문가를 만나보세요
-                </h1>
-              </div>
-
-              {/* 모바일용 텍스트 */}
-              <h1 className="text-lg font-bold text-slate-900 sm:hidden">
+              <h1 className="text-lg font-bold text-slate-900">
                 우리동네 전문가를 만나보세요
               </h1>
             </div>
-
             <Button
               variant="outline"
               size="sm"
               onClick={handleSharePage}
-              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap"
+              className="flex items-center gap-1 text-xs whitespace-nowrap"
             >
-              <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">페이지 공유</span>
-              <span className="sm:hidden">공유</span>
+              <Share2 className="w-3 h-3" />
+              <span>공유</span>
+            </Button>
+          </div>
+
+          {/* PC 헤더 - 중앙 정렬 */}
+          <div className="hidden sm:flex sm:flex-col sm:items-center sm:gap-4 mb-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-slate-900">
+                우리동네 전문가를 만나보세요
+              </h1>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSharePage}
+              className="flex items-center gap-2 text-sm"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>페이지 공유</span>
             </Button>
           </div>
         </div>
