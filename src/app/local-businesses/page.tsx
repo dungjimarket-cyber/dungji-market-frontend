@@ -522,13 +522,13 @@ function LocalBusinessesContent() {
                 </SelectContent>
               </Select>
 
-              {/* 시/군/구 */}
+              {/* 시/군/구 - 서귀포시 등 4글자 기준 */}
               <Select
                 value={selectedCity}
                 onValueChange={setSelectedCity}
                 disabled={!selectedProvince}
               >
-                <SelectTrigger className="h-9 sm:h-10 w-[78px] sm:w-[100px]">
+                <SelectTrigger className="h-9 sm:h-10 w-[85px] sm:w-[100px]">
                   <SelectValue placeholder="전체" />
                 </SelectTrigger>
                 <SelectContent>
