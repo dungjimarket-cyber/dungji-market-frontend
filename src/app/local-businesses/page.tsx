@@ -507,10 +507,10 @@ function LocalBusinessesContent() {
             </div>
 
             {/* 지역 선택 영역 */}
-            <div className="flex gap-1.5 sm:gap-2 flex-shrink-0">
-              {/* 시/도 */}
+            <div className="flex gap-1 sm:gap-2 flex-shrink-0">
+              {/* 시/도 - 서울특별시가 안 짤리도록 */}
               <Select value={selectedProvince} onValueChange={handleProvinceChange}>
-                <SelectTrigger className="h-9 sm:h-10 w-[85px] sm:w-[120px]">
+                <SelectTrigger className="h-9 sm:h-10 w-[95px] sm:w-[120px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -528,7 +528,7 @@ function LocalBusinessesContent() {
                 onValueChange={setSelectedCity}
                 disabled={!selectedProvince}
               >
-                <SelectTrigger className="h-9 sm:h-10 w-[70px] sm:w-[100px]">
+                <SelectTrigger className="h-9 sm:h-10 w-[68px] sm:w-[100px]">
                   <SelectValue placeholder="전체" />
                 </SelectTrigger>
                 <SelectContent>
