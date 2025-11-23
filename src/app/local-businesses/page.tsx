@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Script from 'next/script';
+import Head from 'next/head';
 import { useAuth } from '@/contexts/AuthContext';
 import { regions } from '@/lib/regions';
 import { LocalBusinessCategory, LocalBusinessList } from '@/types/localBusiness';
@@ -12,9 +13,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search } from 'lucide-react';
+import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import KakaoMap from '@/components/kakao/KakaoMap';
+
+export const metadata = {
+  title: '우리동네 전문가 - 둥지마켓',
+  description: '우리동네 전문가를 만나보세요. 법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 정비소 등 지역 전문가 정보를 한눈에 확인하세요.',
+  keywords: '지역 전문가, 변호사, 법무사, 세무사, 회계사, 공인중개사, 부동산, 휴대폰매장, 자동차정비, 인테리어',
+  openGraph: {
+    title: '우리동네 전문가 - 둥지마켓',
+    description: '법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 정비소 등 우리동네 전문가를 만나보세요',
+    type: 'website',
+  }
+};
 
 export default function LocalBusinessesPage() {
   const { user } = useAuth();
@@ -298,6 +310,57 @@ export default function LocalBusinessesPage() {
     }, 100);
   };
 
+  // 페이지 공유
+  const handleSharePage = async () => {
+    const shareData = {
+      title: '우리동네 전문가 - 둥지마켓',
+      text: '법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 정비소 등 우리동네 전문가를 만나보세요',
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Web Share API 미지원 시 URL 복사
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success('링크가 복사되었습니다');
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('공유 실패:', error);
+      }
+    }
+  };
+
+  // 업체 공유
+  const handleShareBusiness = async (business: LocalBusinessList, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const shareData = {
+      title: `${business.name} - 둥지마켓`,
+      text: `${business.category_name} | ${cleanAddress(business.address)}${business.rating ? ` | ⭐ ${business.rating.toFixed(1)}` : ''}`,
+      url: `${window.location.origin}/local-businesses?name=${encodeURIComponent(business.name)}`
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success('공유 완료');
+      } else {
+        // Web Share API 미지원 시 URL 복사
+        await navigator.clipboard.writeText(shareData.url);
+        toast.success('링크가 복사되었습니다');
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error('공유 실패:', error);
+        toast.error('공유에 실패했습니다');
+      }
+    }
+  };
+
   return (
     <>
       {/* Kakao Map Script - 페이지 전체에서 한 번만 로드 */}
@@ -316,13 +379,25 @@ export default function LocalBusinessesPage() {
       <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 max-w-7xl">
         {/* 헤더 */}
         <div className="mb-4 sm:mb-6">
-          <div className="flex sm:flex-col items-center sm:justify-center gap-2 sm:gap-0">
-            <div className="flex-shrink-0 w-8 h-8 sm:w-12 sm:h-12 bg-slate-800 rounded-xl flex items-center justify-center sm:mb-3">
-              <Building2 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex sm:flex-col items-center gap-2 sm:gap-0 flex-1">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-12 sm:h-12 bg-slate-800 rounded-xl flex items-center justify-center sm:mb-3">
+                <Building2 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <h1 className="text-lg sm:text-3xl font-bold text-slate-900">
+                우리동네 전문가를 만나보세요
+              </h1>
             </div>
-            <h1 className="text-lg sm:text-3xl font-bold text-slate-900">
-              우리동네 전문가를 만나보세요
-            </h1>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSharePage}
+              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm whitespace-nowrap"
+            >
+              <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">페이지 공유</span>
+              <span className="sm:hidden">공유</span>
+            </Button>
           </div>
         </div>
 
@@ -493,12 +568,22 @@ export default function LocalBusinessesPage() {
                       </div>
                     </div>
 
-                    {/* 인증 배지 */}
-                    {business.is_verified && (
-                      <div className="absolute top-2 right-2">
+                    {/* 상단 버튼들 */}
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      {/* 공유 버튼 */}
+                      <button
+                        onClick={(e) => handleShareBusiness(business, e)}
+                        className="p-1.5 sm:p-2 bg-white/90 hover:bg-white rounded-full shadow-sm transition-all hover:scale-110"
+                        aria-label="업체 공유"
+                      >
+                        <Share2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-700" />
+                      </button>
+
+                      {/* 인증 배지 */}
+                      {business.is_verified && (
                         <Badge className="bg-slate-100 text-slate-900 border border-slate-300 shadow-sm">인증</Badge>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
 
                   {/* 정보 */}
