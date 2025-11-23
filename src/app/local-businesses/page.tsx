@@ -528,7 +528,7 @@ function LocalBusinessesContent() {
                 onValueChange={setSelectedCity}
                 disabled={!selectedProvince}
               >
-                <SelectTrigger className="h-9 sm:h-10 w-[85px] sm:w-[100px]">
+                <SelectTrigger className="h-9 sm:h-10 w-[90px] sm:w-[100px]">
                   <SelectValue placeholder="전체" />
                 </SelectTrigger>
                 <SelectContent>
