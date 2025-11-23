@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Script from 'next/script';
 import { useAuth } from '@/contexts/AuthContext';
 import { regions } from '@/lib/regions';
@@ -16,33 +17,8 @@ import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search, Share2
 import { toast } from 'sonner';
 import KakaoMap from '@/components/kakao/KakaoMap';
 
-export default function LocalBusinessesPage() {
-  // 페이지 메타 정보 설정
-  useEffect(() => {
-    document.title = '우리동네 전문가 - 둥지마켓';
-
-    // 메타 태그 설정
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', '우리동네 전문가를 만나보세요. 법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 정비소 등 지역 전문가 정보를 한눈에 확인하세요.');
-    }
-
-    const metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (metaKeywords) {
-      metaKeywords.setAttribute('content', '지역 전문가, 변호사, 법무사, 세무사, 회계사, 공인중개사, 부동산, 휴대폰매장, 자동차정비, 인테리어');
-    }
-
-    // OG 태그 설정
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) {
-      ogTitle.setAttribute('content', '우리동네 전문가 - 둥지마켓');
-    }
-
-    const ogDescription = document.querySelector('meta[property="og:description"]');
-    if (ogDescription) {
-      ogDescription.setAttribute('content', '법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 정비소 등 우리동네 전문가를 만나보세요');
-    }
-  }, []);
+function LocalBusinessesContent() {
+  const searchParams = useSearchParams();
   const { user } = useAuth();
 
   // 상태 - 초기값을 빈 문자열로 설정 (사용자 지역 로드 전까지 대기)
@@ -76,12 +52,53 @@ export default function LocalBusinessesPage() {
     loadCategories();
   }, []);
 
-  // 초기 지역 설정 (한 번만 실행)
+  // URL 파라미터에서 초기 지역 및 검색어 설정
   useEffect(() => {
     if (isInitialized) return;
 
-    const initializeRegion = () => {
-      // 사용자 활동지역이 있으면 사용 (로그인 사용자)
+    const initializeFromURL = () => {
+      // URL 파라미터 읽기
+      const urlCity = searchParams.get('city');
+      const urlProvince = searchParams.get('province');
+      const urlName = searchParams.get('name');
+
+      // URL에 지역 정보가 있으면 우선 적용
+      if (urlCity || urlProvince) {
+        let targetProvince = urlProvince;
+
+        // Province가 없으면 city로부터 찾기
+        if (!targetProvince && urlCity) {
+          for (const region of regions) {
+            if (region.cities.includes(urlCity)) {
+              targetProvince = region.name;
+              break;
+            }
+          }
+        }
+
+        if (targetProvince) {
+          setSelectedProvince(targetProvince);
+          const region = regions.find(r => r.name === targetProvince);
+          if (region) {
+            setCities(region.cities);
+            if (urlCity && region.cities.includes(urlCity)) {
+              setSelectedCity(urlCity);
+            } else {
+              setSelectedCity('all');
+            }
+          }
+        }
+
+        // URL에 검색어가 있으면 설정
+        if (urlName) {
+          setSearchQuery(urlName);
+        }
+
+        setIsInitialized(true);
+        return;
+      }
+
+      // URL 파라미터가 없으면 사용자 지역 또는 기본값 사용
       const userRegion = user?.address_region?.name || user?.region;
 
       if (userRegion) {
@@ -107,8 +124,8 @@ export default function LocalBusinessesPage() {
       setIsInitialized(true);
     };
 
-    initializeRegion();
-  }, [user, isInitialized]);
+    initializeFromURL();
+  }, [user, isInitialized, searchParams]);
 
   // 지역/카테고리/검색어 변경 시 검색
   useEffect(() => {
@@ -116,6 +133,37 @@ export default function LocalBusinessesPage() {
       loadBusinesses();
     }
   }, [selectedProvince, selectedCity, selectedCategory, searchQuery]);
+
+  // URL에서 지정된 업체로 스크롤 및 하이라이트
+  useEffect(() => {
+    const urlName = searchParams.get('name');
+
+    if (urlName && businesses.length > 0 && !loading) {
+      // 검색어와 일치하는 업체 찾기
+      const matchedBusiness = businesses.find(
+        b => b.name.toLowerCase().includes(urlName.toLowerCase())
+      );
+
+      if (matchedBusiness) {
+        // 약간의 딜레이를 주어 DOM이 완전히 렌더링되도록 함
+        setTimeout(() => {
+          const element = document.getElementById(`business-${matchedBusiness.id}`);
+          if (element) {
+            // 스크롤
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 하이라이트 효과 추가
+            element.classList.add('ring-4', 'ring-amber-400', 'ring-offset-2');
+
+            // 3초 후 하이라이트 제거
+            setTimeout(() => {
+              element.classList.remove('ring-4', 'ring-amber-400', 'ring-offset-2');
+            }, 3000);
+          }
+        }, 500);
+      }
+    }
+  }, [businesses, loading, searchParams]);
 
   // 무한스크롤 IntersectionObserver 설정
   useEffect(() => {
@@ -352,54 +400,25 @@ export default function LocalBusinessesPage() {
     e.preventDefault();
     e.stopPropagation();
 
-    // 메타 태그 업데이트 함수
-    const updateMetaTag = (property: string, content: string) => {
-      let tag = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
-      if (!tag) {
-        tag = document.createElement('meta');
-        tag.setAttribute('property', property);
-        document.head.appendChild(tag);
-      }
-      tag.content = content;
-    };
-
-    const updateTwitterTag = (name: string, content: string) => {
-      let tag = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement;
-      if (!tag) {
-        tag = document.createElement('meta');
-        tag.setAttribute('name', name);
-        document.head.appendChild(tag);
-      }
-      tag.content = content;
-    };
-
     // 간결한 설명 생성
     const description = business.rating
       ? `${business.category_name} | ⭐ ${business.rating.toFixed(1)}`
       : business.category_name;
 
-    const shareUrl = `${window.location.origin}/local-businesses?name=${encodeURIComponent(business.name)}`;
+    // URL에 지역 및 업체명 포함
+    const params = new URLSearchParams({
+      name: business.name,
+    });
 
-    // Open Graph 메타태그 설정
-    updateMetaTag('og:title', business.name);
-    updateMetaTag('og:description', description);
-    updateMetaTag('og:url', shareUrl);
-
-    // 대표 이미지 설정 (custom_photo_url 우선, 없으면 photo_url)
-    const businessImage = business.custom_photo_url ||
-      (business.has_photo ? `${process.env.NEXT_PUBLIC_API_URL}/local-businesses/${business.id}/photo/` : null);
-
-    if (businessImage) {
-      updateMetaTag('og:image', businessImage);
+    // 현재 선택된 지역 정보 추가
+    if (selectedCity && selectedCity !== 'all') {
+      params.append('city', selectedCity);
+    }
+    if (selectedProvince) {
+      params.append('province', selectedProvince);
     }
 
-    // Twitter Card 메타태그 설정
-    updateTwitterTag('twitter:card', 'summary_large_image');
-    updateTwitterTag('twitter:title', business.name);
-    updateTwitterTag('twitter:description', description);
-    if (businessImage) {
-      updateTwitterTag('twitter:image', businessImage);
-    }
+    const shareUrl = `${window.location.origin}/local-businesses?${params.toString()}`;
 
     const shareData = {
       title: business.name,
@@ -590,7 +609,11 @@ export default function LocalBusinessesPage() {
             {/* 업체 카드 그리드 */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
               {businesses.map((business) => (
-                <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-all duration-200 h-full">
+                <Card
+                  key={business.id}
+                  id={`business-${business.id}`}
+                  className="overflow-hidden hover:shadow-lg transition-all duration-200 h-full"
+                >
                   {/* 사진 또는 대체 이미지 */}
                   <div className="relative h-32 sm:h-48 w-full bg-slate-100">
                     {(business.custom_photo_url || business.has_photo) ? (
@@ -854,5 +877,20 @@ export default function LocalBusinessesPage() {
       </Dialog>
       </div>
     </>
+  );
+}
+
+export default function LocalBusinessesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-slate-700 mb-4"></div>
+          <p className="text-slate-600">로딩 중...</p>
+        </div>
+      </div>
+    }>
+      <LocalBusinessesContent />
+    </Suspense>
   );
 }
