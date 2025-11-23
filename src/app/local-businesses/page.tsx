@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Script from 'next/script';
-import Head from 'next/head';
 import { useAuth } from '@/contexts/AuthContext';
 import { regions } from '@/lib/regions';
 import { LocalBusinessCategory, LocalBusinessList } from '@/types/localBusiness';
@@ -17,18 +16,33 @@ import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search, Share2
 import { toast } from 'sonner';
 import KakaoMap from '@/components/kakao/KakaoMap';
 
-export const metadata = {
-  title: '우리동네 전문가 - 둥지마켓',
-  description: '우리동네 전문가를 만나보세요. 법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 정비소 등 지역 전문가 정보를 한눈에 확인하세요.',
-  keywords: '지역 전문가, 변호사, 법무사, 세무사, 회계사, 공인중개사, 부동산, 휴대폰매장, 자동차정비, 인테리어',
-  openGraph: {
-    title: '우리동네 전문가 - 둥지마켓',
-    description: '법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 정비소 등 우리동네 전문가를 만나보세요',
-    type: 'website',
-  }
-};
-
 export default function LocalBusinessesPage() {
+  // 페이지 메타 정보 설정
+  useEffect(() => {
+    document.title = '우리동네 전문가 - 둥지마켓';
+
+    // 메타 태그 설정
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', '우리동네 전문가를 만나보세요. 법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 정비소 등 지역 전문가 정보를 한눈에 확인하세요.');
+    }
+
+    const metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (metaKeywords) {
+      metaKeywords.setAttribute('content', '지역 전문가, 변호사, 법무사, 세무사, 회계사, 공인중개사, 부동산, 휴대폰매장, 자동차정비, 인테리어');
+    }
+
+    // OG 태그 설정
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) {
+      ogTitle.setAttribute('content', '우리동네 전문가 - 둥지마켓');
+    }
+
+    const ogDescription = document.querySelector('meta[property="og:description"]');
+    if (ogDescription) {
+      ogDescription.setAttribute('content', '법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 정비소 등 우리동네 전문가를 만나보세요');
+    }
+  }, []);
   const { user } = useAuth();
 
   // 상태 - 초기값을 빈 문자열로 설정 (사용자 지역 로드 전까지 대기)
