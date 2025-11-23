@@ -483,31 +483,14 @@ function LocalBusinessesContent() {
           </div>
         </div>
 
-        {/* 검색 */}
+        {/* 지역 선택 및 검색 (한 줄) */}
         <Card className="mb-3 p-2 sm:p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
-            <Input
-              type="text"
-              placeholder="업체명 검색"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 sm:pl-10 h-9 sm:h-11 text-sm"
-            />
-          </div>
-        </Card>
-
-        {/* 지역 선택 */}
-        <Card className="mb-3 p-2 sm:p-4">
-          <div className="space-y-2 sm:space-y-3">
-            <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-700">
-              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span>지역 선택</span>
-            </div>
-            <div className="grid grid-cols-2 gap-1.5 sm:gap-3">
-              {/* 시/도 */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            {/* 지역 선택 영역 */}
+            <div className="flex gap-1.5 sm:gap-2 flex-shrink-0">
+              {/* 시/도 - 가장 긴 텍스트 "서울특별시" 기준 */}
               <Select value={selectedProvince} onValueChange={handleProvinceChange}>
-                <SelectTrigger className="h-8 sm:h-10">
+                <SelectTrigger className="h-9 sm:h-10 w-[110px] sm:w-[130px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -525,7 +508,7 @@ function LocalBusinessesContent() {
                 onValueChange={setSelectedCity}
                 disabled={!selectedProvince}
               >
-                <SelectTrigger className="h-8 sm:h-10">
+                <SelectTrigger className="h-9 sm:h-10 w-[90px] sm:w-[110px]">
                   <SelectValue placeholder="전체" />
                 </SelectTrigger>
                 <SelectContent>
@@ -537,6 +520,18 @@ function LocalBusinessesContent() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* 검색 영역 */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
+              <Input
+                type="text"
+                placeholder="업체명 검색"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 sm:pl-10 h-9 sm:h-10 text-sm"
+              />
             </div>
           </div>
         </Card>
