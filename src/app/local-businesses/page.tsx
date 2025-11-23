@@ -483,7 +483,7 @@ function LocalBusinessesContent() {
           </div>
 
           {/* PC 헤더 - 중앙 정렬 */}
-          <div className="hidden sm:flex sm:flex-col sm:items-center sm:gap-4 mb-3">
+          <div className="hidden sm:flex sm:items-center sm:justify-center sm:relative mb-3">
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-white" />
@@ -492,15 +492,12 @@ function LocalBusinessesContent() {
                 우리동네 전문가를 만나보세요
               </h1>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
+            <Badge
               onClick={handleSharePage}
-              className="flex items-center gap-2 text-sm"
+              className="absolute right-0 bg-slate-900 text-white hover:bg-slate-800 cursor-pointer px-4 py-2 text-sm font-medium"
             >
-              <Share2 className="w-4 h-4" />
-              <span>페이지 공유</span>
-            </Button>
+              페이지 공유
+            </Badge>
           </div>
         </div>
 
