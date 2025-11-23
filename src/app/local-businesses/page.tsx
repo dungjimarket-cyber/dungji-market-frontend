@@ -178,7 +178,7 @@ export default function LocalBusinessesPage() {
       // URL 파라미터 구성 (카테고리와 검색어는 선택사항)
       const params = new URLSearchParams({
         region_name__icontains: regionParam,
-        ordering: 'rank_in_region',
+        ordering: '-popularity_score',
         limit: '12'  // LimitOffsetPagination uses 'limit' not 'page_size'
       });
 
