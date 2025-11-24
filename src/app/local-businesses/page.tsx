@@ -513,8 +513,8 @@ function LocalBusinessesContent() {
             <div className="flex gap-1 sm:gap-2 flex-shrink-0">
               {/* 시/도 - 세종특별자치시(7글자)도 안 짤리도록 */}
               <Select value={selectedProvince} onValueChange={handleProvinceChange}>
-                <SelectTrigger className="h-9 sm:h-10 w-[116px] sm:w-[136px]">
-                  <SelectValue />
+                <SelectTrigger className="h-9 sm:h-10 w-[130px] sm:w-[140px]">
+                  <SelectValue className="whitespace-nowrap" />
                 </SelectTrigger>
                 <SelectContent>
                   {regions.map((region) => (
@@ -531,8 +531,8 @@ function LocalBusinessesContent() {
                 onValueChange={setSelectedCity}
                 disabled={!selectedProvince}
               >
-                <SelectTrigger className="h-9 sm:h-10 w-[90px] sm:w-[100px]">
-                  <SelectValue placeholder="전체" />
+                <SelectTrigger className="h-9 sm:h-10 w-[95px] sm:w-[105px]">
+                  <SelectValue placeholder="전체" className="whitespace-nowrap" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
