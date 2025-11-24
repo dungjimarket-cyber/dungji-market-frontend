@@ -376,7 +376,7 @@ function LocalBusinessesContent() {
   const handleSharePage = async () => {
     const shareData = {
       title: '우리동네 전문가 - 둥지마켓',
-      text: '법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 정비소 등 우리동네 전문가를 만나보세요',
+      text: '법률서비스, 세무/회계, 공인중개사, 휴대폰대리점, 자동차정비 등 우리동네 전문가를 만나보세요',
       url: window.location.href
     };
 
