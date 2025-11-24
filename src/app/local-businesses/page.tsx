@@ -595,7 +595,9 @@ function LocalBusinessesContent() {
                   onClick={() => setSelectedCategory(cat)}
                 >
                   <span className="text-xl sm:text-2xl">{cat.icon}</span>
-                  <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">{cat.name}</span>
+                  <span className="text-[10px] sm:text-xs font-medium whitespace-nowrap">
+                    {cat.name === '정비소' ? '자동차 정비' : cat.name}
+                  </span>
                 </Button>
               ))}
             </div>
