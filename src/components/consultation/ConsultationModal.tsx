@@ -65,10 +65,51 @@ export default function ConsultationModal({
   const [polishing, setPolishing] = useState(false);
   const [agreed, setAgreed] = useState(false);
 
-  // 카테고리 로드
+  // 통합 카테고리 설정 (청소 전문 + 이사 전문 → 청소·이사)
+  // 세무사 + 회계사 → 세무·회계, 변호사 + 법무사 → 법률 서비스
+  const MERGED_CATEGORIES: Record<string, { names: string[]; mergedName: string; icon: string; id: string }> = {
+    '청소·이사': { names: ['청소 전문', '이사 전문'], mergedName: '청소·이사', icon: '🧹', id: 'cleaning_moving' },
+    '세무·회계': { names: ['세무사', '회계사'], mergedName: '세무·회계', icon: '💼', id: 'tax_accounting' },
+    '법률 서비스': { names: ['변호사', '법무사'], mergedName: '법률 서비스', icon: '⚖️', id: 'legal_service' },
+  };
+
+  // 카테고리 로드 및 통합 처리
   useEffect(() => {
     if (isOpen) {
-      fetchCategories().then(setCategories);
+      fetchCategories().then(rawCategories => {
+        // 통합 대상 카테고리 이름들
+        const mergedCategoryNames = new Set(
+          Object.values(MERGED_CATEGORIES).flatMap(m => m.names)
+        );
+
+        // 통합 대상이 아닌 카테고리만 필터링
+        const filteredCategories = rawCategories.filter(
+          cat => !mergedCategoryNames.has(cat.name)
+        );
+
+        // 통합 카테고리 추가 (원본 카테고리가 존재하는 경우에만)
+        const mergedToAdd: LocalBusinessCategory[] = [];
+        for (const [, merged] of Object.entries(MERGED_CATEGORIES)) {
+          // 해당 통합 카테고리의 원본 카테고리 중 하나라도 존재하면 추가
+          const hasOriginal = rawCategories.some(cat => merged.names.includes(cat.name));
+          if (hasOriginal) {
+            // 첫 번째 원본 카테고리를 찾아서 기본값 사용
+            const originalCat = rawCategories.find(cat => merged.names.includes(cat.name));
+            mergedToAdd.push({
+              id: merged.id as unknown as number, // 문자열 ID 사용
+              name: merged.mergedName,
+              name_en: merged.id,
+              icon: merged.icon,
+              google_place_type: '',
+              description: '',
+              order_index: originalCat?.order_index || 99,
+              is_active: true,
+            });
+          }
+        }
+
+        setCategories([...filteredCategories, ...mergedToAdd]);
+      });
     }
   }, [isOpen]);
 
