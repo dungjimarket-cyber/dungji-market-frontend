@@ -26,12 +26,16 @@ import {
   polishContent,
 } from '@/lib/api/consultationService';
 import RegionDropdown from '@/components/address/RegionDropdown';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function ConsultationModal({
   isOpen,
   onClose,
   preSelectedCategory,
 }: ConsultationModalProps) {
+  // 로그인 유저 정보
+  const { user } = useAuth();
+
   // 스텝 관리
   const [step, setStep] = useState(1);
 
@@ -47,6 +51,7 @@ export default function ConsultationModal({
   const [category, setCategory] = useState<string | number | null>(preSelectedCategory?.id || null);
   const [province, setProvince] = useState('');
   const [city, setCity] = useState('');
+  const [userInfoLoaded, setUserInfoLoaded] = useState(false);
 
   // 플로우 선택 결과
   const [selections, setSelections] = useState<FlowSelection[]>([]);
@@ -67,6 +72,58 @@ export default function ConsultationModal({
       fetchCategories().then(setCategories);
     }
   }, [isOpen]);
+
+  // 로그인 유저 정보 자동 채우기
+  useEffect(() => {
+    if (isOpen && user && !userInfoLoaded) {
+      // 이름 (name 또는 username/nickname)
+      if (user.name) {
+        setName(user.name);
+      } else if (user.username) {
+        setName(user.username);
+      } else if (user.nickname) {
+        setName(user.nickname);
+      }
+
+      // 연락처
+      if (user.phone_number) {
+        setPhone(formatPhone(user.phone_number));
+      }
+
+      // 이메일
+      if (user.email) {
+        setEmail(user.email);
+      }
+
+      // 지역 (address_region 객체에서 추출)
+      if (user.address_region) {
+        const regionObj = user.address_region;
+        // 시/도 (full_name에서 첫 번째 부분 또는 name)
+        if (regionObj.full_name) {
+          const parts = regionObj.full_name.split(' ');
+          if (parts.length >= 2) {
+            setProvince(parts[0]);
+            setCity(parts[1]);
+          } else if (parts.length === 1) {
+            setProvince(parts[0]);
+          }
+        } else if (regionObj.name) {
+          setProvince(regionObj.name);
+        }
+      } else if (user.region) {
+        // 구버전 region 문자열 처리
+        const parts = user.region.split(' ');
+        if (parts.length >= 2) {
+          setProvince(parts[0]);
+          setCity(parts[1]);
+        } else if (parts.length === 1) {
+          setProvince(parts[0]);
+        }
+      }
+
+      setUserInfoLoaded(true);
+    }
+  }, [isOpen, user, userInfoLoaded]);
 
   // 선택된 카테고리 변경 시 플로우 로드
   useEffect(() => {
@@ -100,6 +157,7 @@ export default function ConsultationModal({
       setAdditionalContent('');
       setFinalContent('');
       setAgreed(false);
+      setUserInfoLoaded(false); // 다음 열릴 때 다시 자동 채우기 가능
     }
   }, [isOpen, preSelectedCategory]);
 
