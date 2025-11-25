@@ -172,13 +172,13 @@ export default function ConsultationModal({
   // 현재 플로우 단계
   const currentFlow = flows[currentFlowStep];
 
-  // 플로우가 조건부인지 확인
-  const shouldShowFlow = (flow: ConsultationFlow) => {
+  // 플로우가 조건부인지 확인 (선택 목록을 인자로 받아 최신 상태 사용)
+  const shouldShowFlow = (flow: ConsultationFlow, currentSelections: FlowSelection[] = selections) => {
     if (!flow.depends_on_step || flow.depends_on_options.length === 0) {
       return true;
     }
     // 의존하는 단계에서 선택된 옵션 확인
-    const dependentSelection = selections.find(s => s.step === flow.depends_on_step);
+    const dependentSelection = currentSelections.find(s => s.step === flow.depends_on_step);
     if (!dependentSelection) return false;
     return flow.depends_on_options.includes(dependentSelection.optionKey);
   };
@@ -203,21 +203,22 @@ export default function ConsultationModal({
     };
 
     // 기존 선택 업데이트 또는 추가
-    setSelections(prev => {
-      const filtered = prev.filter(s => s.step !== currentFlow.step_number);
-      return [...filtered, newSelection];
-    });
+    const newSelections = [
+      ...selections.filter(s => s.step !== currentFlow.step_number),
+      newSelection,
+    ];
+    setSelections(newSelections);
 
-    // 다음 단계로 이동
-    moveToNextFlow();
+    // 다음 단계로 이동 (새 선택 목록 전달)
+    moveToNextFlow(newSelections);
   };
 
-  // 다음 플로우로 이동
-  const moveToNextFlow = () => {
+  // 다음 플로우로 이동 (최신 선택 목록 사용)
+  const moveToNextFlow = (currentSelections: FlowSelection[]) => {
     let nextStep = currentFlowStep + 1;
 
-    // 조건부 플로우 스킵
-    while (nextStep < flows.length && !shouldShowFlow(flows[nextStep])) {
+    // 조건부 플로우 스킵 (최신 선택 목록으로 확인)
+    while (nextStep < flows.length && !shouldShowFlow(flows[nextStep], currentSelections)) {
       nextStep++;
     }
 
