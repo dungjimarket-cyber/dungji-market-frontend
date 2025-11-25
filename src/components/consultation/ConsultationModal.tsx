@@ -160,12 +160,91 @@ export default function ConsultationModal({
     }
   }, [isOpen, user, userInfoLoaded]);
 
+  // 청소·이사 기본 플로우 (백엔드 데이터 없을 때 폴백용)
+  const CLEANING_MOVING_DEFAULT_FLOWS: ConsultationFlow[] = [
+    {
+      id: 1,
+      step_number: 1,
+      question: '어떤 서비스가 필요하세요?',
+      is_required: true,
+      depends_on_step: null,
+      depends_on_options: [],
+      options: [
+        { id: 1, key: 'moving', label: '이사 서비스', icon: '🚚', description: '가정/사무실 이사, 포장이사 등', is_custom_input: false, order_index: 0 },
+        { id: 2, key: 'cleaning', label: '청소 서비스', icon: '🧹', description: '입주청소, 정기청소, 특수청소 등', is_custom_input: false, order_index: 1 },
+      ]
+    },
+    {
+      id: 2,
+      step_number: 2,
+      question: '어떤 이사인가요?',
+      is_required: true,
+      depends_on_step: 1,
+      depends_on_options: ['moving'],
+      options: [
+        { id: 3, key: 'home_move', label: '가정 이사', icon: '🏠', description: '', is_custom_input: false, order_index: 0 },
+        { id: 4, key: 'office_move', label: '사무실 이사', icon: '🏢', description: '', is_custom_input: false, order_index: 1 },
+        { id: 5, key: 'small_move', label: '원룸/소형 이사', icon: '📦', description: '', is_custom_input: false, order_index: 2 },
+        { id: 6, key: 'long_distance', label: '장거리 이사', icon: '🚛', description: '', is_custom_input: false, order_index: 3 },
+      ]
+    },
+    {
+      id: 3,
+      step_number: 2,
+      question: '어떤 청소가 필요하세요?',
+      is_required: true,
+      depends_on_step: 1,
+      depends_on_options: ['cleaning'],
+      options: [
+        { id: 7, key: 'move_in', label: '입주 청소', icon: '🏠', description: '', is_custom_input: false, order_index: 0 },
+        { id: 8, key: 'move_out', label: '이사 청소', icon: '📦', description: '', is_custom_input: false, order_index: 1 },
+        { id: 9, key: 'regular', label: '정기 청소', icon: '✨', description: '', is_custom_input: false, order_index: 2 },
+        { id: 10, key: 'special', label: '특수 청소', icon: '🧽', description: '에어컨, 새집증후군 등', is_custom_input: false, order_index: 3 },
+        { id: 11, key: 'office', label: '사무실/상가 청소', icon: '🏢', description: '', is_custom_input: false, order_index: 4 },
+      ]
+    },
+    {
+      id: 4,
+      step_number: 3,
+      question: '공간 크기는?',
+      is_required: true,
+      depends_on_step: null,
+      depends_on_options: [],
+      options: [
+        { id: 12, key: 'studio', label: '원룸/투룸', icon: '🛏️', description: '', is_custom_input: false, order_index: 0 },
+        { id: 13, key: 'under_20', label: '20평 미만', icon: '📐', description: '', is_custom_input: false, order_index: 1 },
+        { id: 14, key: '20_to_30', label: '20~30평', icon: '📏', description: '', is_custom_input: false, order_index: 2 },
+        { id: 15, key: '30_to_40', label: '30~40평', icon: '🏠', description: '', is_custom_input: false, order_index: 3 },
+        { id: 16, key: 'over_40', label: '40평 이상', icon: '🏡', description: '', is_custom_input: false, order_index: 4 },
+      ]
+    },
+    {
+      id: 5,
+      step_number: 4,
+      question: '희망 날짜는?',
+      is_required: true,
+      depends_on_step: null,
+      depends_on_options: [],
+      options: [
+        { id: 17, key: 'this_week', label: '이번 주', icon: '📅', description: '', is_custom_input: false, order_index: 0 },
+        { id: 18, key: 'next_week', label: '다음 주', icon: '🗓️', description: '', is_custom_input: false, order_index: 1 },
+        { id: 19, key: 'within_month', label: '한 달 이내', icon: '📆', description: '', is_custom_input: false, order_index: 2 },
+        { id: 20, key: 'flexible', label: '협의 가능', icon: '🤝', description: '', is_custom_input: false, order_index: 3 },
+      ]
+    },
+  ];
+
   // 선택된 카테고리 변경 시 플로우 로드
   useEffect(() => {
     if (category) {
       // 카테고리 ID (숫자 또는 문자열)로 플로우 조회
       fetchConsultationFlows(category).then(data => {
-        setFlows(data);
+        // 데이터가 없고 청소·이사 카테고리면 기본 플로우 사용
+        if (data.length === 0 && category === 'cleaning_moving') {
+          setFlows(CLEANING_MOVING_DEFAULT_FLOWS);
+        } else {
+          setFlows(data);
+        }
         setCurrentFlowStep(0);
         setSelections([]);
         setCustomInputs({});
