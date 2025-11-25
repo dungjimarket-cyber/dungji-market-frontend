@@ -527,7 +527,15 @@ export default function ConsultationModal({
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          {option.icon && <span className="text-lg">{option.icon}</span>}
+                          {option.logo ? (
+                            <img
+                              src={option.logo}
+                              alt={option.label}
+                              className="h-5 w-auto object-contain"
+                            />
+                          ) : option.icon ? (
+                            <span className="text-lg">{option.icon}</span>
+                          ) : null}
                           <span className="text-sm font-medium">{option.label}</span>
                         </div>
                         {option.description && (

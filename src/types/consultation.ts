@@ -84,6 +84,7 @@ export interface ConsultationFlowOption {
   key: string;
   label: string;
   icon: string;
+  logo?: string;  // 로고 이미지 경로 (예: /logos/skt.png)
   description: string;
   is_custom_input: boolean;
   order_index: number;
