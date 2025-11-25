@@ -202,12 +202,21 @@ export default function ConsultationModal({
       isCustom,
     };
 
-    // 기존 선택 업데이트 또는 추가
+    // 현재 단계 이후의 선택은 모두 제거 (다른 옵션 선택 시 이후 단계 초기화)
     const newSelections = [
-      ...selections.filter(s => s.step !== currentFlow.step_number),
+      ...selections.filter(s => s.step < currentFlow.step_number),
       newSelection,
     ];
     setSelections(newSelections);
+
+    // 현재 단계 이후의 커스텀 입력도 제거
+    const newCustomInputs = { ...customInputs };
+    Object.keys(newCustomInputs).forEach(key => {
+      if (Number(key) > currentFlow.step_number) {
+        delete newCustomInputs[Number(key)];
+      }
+    });
+    setCustomInputs(newCustomInputs);
 
     // 다음 단계로 이동 (새 선택 목록 전달)
     moveToNextFlow(newSelections);
@@ -232,10 +241,26 @@ export default function ConsultationModal({
 
   // 이전 플로우로 이동
   const moveToPrevFlow = () => {
+    if (!currentFlow) return;
+
+    // 현재 단계 및 이후 단계의 선택을 모두 제거
+    const currentStepNumber = currentFlow.step_number;
+    const newSelections = selections.filter(s => s.step < currentStepNumber);
+    setSelections(newSelections);
+
+    // 현재 단계 이후의 커스텀 입력도 제거
+    const newCustomInputs = { ...customInputs };
+    Object.keys(newCustomInputs).forEach(key => {
+      if (Number(key) >= currentStepNumber) {
+        delete newCustomInputs[Number(key)];
+      }
+    });
+    setCustomInputs(newCustomInputs);
+
     let prevStep = currentFlowStep - 1;
 
-    // 조건부 플로우 스킵
-    while (prevStep >= 0 && !shouldShowFlow(flows[prevStep])) {
+    // 조건부 플로우 스킵 (업데이트된 선택 목록으로 판단)
+    while (prevStep >= 0 && !shouldShowFlow(flows[prevStep], newSelections)) {
       prevStep--;
     }
 
