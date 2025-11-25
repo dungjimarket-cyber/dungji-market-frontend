@@ -488,30 +488,32 @@ export default function ConsultationModal({
                 <div className="grid grid-cols-2 gap-2">
                   {currentFlow.options.map(option => (
                     option.is_custom_input ? (
-                      // 직접 입력 옵션
-                      <div key={option.key} className="col-span-2 space-y-2">
-                        <div className="border-t pt-3 mt-2">
-                          <p className="text-sm text-slate-500 mb-2">원하는 내용이 없으신가요?</p>
-                          <div className="flex gap-2">
-                            <Input
-                              value={customInputs[currentFlow.step_number] || ''}
-                              onChange={e => setCustomInputs(prev => ({
-                                ...prev,
-                                [currentFlow.step_number]: e.target.value
-                              }))}
-                              placeholder="직접 입력해주세요"
-                              className="flex-1"
-                            />
-                            <Button
-                              variant="outline"
-                              onClick={() => handleOptionSelect(option.key, '', true)}
-                              disabled={!customInputs[currentFlow.step_number]?.trim()}
-                            >
-                              선택
-                            </Button>
+                      // 직접 입력 옵션 (1단계에서는 숨김)
+                      currentFlow.step_number > 1 ? (
+                        <div key={option.key} className="col-span-2 space-y-2">
+                          <div className="border-t pt-3 mt-2">
+                            <p className="text-sm text-slate-500 mb-2">원하는 내용이 없으신가요?</p>
+                            <div className="flex gap-2">
+                              <Input
+                                value={customInputs[currentFlow.step_number] || ''}
+                                onChange={e => setCustomInputs(prev => ({
+                                  ...prev,
+                                  [currentFlow.step_number]: e.target.value
+                                }))}
+                                placeholder="직접 입력해주세요"
+                                className="flex-1"
+                              />
+                              <Button
+                                variant="outline"
+                                onClick={() => handleOptionSelect(option.key, '', true)}
+                                disabled={!customInputs[currentFlow.step_number]?.trim()}
+                              >
+                                선택
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      ) : null
                     ) : (
                       // 일반 옵션
                       <button
