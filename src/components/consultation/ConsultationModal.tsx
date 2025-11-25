@@ -654,13 +654,20 @@ export default function ConsultationModal({
               </div>
 
               <div className="pt-2 border-t">
-                <div className="text-slate-500 text-sm mb-1">상담 내용</div>
-                <div className="text-sm whitespace-pre-wrap bg-white p-3 rounded border">
-                  {finalContent}
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-slate-500 text-sm">상담 내용</div>
+                  <span className="text-xs text-slate-400">직접 수정 가능</span>
                 </div>
+                <Textarea
+                  value={finalContent}
+                  onChange={e => setFinalContent(e.target.value)}
+                  rows={6}
+                  className="text-sm"
+                  placeholder="상담 내용을 입력하세요"
+                />
               </div>
 
-              {/* 내용 수정 버튼 */}
+              {/* 플로우 다시 선택 버튼 */}
               <Button
                 variant="outline"
                 size="sm"
@@ -670,7 +677,7 @@ export default function ConsultationModal({
                 }}
                 className="w-full text-xs"
               >
-                상담 내용 다시 선택하기
+                처음부터 다시 선택하기
               </Button>
             </div>
 
