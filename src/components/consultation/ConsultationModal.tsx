@@ -47,7 +47,6 @@ export default function ConsultationModal({
   // 기본 정보
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
   const [category, setCategory] = useState<string | number | null>(preSelectedCategory?.id || null);
   const [province, setProvince] = useState('');
   const [city, setCity] = useState('');
@@ -88,11 +87,6 @@ export default function ConsultationModal({
       // 연락처
       if (user.phone_number) {
         setPhone(formatPhone(user.phone_number));
-      }
-
-      // 이메일
-      if (user.email) {
-        setEmail(user.email);
       }
 
       // 지역 (address_region 객체에서 추출)
@@ -146,7 +140,6 @@ export default function ConsultationModal({
       setStep(1);
       setName('');
       setPhone('');
-      setEmail('');
       setCategory(preSelectedCategory?.id || null);
       setProvince('');
       setCity('');
@@ -314,7 +307,6 @@ export default function ConsultationModal({
       const result = await createConsultationRequest({
         name,
         phone: phone.replace(/-/g, ''),
-        email: email || undefined,
         category: categoryValue as number,
         region: `${province} ${city}`.trim(),
         content: finalContent,
@@ -398,18 +390,6 @@ export default function ConsultationModal({
                 onChange={e => setPhone(formatPhone(e.target.value))}
                 placeholder="010-1234-5678"
                 maxLength={13}
-              />
-            </div>
-
-            {/* 이메일 */}
-            <div>
-              <Label htmlFor="email">이메일 (선택)</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="example@email.com"
               />
             </div>
 
@@ -605,12 +585,6 @@ export default function ConsultationModal({
                 <div>{name}</div>
                 <div className="text-slate-500">연락처</div>
                 <div>{phone}</div>
-                {email && (
-                  <>
-                    <div className="text-slate-500">이메일</div>
-                    <div>{email}</div>
-                  </>
-                )}
                 <div className="text-slate-500">업종</div>
                 <div>{selectedCategory?.icon} {selectedCategory?.name}</div>
                 <div className="text-slate-500">지역</div>
