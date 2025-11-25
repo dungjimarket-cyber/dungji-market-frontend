@@ -13,9 +13,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search, Share2 } from 'lucide-react';
+import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search, Share2, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import KakaoMap from '@/components/kakao/KakaoMap';
+import ConsultationModal from '@/components/consultation/ConsultationModal';
 
 function LocalBusinessesContent() {
   const searchParams = useSearchParams();
@@ -40,6 +41,7 @@ function LocalBusinessesContent() {
   const [mapKey, setMapKey] = useState(0); // 지도 강제 재생성용
   const [isInitialized, setIsInitialized] = useState(false); // 초기화 완료 플래그
   const [kakaoScriptLoaded, setKakaoScriptLoaded] = useState(false); // Kakao Script 로드 상태
+  const [consultModalOpen, setConsultModalOpen] = useState(false); // 상담 모달
 
   // IntersectionObserver용 ref
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -471,15 +473,24 @@ function LocalBusinessesContent() {
                 우리동네 전문가를 만나보세요
               </h1>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSharePage}
-              className="flex items-center gap-1 text-xs whitespace-nowrap"
-            >
-              <Share2 className="w-3 h-3" />
-              <span>공유</span>
-            </Button>
+            <div className="flex items-center gap-1.5">
+              <Button
+                size="sm"
+                onClick={() => setConsultModalOpen(true)}
+                className="flex items-center gap-1 text-xs whitespace-nowrap bg-dungji-primary hover:bg-dungji-primary/90"
+              >
+                <MessageCircle className="w-3 h-3" />
+                <span>무료상담</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSharePage}
+                className="flex items-center gap-1 text-xs whitespace-nowrap"
+              >
+                <Share2 className="w-3 h-3" />
+              </Button>
+            </div>
           </div>
 
           {/* PC 헤더 - 중앙 정렬 */}
@@ -492,12 +503,21 @@ function LocalBusinessesContent() {
                 우리동네 전문가를 만나보세요
               </h1>
             </div>
-            <Badge
-              onClick={handleSharePage}
-              className="absolute right-0 bg-slate-900 text-white hover:bg-slate-800 cursor-pointer px-4 py-2 text-sm font-medium"
-            >
-              페이지 공유
-            </Badge>
+            <div className="absolute right-0 flex items-center gap-2">
+              <Button
+                onClick={() => setConsultModalOpen(true)}
+                className="bg-dungji-primary hover:bg-dungji-primary/90 text-white px-4 py-2 text-sm font-medium"
+              >
+                <MessageCircle className="w-4 h-4 mr-1.5" />
+                무료상담신청
+              </Button>
+              <Badge
+                onClick={handleSharePage}
+                className="bg-slate-900 text-white hover:bg-slate-800 cursor-pointer px-4 py-2 text-sm font-medium"
+              >
+                페이지 공유
+              </Badge>
+            </div>
           </div>
         </div>
 
@@ -895,6 +915,17 @@ function LocalBusinessesContent() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* 무료상담신청 모달 */}
+      <ConsultationModal
+        isOpen={consultModalOpen}
+        onClose={() => setConsultModalOpen(false)}
+        preSelectedCategory={selectedCategory ? {
+          id: selectedCategory.id,
+          name: selectedCategory.name,
+          icon: selectedCategory.icon
+        } : undefined}
+      />
       </div>
     </>
   );
