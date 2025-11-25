@@ -78,6 +78,50 @@ export interface AIAssistResponse {
   recommended_types: AIRecommendedType[];
 }
 
+// 상담 질문 플로우 선택지
+export interface ConsultationFlowOption {
+  id: number;
+  key: string;
+  label: string;
+  icon: string;
+  description: string;
+  is_custom_input: boolean;
+  order_index: number;
+}
+
+// 상담 질문 플로우
+export interface ConsultationFlow {
+  id: number;
+  step_number: number;
+  question: string;
+  is_required: boolean;
+  depends_on_step: number | null;
+  depends_on_options: string[];
+  options: ConsultationFlowOption[];
+}
+
+// 플로우 선택 결과
+export interface FlowSelection {
+  step: number;
+  question: string;
+  answer: string;
+  optionKey: string;
+  isCustom?: boolean;
+}
+
+// AI 다듬기 요청
+export interface AIPolishRequest {
+  category: number;
+  selections: FlowSelection[];
+  additional_content?: string;
+}
+
+// AI 다듬기 응답
+export interface AIPolishResponse {
+  polished_content: string;
+  raw_summary: string;
+}
+
 // 상담 신청 모달 props
 export interface ConsultationModalProps {
   isOpen: boolean;

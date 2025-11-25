@@ -15,16 +15,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import {
   ConsultationModalProps,
-  ConsultationFormData,
-  ConsultationType,
-  AIRecommendedType,
+  ConsultationFlow,
+  FlowSelection,
 } from '@/types/consultation';
 import { LocalBusinessCategory } from '@/types/localBusiness';
 import { fetchCategories } from '@/lib/api/localBusiness';
 import {
-  fetchConsultationTypes,
+  fetchConsultationFlows,
   createConsultationRequest,
-  getAIAssist,
+  polishContent,
 } from '@/lib/api/consultationService';
 
 // 시/도 목록
@@ -41,27 +40,30 @@ export default function ConsultationModal({
   // 스텝 관리
   const [step, setStep] = useState(1);
 
-  // 카테고리 & 상담 유형
+  // 카테고리 & 플로우
   const [categories, setCategories] = useState<LocalBusinessCategory[]>([]);
-  const [consultationTypes, setConsultationTypes] = useState<ConsultationType[]>([]);
+  const [flows, setFlows] = useState<ConsultationFlow[]>([]);
+  const [currentFlowStep, setCurrentFlowStep] = useState(0);
 
-  // 폼 데이터
-  const [formData, setFormData] = useState<ConsultationFormData>({
-    name: '',
-    phone: '',
-    email: '',
-    category: preSelectedCategory?.id || null,
-    region: '',
-    regionDetail: '',
-    content: '',
-    consultationType: null,
-    aiSummary: '',
-    aiRecommendedTypes: [],
-  });
+  // 기본 정보
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [category, setCategory] = useState<number | null>(preSelectedCategory?.id || null);
+  const [region, setRegion] = useState('');
+  const [regionDetail, setRegionDetail] = useState('');
+
+  // 플로우 선택 결과
+  const [selections, setSelections] = useState<FlowSelection[]>([]);
+  const [customInputs, setCustomInputs] = useState<Record<number, string>>({});
+  const [additionalContent, setAdditionalContent] = useState('');
+
+  // 최종 상담 내용
+  const [finalContent, setFinalContent] = useState('');
 
   // 상태
   const [loading, setLoading] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
+  const [polishing, setPolishing] = useState(false);
   const [agreed, setAgreed] = useState(false);
 
   // 카테고리 로드
@@ -71,31 +73,36 @@ export default function ConsultationModal({
     }
   }, [isOpen]);
 
-  // 선택된 카테고리 변경 시 상담 유형 로드
+  // 선택된 카테고리 변경 시 플로우 로드
   useEffect(() => {
-    if (formData.category) {
-      fetchConsultationTypes(formData.category).then(setConsultationTypes);
+    if (category) {
+      fetchConsultationFlows(category).then(data => {
+        setFlows(data);
+        setCurrentFlowStep(0);
+        setSelections([]);
+        setCustomInputs({});
+      });
     } else {
-      setConsultationTypes([]);
+      setFlows([]);
     }
-  }, [formData.category]);
+  }, [category]);
 
   // 모달 닫힐 때 초기화
   useEffect(() => {
     if (!isOpen) {
       setStep(1);
-      setFormData({
-        name: '',
-        phone: '',
-        email: '',
-        category: preSelectedCategory?.id || null,
-        region: '',
-        regionDetail: '',
-        content: '',
-        consultationType: null,
-        aiSummary: '',
-        aiRecommendedTypes: [],
-      });
+      setName('');
+      setPhone('');
+      setEmail('');
+      setCategory(preSelectedCategory?.id || null);
+      setRegion('');
+      setRegionDetail('');
+      setFlows([]);
+      setCurrentFlowStep(0);
+      setSelections([]);
+      setCustomInputs({});
+      setAdditionalContent('');
+      setFinalContent('');
       setAgreed(false);
     }
   }, [isOpen, preSelectedCategory]);
@@ -108,31 +115,105 @@ export default function ConsultationModal({
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
   };
 
-  // AI 내용 정리
-  const handleAIAssist = async () => {
-    if (!formData.category || formData.content.length < 10) return;
+  // 현재 플로우 단계
+  const currentFlow = flows[currentFlowStep];
 
-    setAiLoading(true);
+  // 플로우가 조건부인지 확인
+  const shouldShowFlow = (flow: ConsultationFlow) => {
+    if (!flow.depends_on_step || flow.depends_on_options.length === 0) {
+      return true;
+    }
+    // 의존하는 단계에서 선택된 옵션 확인
+    const dependentSelection = selections.find(s => s.step === flow.depends_on_step);
+    if (!dependentSelection) return false;
+    return flow.depends_on_options.includes(dependentSelection.optionKey);
+  };
+
+  // 옵션 선택 핸들러
+  const handleOptionSelect = (optionKey: string, optionLabel: string, isCustom: boolean = false) => {
+    if (!currentFlow) return;
+
+    const answer = isCustom ? customInputs[currentFlow.step_number] || '' : optionLabel;
+
+    if (isCustom && !answer.trim()) {
+      toast.error('내용을 입력해주세요.');
+      return;
+    }
+
+    const newSelection: FlowSelection = {
+      step: currentFlow.step_number,
+      question: currentFlow.question,
+      answer,
+      optionKey,
+      isCustom,
+    };
+
+    // 기존 선택 업데이트 또는 추가
+    setSelections(prev => {
+      const filtered = prev.filter(s => s.step !== currentFlow.step_number);
+      return [...filtered, newSelection];
+    });
+
+    // 다음 단계로 이동
+    moveToNextFlow();
+  };
+
+  // 다음 플로우로 이동
+  const moveToNextFlow = () => {
+    let nextStep = currentFlowStep + 1;
+
+    // 조건부 플로우 스킵
+    while (nextStep < flows.length && !shouldShowFlow(flows[nextStep])) {
+      nextStep++;
+    }
+
+    if (nextStep >= flows.length) {
+      // 모든 플로우 완료 → AI 다듬기
+      handlePolish();
+    } else {
+      setCurrentFlowStep(nextStep);
+    }
+  };
+
+  // 이전 플로우로 이동
+  const moveToPrevFlow = () => {
+    let prevStep = currentFlowStep - 1;
+
+    // 조건부 플로우 스킵
+    while (prevStep >= 0 && !shouldShowFlow(flows[prevStep])) {
+      prevStep--;
+    }
+
+    if (prevStep >= 0) {
+      setCurrentFlowStep(prevStep);
+    }
+  };
+
+  // AI 다듬기
+  const handlePolish = async () => {
+    if (!category) return;
+
+    setPolishing(true);
     try {
-      const result = await getAIAssist({
-        category: formData.category,
-        content: formData.content,
+      const result = await polishContent({
+        category,
+        selections,
+        additional_content: additionalContent,
       });
 
       if (result) {
-        setFormData(prev => ({
-          ...prev,
-          aiSummary: result.summary,
-          aiRecommendedTypes: result.recommended_types,
-        }));
-        toast.success('AI가 내용을 정리했습니다!');
+        setFinalContent(result.polished_content);
+        setStep(3); // 확인 단계로
       } else {
-        toast.error('AI 정리에 실패했습니다.');
+        // AI 실패 시 raw summary 사용
+        const rawContent = selections.map(s => `${s.question}: ${s.answer}`).join('\n');
+        setFinalContent(additionalContent ? `${rawContent}\n\n추가사항: ${additionalContent}` : rawContent);
+        setStep(3);
       }
     } catch {
-      toast.error('AI 정리 중 오류가 발생했습니다.');
+      toast.error('내용 정리에 실패했습니다.');
     } finally {
-      setAiLoading(false);
+      setPolishing(false);
     }
   };
 
@@ -146,17 +227,12 @@ export default function ConsultationModal({
     setLoading(true);
     try {
       const result = await createConsultationRequest({
-        name: formData.name,
-        phone: formData.phone.replace(/-/g, ''),
-        email: formData.email || undefined,
-        category: formData.category!,
-        consultation_type: formData.consultationType || undefined,
-        region: `${formData.region} ${formData.regionDetail}`.trim(),
-        content: formData.content,
-        ai_summary: formData.aiSummary || undefined,
-        ai_recommended_types: formData.aiRecommendedTypes.length > 0
-          ? formData.aiRecommendedTypes
-          : undefined,
+        name,
+        phone: phone.replace(/-/g, ''),
+        email: email || undefined,
+        category: category!,
+        region: `${region} ${regionDetail}`.trim(),
+        content: finalContent,
       });
 
       if (result.success) {
@@ -174,16 +250,18 @@ export default function ConsultationModal({
 
   // Step 1 유효성 검사
   const isStep1Valid =
-    formData.name.length >= 2 &&
-    formData.phone.replace(/-/g, '').length >= 10 &&
-    formData.category !== null &&
-    formData.region !== '';
-
-  // Step 2 유효성 검사
-  const isStep2Valid = formData.content.length >= 10;
+    name.length >= 2 &&
+    phone.replace(/-/g, '').length >= 10 &&
+    category !== null &&
+    region !== '';
 
   // 선택된 카테고리 정보
-  const selectedCategory = categories.find(c => c.id === formData.category);
+  const selectedCategory = categories.find(c => c.id === category);
+
+  // 현재 단계에서 선택된 옵션
+  const currentSelection = currentFlow
+    ? selections.find(s => s.step === currentFlow.step_number)
+    : null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -218,8 +296,8 @@ export default function ConsultationModal({
               <Label htmlFor="name">이름 *</Label>
               <Input
                 id="name"
-                value={formData.name}
-                onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                value={name}
+                onChange={e => setName(e.target.value)}
                 placeholder="홍길동"
                 maxLength={20}
               />
@@ -230,11 +308,8 @@ export default function ConsultationModal({
               <Label htmlFor="phone">연락처 *</Label>
               <Input
                 id="phone"
-                value={formData.phone}
-                onChange={e => setFormData(prev => ({
-                  ...prev,
-                  phone: formatPhone(e.target.value)
-                }))}
+                value={phone}
+                onChange={e => setPhone(formatPhone(e.target.value))}
                 placeholder="010-1234-5678"
                 maxLength={13}
               />
@@ -246,8 +321,8 @@ export default function ConsultationModal({
               <Input
                 id="email"
                 type="email"
-                value={formData.email}
-                onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="example@email.com"
               />
             </div>
@@ -260,13 +335,9 @@ export default function ConsultationModal({
                   <button
                     key={cat.id}
                     type="button"
-                    onClick={() => setFormData(prev => ({
-                      ...prev,
-                      category: cat.id,
-                      consultationType: null,
-                    }))}
+                    onClick={() => setCategory(cat.id)}
                     className={`p-2 rounded-lg border text-sm flex flex-col items-center gap-1 transition-colors ${
-                      formData.category === cat.id
+                      category === cat.id
                         ? 'border-dungji-primary bg-dungji-primary/10 text-dungji-primary'
                         : 'border-slate-200 hover:border-slate-300'
                     }`}
@@ -283,8 +354,8 @@ export default function ConsultationModal({
               <Label>희망 지역 *</Label>
               <div className="flex gap-2 mt-2">
                 <select
-                  value={formData.region}
-                  onChange={e => setFormData(prev => ({ ...prev, region: e.target.value }))}
+                  value={region}
+                  onChange={e => setRegion(e.target.value)}
                   className="flex-1 border rounded-lg px-3 py-2 text-sm"
                 >
                   <option value="">시/도 선택</option>
@@ -293,8 +364,8 @@ export default function ConsultationModal({
                   ))}
                 </select>
                 <Input
-                  value={formData.regionDetail}
-                  onChange={e => setFormData(prev => ({ ...prev, regionDetail: e.target.value }))}
+                  value={regionDetail}
+                  onChange={e => setRegionDetail(e.target.value)}
                   placeholder="시/군/구"
                   className="flex-1"
                 />
@@ -311,7 +382,7 @@ export default function ConsultationModal({
           </div>
         )}
 
-        {/* Step 2: 상담 내용 */}
+        {/* Step 2: 탭 기반 상담 내용 선택 */}
         {step === 2 && (
           <div className="space-y-4">
             {/* 선택된 업종 표시 */}
@@ -323,100 +394,122 @@ export default function ConsultationModal({
               </div>
             )}
 
-            {/* 상담 내용 입력 */}
-            <div>
-              <Label htmlFor="content">상담 내용 *</Label>
-              <Textarea
-                id="content"
-                value={formData.content}
-                onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                placeholder="상담받고 싶은 내용을 자유롭게 작성해주세요. (최소 10자)"
-                rows={5}
-                className="resize-none"
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                {formData.content.length}/500자
-              </p>
-            </div>
-
-            {/* AI 정리 버튼 */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleAIAssist}
-              disabled={formData.content.length < 10 || aiLoading}
-              className="w-full"
-            >
-              {aiLoading ? '정리 중...' : '✨ AI로 내용 정리하기'}
-            </Button>
-
-            {/* AI 정리 결과 */}
-            {formData.aiSummary && (
-              <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-                <div>
-                  <p className="text-sm font-semibold text-blue-800 mb-1">📝 AI 정리 내용</p>
-                  <p className="text-sm text-blue-700">{formData.aiSummary}</p>
+            {/* 플로우 로딩 */}
+            {flows.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-dungji-primary"></div>
+                <p className="mt-2 text-sm text-slate-500">질문을 불러오는 중...</p>
+              </div>
+            ) : polishing ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-dungji-primary"></div>
+                <p className="mt-2 text-sm text-slate-500">내용을 정리하고 있습니다...</p>
+              </div>
+            ) : currentFlow ? (
+              <>
+                {/* 진행 상태 */}
+                <div className="flex items-center justify-between text-sm text-slate-500">
+                  <span>질문 {currentFlowStep + 1} / {flows.filter(f => shouldShowFlow(f)).length}</span>
+                  {selections.length > 0 && (
+                    <button
+                      onClick={moveToPrevFlow}
+                      className="text-dungji-primary hover:underline"
+                    >
+                      ← 이전 질문
+                    </button>
+                  )}
                 </div>
 
-                {formData.aiRecommendedTypes.length > 0 && (
-                  <div>
-                    <p className="text-sm font-semibold text-blue-800 mb-2">💡 추천 상담 유형</p>
-                    <div className="flex flex-wrap gap-2">
-                      {formData.aiRecommendedTypes.map((type: AIRecommendedType) => (
-                        <button
-                          key={type.id}
-                          type="button"
-                          onClick={() => setFormData(prev => ({
-                            ...prev,
-                            consultationType: type.id
-                          }))}
-                          className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                            formData.consultationType === type.id
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-blue-700 border border-blue-300 hover:bg-blue-100'
-                          }`}
-                        >
-                          {type.name}
-                        </button>
+                {/* 질문 */}
+                <div className="text-lg font-semibold text-slate-800">
+                  {currentFlow.question}
+                </div>
+
+                {/* 선택지 */}
+                <div className="grid grid-cols-2 gap-2">
+                  {currentFlow.options.map(option => (
+                    option.is_custom_input ? (
+                      // 직접 입력 옵션
+                      <div key={option.key} className="col-span-2 space-y-2">
+                        <div className="border-t pt-3 mt-2">
+                          <p className="text-sm text-slate-500 mb-2">원하는 내용이 없으신가요?</p>
+                          <div className="flex gap-2">
+                            <Input
+                              value={customInputs[currentFlow.step_number] || ''}
+                              onChange={e => setCustomInputs(prev => ({
+                                ...prev,
+                                [currentFlow.step_number]: e.target.value
+                              }))}
+                              placeholder="직접 입력해주세요"
+                              className="flex-1"
+                            />
+                            <Button
+                              variant="outline"
+                              onClick={() => handleOptionSelect(option.key, '', true)}
+                              disabled={!customInputs[currentFlow.step_number]?.trim()}
+                            >
+                              선택
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // 일반 옵션
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => handleOptionSelect(option.key, option.label)}
+                        className={`p-3 rounded-lg border text-left transition-all hover:border-dungji-primary hover:bg-dungji-primary/5 ${
+                          currentSelection?.optionKey === option.key
+                            ? 'border-dungji-primary bg-dungji-primary/10'
+                            : 'border-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {option.icon && <span className="text-lg">{option.icon}</span>}
+                          <span className="text-sm font-medium">{option.label}</span>
+                        </div>
+                        {option.description && (
+                          <p className="text-xs text-slate-500 mt-1">{option.description}</p>
+                        )}
+                      </button>
+                    )
+                  ))}
+                </div>
+
+                {/* 선택 내역 미리보기 */}
+                {selections.length > 0 && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-xs font-semibold text-blue-800 mb-2">선택한 내용</p>
+                    <div className="space-y-1">
+                      {selections.map((sel, idx) => (
+                        <p key={idx} className="text-xs text-blue-700">
+                          • {sel.question}: <span className="font-medium">{sel.answer}</span>
+                        </p>
                       ))}
                     </div>
                   </div>
                 )}
-              </div>
-            )}
 
-            {/* 상담 유형 직접 선택 (AI 미사용 시) */}
-            {!formData.aiSummary && consultationTypes.length > 0 && (
-              <div>
-                <Label>상담 유형 (선택)</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {consultationTypes.map(type => (
-                    <button
-                      key={type.id}
-                      type="button"
-                      onClick={() => setFormData(prev => ({
-                        ...prev,
-                        consultationType: prev.consultationType === type.id ? null : type.id
-                      }))}
-                      className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                        formData.consultationType === type.id
-                          ? 'bg-dungji-primary text-white'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                      }`}
-                    >
-                      {type.icon} {type.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+                {/* 마지막 단계면 추가 입력란 표시 */}
+                {currentFlowStep === flows.filter(f => shouldShowFlow(f)).length - 1 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Label>추가로 전달하고 싶은 내용 (선택)</Label>
+                    <Textarea
+                      value={additionalContent}
+                      onChange={e => setAdditionalContent(e.target.value)}
+                      placeholder="추가 상황이나 요청사항이 있다면 자유롭게 작성해주세요."
+                      rows={3}
+                      className="mt-2"
+                    />
+                  </div>
+                )}
+              </>
+            ) : null}
 
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
                 이전
-              </Button>
-              <Button onClick={() => setStep(3)} disabled={!isStep2Valid} className="flex-1">
-                다음
               </Button>
             </div>
           </div>
@@ -430,32 +523,40 @@ export default function ConsultationModal({
 
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="text-slate-500">이름</div>
-                <div>{formData.name}</div>
+                <div>{name}</div>
                 <div className="text-slate-500">연락처</div>
-                <div>{formData.phone}</div>
-                {formData.email && (
+                <div>{phone}</div>
+                {email && (
                   <>
                     <div className="text-slate-500">이메일</div>
-                    <div>{formData.email}</div>
+                    <div>{email}</div>
                   </>
                 )}
                 <div className="text-slate-500">업종</div>
                 <div>{selectedCategory?.icon} {selectedCategory?.name}</div>
                 <div className="text-slate-500">지역</div>
-                <div>{formData.region} {formData.regionDetail}</div>
+                <div>{region} {regionDetail}</div>
               </div>
 
               <div className="pt-2 border-t">
                 <div className="text-slate-500 text-sm mb-1">상담 내용</div>
-                <div className="text-sm whitespace-pre-wrap">{formData.content}</div>
+                <div className="text-sm whitespace-pre-wrap bg-white p-3 rounded border">
+                  {finalContent}
+                </div>
               </div>
 
-              {formData.aiSummary && (
-                <div className="pt-2 border-t">
-                  <div className="text-blue-600 text-sm mb-1">📝 AI 정리 내용</div>
-                  <div className="text-sm text-blue-700">{formData.aiSummary}</div>
-                </div>
-              )}
+              {/* 내용 수정 버튼 */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setCurrentFlowStep(0);
+                  setStep(2);
+                }}
+                className="w-full text-xs"
+              >
+                상담 내용 다시 선택하기
+              </Button>
             </div>
 
             {/* 개인정보 동의 */}

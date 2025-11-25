@@ -7,6 +7,9 @@ import {
   ConsultationRequestCreate,
   AIAssistRequest,
   AIAssistResponse,
+  ConsultationFlow,
+  AIPolishRequest,
+  AIPolishResponse,
 } from '@/types/consultation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
@@ -90,6 +93,48 @@ export async function getAIAssist(data: AIAssistRequest): Promise<AIAssistRespon
     return await response.json();
   } catch (error) {
     console.error('AI 정리 오류:', error);
+    return null;
+  }
+}
+
+/**
+ * 업종별 상담 질문 플로우 조회
+ */
+export async function fetchConsultationFlows(categoryId: number): Promise<ConsultationFlow[]> {
+  try {
+    const response = await fetch(`${API_URL}/consultation-flows/?category=${categoryId}`);
+
+    if (!response.ok) {
+      throw new Error('상담 플로우 조회 실패');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('상담 플로우 조회 오류:', error);
+    return [];
+  }
+}
+
+/**
+ * AI 문장 다듬기
+ */
+export async function polishContent(data: AIPolishRequest): Promise<AIPolishResponse | null> {
+  try {
+    const response = await fetch(`${API_URL}/consultation-requests/ai_polish/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error('AI 다듬기 실패');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('AI 다듬기 오류:', error);
     return null;
   }
 }
