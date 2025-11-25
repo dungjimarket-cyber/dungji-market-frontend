@@ -734,12 +734,20 @@ export default function AdminPage() {
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">관리자 대시보드</h1>
-        <Button 
-          onClick={() => router.push('/admin/noshow')}
-          variant="outline"
-        >
-          노쇼 신고 관리
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => router.push('/admin/consultation-flows')}
+            variant="outline"
+          >
+            상담 플로우 관리
+          </Button>
+          <Button
+            onClick={() => router.push('/admin/noshow')}
+            variant="outline"
+          >
+            노쇼 신고 관리
+          </Button>
+        </div>
       </div>
       
       {/* 통계 카드들 */}

@@ -577,7 +577,18 @@ export default function ConsultationModal({
             ) : null}
 
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  // Step 1으로 돌아갈 때 플로우 관련 상태 초기화
+                  setCurrentFlowStep(0);
+                  setSelections([]);
+                  setCustomInputs({});
+                  setAdditionalContent('');
+                  setStep(1);
+                }}
+                className="flex-1"
+              >
                 이전
               </Button>
             </div>
