@@ -111,7 +111,7 @@ export interface FlowSelection {
 
 // AI 다듬기 요청
 export interface AIPolishRequest {
-  category: number;
+  category: number | string;
   selections: FlowSelection[];
   additional_content?: string;
 }

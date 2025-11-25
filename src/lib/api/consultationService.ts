@@ -99,8 +99,9 @@ export async function getAIAssist(data: AIAssistRequest): Promise<AIAssistRespon
 
 /**
  * 업종별 상담 질문 플로우 조회
+ * @param categoryId 숫자 ID 또는 문자열 ID (tax_accounting 등)
  */
-export async function fetchConsultationFlows(categoryId: number): Promise<ConsultationFlow[]> {
+export async function fetchConsultationFlows(categoryId: number | string): Promise<ConsultationFlow[]> {
   try {
     const response = await fetch(`${API_URL}/consultation-flows/?category=${categoryId}`);
 

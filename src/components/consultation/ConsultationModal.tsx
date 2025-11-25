@@ -25,12 +25,7 @@ import {
   createConsultationRequest,
   polishContent,
 } from '@/lib/api/consultationService';
-
-// 시/도 목록
-const REGIONS = [
-  '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종',
-  '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'
-];
+import RegionDropdown from '@/components/address/RegionDropdown';
 
 export default function ConsultationModal({
   isOpen,
@@ -49,9 +44,9 @@ export default function ConsultationModal({
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [category, setCategory] = useState<number | null>(preSelectedCategory?.id || null);
-  const [region, setRegion] = useState('');
-  const [regionDetail, setRegionDetail] = useState('');
+  const [category, setCategory] = useState<string | number | null>(preSelectedCategory?.id || null);
+  const [province, setProvince] = useState('');
+  const [city, setCity] = useState('');
 
   // 플로우 선택 결과
   const [selections, setSelections] = useState<FlowSelection[]>([]);
@@ -76,6 +71,7 @@ export default function ConsultationModal({
   // 선택된 카테고리 변경 시 플로우 로드
   useEffect(() => {
     if (category) {
+      // 카테고리 ID (숫자 또는 문자열)로 플로우 조회
       fetchConsultationFlows(category).then(data => {
         setFlows(data);
         setCurrentFlowStep(0);
@@ -95,8 +91,8 @@ export default function ConsultationModal({
       setPhone('');
       setEmail('');
       setCategory(preSelectedCategory?.id || null);
-      setRegion('');
-      setRegionDetail('');
+      setProvince('');
+      setCity('');
       setFlows([]);
       setCurrentFlowStep(0);
       setSelections([]);
@@ -226,12 +222,17 @@ export default function ConsultationModal({
 
     setLoading(true);
     try {
+      // 카테고리가 문자열이면 숫자로 변환 시도, 아니면 그대로 사용
+      const categoryValue = typeof category === 'string' && !isNaN(Number(category))
+        ? Number(category)
+        : category;
+
       const result = await createConsultationRequest({
         name,
         phone: phone.replace(/-/g, ''),
         email: email || undefined,
-        category: category!,
-        region: `${region} ${regionDetail}`.trim(),
+        category: categoryValue as number,
+        region: `${province} ${city}`.trim(),
         content: finalContent,
       });
 
@@ -253,7 +254,8 @@ export default function ConsultationModal({
     name.length >= 2 &&
     phone.replace(/-/g, '').length >= 10 &&
     category !== null &&
-    region !== '';
+    province !== '' &&
+    city !== '';
 
   // 선택된 카테고리 정보
   const selectedCategory = categories.find(c => c.id === category);
@@ -352,22 +354,15 @@ export default function ConsultationModal({
             {/* 지역 선택 */}
             <div>
               <Label>희망 지역 *</Label>
-              <div className="flex gap-2 mt-2">
-                <select
-                  value={region}
-                  onChange={e => setRegion(e.target.value)}
-                  className="flex-1 border rounded-lg px-3 py-2 text-sm"
-                >
-                  <option value="">시/도 선택</option>
-                  {REGIONS.map(r => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-                <Input
-                  value={regionDetail}
-                  onChange={e => setRegionDetail(e.target.value)}
-                  placeholder="시/군/구"
-                  className="flex-1"
+              <div className="mt-2">
+                <RegionDropdown
+                  selectedProvince={province}
+                  selectedCity={city}
+                  onSelect={(p, c) => {
+                    setProvince(p);
+                    setCity(c);
+                  }}
+                  required
                 />
               </div>
             </div>
@@ -535,7 +530,7 @@ export default function ConsultationModal({
                 <div className="text-slate-500">업종</div>
                 <div>{selectedCategory?.icon} {selectedCategory?.name}</div>
                 <div className="text-slate-500">지역</div>
-                <div>{region} {regionDetail}</div>
+                <div>{province} {city}</div>
               </div>
 
               <div className="pt-2 border-t">
