@@ -20,6 +20,7 @@ export interface ConsultationRequestCreate {
   email?: string;
   category: number;
   consultation_type?: number;
+  consultation_type_name?: string;  // 상담 유형명 (백엔드에서 ID로 변환)
   region: string;
   content: string;
   ai_summary?: string;

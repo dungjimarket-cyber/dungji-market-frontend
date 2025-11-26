@@ -421,6 +421,25 @@ export default function ConsultationModal({
     }
   };
 
+  // 통합 카테고리 여부 확인 (1단계가 카테고리 선택인 경우)
+  const MERGED_CATEGORY_IDS = ['tax_accounting', 'legal_service', 'cleaning_moving'];
+  const isMergedCategory = typeof category === 'string' && MERGED_CATEGORY_IDS.includes(category);
+
+  // 상담 유형 결정: 통합 카테고리는 2단계, 일반 카테고리는 1단계 선택지
+  const getConsultationType = (): string | undefined => {
+    if (selections.length === 0) return undefined;
+
+    if (isMergedCategory) {
+      // 통합 카테고리: 2단계 선택지를 상담 유형으로
+      const step2Selection = selections.find(s => s.step === 2);
+      return step2Selection?.answer;
+    } else {
+      // 일반 카테고리: 1단계 선택지를 상담 유형으로
+      const step1Selection = selections.find(s => s.step === 1);
+      return step1Selection?.answer;
+    }
+  };
+
   // 상담 신청 제출
   const handleSubmit = async () => {
     if (!agreed) {
@@ -446,12 +465,16 @@ export default function ConsultationModal({
         ? Number(finalCategory)
         : finalCategory;
 
+      // 상담 유형 결정
+      const consultationType = getConsultationType();
+
       const result = await createConsultationRequest({
         name,
         phone: phone.replace(/-/g, ''),
         category: categoryValue as number,
         region: `${province} ${city}`.trim(),
         content: finalContent,
+        consultation_type_name: consultationType,  // 상담 유형명 전송
       });
 
       if (result.success) {
