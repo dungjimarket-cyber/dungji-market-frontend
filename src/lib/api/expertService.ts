@@ -115,6 +115,47 @@ export interface ConsultationForCustomer {
   created_at: string;
 }
 
+// ===== 이미지 업로드 API =====
+
+/**
+ * 전문가 프로필 이미지 업로드
+ */
+export async function uploadExpertProfileImage(
+  file: File,
+  token: string
+): Promise<{ success: boolean; image_url?: string; message: string }> {
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch(`${API_URL}/expert/profile/image/`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: result.detail || '이미지 업로드에 실패했습니다.',
+      };
+    }
+
+    return {
+      success: true,
+      image_url: result.image_url,
+      message: result.message || '이미지가 업로드되었습니다.',
+    };
+  } catch (error) {
+    console.error('이미지 업로드 오류:', error);
+    return { success: false, message: '네트워크 오류가 발생했습니다.' };
+  }
+}
+
 // ===== 전문가 프로필 API =====
 
 /**
