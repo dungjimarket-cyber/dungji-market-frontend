@@ -18,7 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle, MessageSquare, AlertTriangle, Shield, X, Smartphone } from 'lucide-react';
+import { Loader2, Package, ShoppingBag, ChevronRight, CheckCircle2, XCircle, Clock, Settings, User, AlertCircle, MessageSquare, AlertTriangle, Shield, X, Smartphone, FileText } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -261,6 +261,15 @@ export default function MyPageClient() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-lg font-bold">견적 서비스 내역</h1>
         <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/mypage/consultations')}
+            className="flex items-center"
+          >
+            <FileText className="w-4 h-4 mr-1" />
+            상담내역
+          </Button>
           <Button
             variant="outline"
             size="sm"
