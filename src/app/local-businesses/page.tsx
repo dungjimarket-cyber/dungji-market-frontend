@@ -141,23 +141,31 @@ function LocalBusinessesContent() {
     }
   }, [selectedProvince, selectedCity, selectedCategory, searchQuery]);
 
+  // 페이지 최초 로드 시 스크롤 맨 위로 (name 파라미터 없을 때만)
+  const initialScrollDone = useRef(false);
+  useEffect(() => {
+    if (!initialScrollDone.current) {
+      const urlName = searchParams.get('name');
+      if (!urlName) {
+        window.scrollTo(0, 0);
+      }
+      initialScrollDone.current = true;
+    }
+  }, [searchParams]);
+
   // URL에서 지정된 업체로 스크롤 및 하이라이트 (공유 링크로 접속한 경우만)
+  const highlightDone = useRef(false);
   useEffect(() => {
     const urlName = searchParams.get('name');
 
-    // name 파라미터가 없으면 스크롤 맨 위로 (일반 접속)
-    if (!urlName) {
-      window.scrollTo(0, 0);
-      return;
-    }
-
-    // name 파라미터가 있으면 해당 업체로 스크롤 및 하이라이트
-    if (urlName && businesses.length > 0 && !loading) {
+    // name 파라미터가 있고, 아직 하이라이트 안 했으면 실행
+    if (urlName && businesses.length > 0 && !loading && !highlightDone.current) {
       const matchedBusiness = businesses.find(
         b => b.name.toLowerCase().includes(urlName.toLowerCase())
       );
 
       if (matchedBusiness) {
+        highlightDone.current = true;
         setTimeout(() => {
           const element = document.getElementById(`business-${matchedBusiness.id}`);
           if (element) {
