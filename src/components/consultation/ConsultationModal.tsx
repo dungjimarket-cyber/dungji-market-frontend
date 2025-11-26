@@ -35,8 +35,8 @@ export default function ConsultationModal({
   preSelectedCategory,
 }: ConsultationModalProps) {
   const router = useRouter();
-  // 로그인 유저 정보
-  const { user } = useAuth();
+  // 로그인 유저 정보 및 토큰
+  const { user, accessToken } = useAuth();
 
   // 스텝 관리
   const [step, setStep] = useState(1);
@@ -479,7 +479,7 @@ export default function ConsultationModal({
         region: `${province} ${city}`.trim(),
         content: finalContent,
         consultation_type_name: consultationType,  // 상담 유형명 전송
-      });
+      }, accessToken);  // 토큰 전달하여 사용자 연결
 
       if (result.success) {
         setSubmitted(true);  // 완료 화면 표시

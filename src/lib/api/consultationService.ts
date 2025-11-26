@@ -39,17 +39,25 @@ export async function fetchConsultationTypes(categoryId?: number): Promise<Consu
 }
 
 /**
- * 상담 신청 생성 (비회원 가능)
+ * 상담 신청 생성 (비회원 가능, 로그인 시 사용자 연결)
  */
 export async function createConsultationRequest(
-  data: ConsultationRequestCreate
+  data: ConsultationRequestCreate,
+  token?: string | null
 ): Promise<{ success: boolean; message: string; id?: number }> {
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // 로그인한 사용자면 토큰 추가
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_URL}/consultation-requests/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(data),
     });
 
