@@ -893,35 +893,68 @@ function RegisterPageContent() {
                   </button>
                 </div>
 
-                {/* 전문가회원 - 새로운 카드 */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    router.push('/expert/register');
-                  }}
-                  className="group relative p-5 sm:p-6 border-2 rounded-2xl transition-all hover:shadow-lg border-gray-200 hover:border-green-400 bg-gradient-to-br from-green-50 to-white"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div className="text-left">
-                        <div className="font-bold text-sm sm:text-base text-green-700 group-hover:text-green-800">
-                          전문가 회원
-                        </div>
-                        <div className="text-[10px] sm:text-xs text-gray-500">
-                          인테리어·이사·청소·가전 등 전문 상담 서비스
-                        </div>
-                      </div>
+                {/* 전문가회원 안내 */}
+                <div className="p-4 sm:p-5 border-2 rounded-2xl border-gray-200 bg-gradient-to-br from-blue-50 to-white">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
                     </div>
-                    <svg className="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    <div>
+                      <div className="font-bold text-sm sm:text-base text-blue-700">전문가 회원</div>
+                      <div className="text-[10px] sm:text-xs text-gray-500">고객에게 상담 서비스를 제공하는 전문가</div>
+                    </div>
                   </div>
-                </button>
+
+                  {/* 10개 업종 나열 */}
+                  <div className="grid grid-cols-5 gap-1.5 mb-3">
+                    <div className="text-center py-1.5 bg-white rounded-lg border border-gray-200">
+                      <div className="text-base">💼</div>
+                      <div className="text-[9px] text-gray-700 font-medium">회계사</div>
+                    </div>
+                    <div className="text-center py-1.5 bg-white rounded-lg border border-gray-200">
+                      <div className="text-base">💼</div>
+                      <div className="text-[9px] text-gray-700 font-medium">세무사</div>
+                    </div>
+                    <div className="text-center py-1.5 bg-white rounded-lg border border-gray-200">
+                      <div className="text-base">📋</div>
+                      <div className="text-[9px] text-gray-700 font-medium">법무사</div>
+                    </div>
+                    <div className="text-center py-1.5 bg-white rounded-lg border border-gray-200">
+                      <div className="text-base">⚖️</div>
+                      <div className="text-[9px] text-gray-700 font-medium">변호사</div>
+                    </div>
+                    <div className="text-center py-1.5 bg-white rounded-lg border border-gray-200">
+                      <div className="text-base">🏠</div>
+                      <div className="text-[9px] text-gray-700 font-medium">공인중개사</div>
+                    </div>
+                    <div className="text-center py-1.5 bg-white rounded-lg border border-gray-200">
+                      <div className="text-base">🛠️</div>
+                      <div className="text-[9px] text-gray-700 font-medium">인테리어</div>
+                    </div>
+                    <div className="text-center py-1.5 bg-white rounded-lg border border-gray-200">
+                      <div className="text-base">📱</div>
+                      <div className="text-[9px] text-gray-700 font-medium">휴대폰</div>
+                    </div>
+                    <div className="text-center py-1.5 bg-white rounded-lg border border-gray-200">
+                      <div className="text-base">🔧</div>
+                      <div className="text-[9px] text-gray-700 font-medium">자동차정비</div>
+                    </div>
+                    <div className="text-center py-1.5 bg-white rounded-lg border border-gray-200">
+                      <div className="text-base">🧹</div>
+                      <div className="text-[9px] text-gray-700 font-medium">청소</div>
+                    </div>
+                    <div className="text-center py-1.5 bg-white rounded-lg border border-gray-200">
+                      <div className="text-base">🚚</div>
+                      <div className="text-[9px] text-gray-700 font-medium">이사</div>
+                    </div>
+                  </div>
+
+                  <div className="text-[10px] text-gray-500 text-center">
+                    ※ 전문가 등록은 <span className="text-blue-600 font-medium">개인회원 가입 후</span> 마이페이지에서 가능합니다
+                  </div>
+                </div>
               </div>
             </div>
           )}
