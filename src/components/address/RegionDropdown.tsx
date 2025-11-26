@@ -29,21 +29,24 @@ export default function RegionDropdown({
       const provinceData = regions.find(r => r.name === province);
       if (provinceData) {
         setCities(provinceData.cities);
-        // 도시가 선택되어 있지 않거나 현재 선택된 도시가 목록에 없으면 초기화
-        if (!city || !provinceData.cities.includes(city)) {
-          setCity('');
-        }
       }
     } else {
       setCities([]);
-      setCity('');
     }
   }, [province]);
 
-  // props 변경 시 상태 업데이트
+  // props 변경 시 상태 업데이트 및 부모에게 알림
   useEffect(() => {
-    setProvince(selectedProvince);
-    setCity(selectedCity);
+    if (selectedProvince !== province) {
+      setProvince(selectedProvince);
+    }
+    if (selectedCity !== city) {
+      setCity(selectedCity);
+    }
+    // props로 둘 다 있으면 부모에게 알림 (초기 로드 시)
+    if (selectedProvince && selectedCity && selectedProvince !== '' && selectedCity !== '') {
+      onSelect(selectedProvince, selectedCity);
+    }
   }, [selectedProvince, selectedCity]);
 
   const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
