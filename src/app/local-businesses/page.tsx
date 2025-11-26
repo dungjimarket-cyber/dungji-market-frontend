@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { useAuth } from '@/contexts/AuthContext';
 import { regions } from '@/lib/regions';
@@ -20,6 +20,7 @@ import ConsultationModal from '@/components/consultation/ConsultationModal';
 
 function LocalBusinessesContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { user } = useAuth();
 
   // 페이지 로드 시 스크롤 맨 위로
@@ -526,10 +527,10 @@ function LocalBusinessesContent() {
                 무료상담신청
               </Button>
               <Badge
-                onClick={handleSharePage}
+                onClick={() => router.push('/mypage/consultations')}
                 className="bg-slate-900 text-white hover:bg-slate-800 cursor-pointer px-4 py-2 text-sm font-medium"
               >
-                페이지 공유
+                상담내역
               </Badge>
             </div>
           </div>
