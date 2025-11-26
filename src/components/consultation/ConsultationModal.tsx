@@ -243,14 +243,19 @@ export default function ConsultationModal({
   // 선택된 카테고리 변경 시 플로우 로드
   useEffect(() => {
     if (category) {
-      // 카테고리 ID (숫자 또는 문자열)로 플로우 조회
+      // 청소·이사 카테고리는 프론트엔드 기본 플로우 강제 사용
+      // (백엔드 DB 플로우가 분기 구조가 아니라서)
+      if (category === 'cleaning_moving') {
+        setFlows(CLEANING_MOVING_DEFAULT_FLOWS);
+        setCurrentFlowStep(0);
+        setSelections([]);
+        setCustomInputs({});
+        return;
+      }
+
+      // 다른 카테고리는 백엔드에서 플로우 조회
       fetchConsultationFlows(category).then(data => {
-        if (data.length === 0 && category === 'cleaning_moving') {
-          // 청소·이사 카테고리인데 백엔드 데이터 없으면 기본 플로우 사용
-          setFlows(CLEANING_MOVING_DEFAULT_FLOWS);
-        } else {
-          setFlows(data);
-        }
+        setFlows(data);
         setCurrentFlowStep(0);
         setSelections([]);
         setCustomInputs({});
