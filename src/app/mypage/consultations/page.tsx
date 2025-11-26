@@ -112,10 +112,10 @@ export default function MyConsultationsPage() {
               전문가 상담을 요청해보세요.
             </p>
             <Link
-              href="/local-business"
+              href="/local-businesses"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              업체 찾기
+              상담신청 하기
             </Link>
           </div>
         ) : (

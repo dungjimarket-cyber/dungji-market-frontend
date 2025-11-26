@@ -116,69 +116,48 @@ export default function DesktopNavbar() {
             <span className="text-xl font-bold font-black-han-sans">둥지마켓</span>
           </Link>
 
-          <div className="flex space-x-8">
-            <Link href="/custom-deals" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
+          <div className="flex items-center space-x-2">
+            <Link
+              href="/custom-deals"
+              className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+            >
               커공/이벤트
             </Link>
-            {/* <Link href="/group-purchases" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
-              견적서비스
-            </Link> */}
-            <Link href="/local-businesses" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
+            <Link
+              href="/local-businesses"
+              className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+            >
               우리동네 전문가
             </Link>
-
-            {/* 비로그인 시 */}
-            {/* {!isAuthenticated && (
-              <>
-                <Link href="/register" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
-                  견적요청
-                </Link>
-              </>
-            )} */}
-
-            {/* 구매회원(buyer) 로그인 시 */}
-            {/* {isAuthenticated && (user?.role === 'buyer' || user?.user_type === '일반' || (!user?.role && !user?.user_type)) && (
-              <>
-                <Link
-                  href="/group-purchases/create"
-                  className="text-gray-600 hover:text-gray-900 font-black-han-sans"
-                  onClick={handleCreateClick}
-                >
-                  견적요청
-                </Link>
-              </>
-            )} */}
-
-            {/* 판매회원 로그인 시 */}
-            {/* {isAuthenticated && (user?.role === 'seller' || user?.user_type === '판매') && (
-              <>
-                <Link
-                  href="/mypage/seller/bids"
-                  className="text-gray-600 hover:text-gray-900 font-black-han-sans"
-                  onClick={handleBidsClick}
-                >
-                  견적 내역
-                </Link>
-              </>
-            )} */}
-
-            <Link href="/used" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
+            <Link
+              href="/used"
+              className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+            >
               중고거래
             </Link>
-            <Link href="/events" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
+            <Link
+              href="/events"
+              className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+            >
               이벤트
             </Link>
 
             {/* 비로그인 시 - 회원가입 */}
             {!isAuthenticated && (
-              <Link href="/register" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
+              <Link
+                href="/register"
+                className="px-3 py-1.5 rounded-full bg-gray-800 text-white font-semibold text-sm hover:bg-gray-900 transition-colors"
+              >
                 회원가입
               </Link>
             )}
 
             {/* 로그인 시 - 마이페이지 */}
             {isAuthenticated && (
-              <Link href="/mypage" className="text-gray-600 hover:text-gray-900 font-black-han-sans">
+              <Link
+                href="/mypage"
+                className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+              >
                 마이페이지
               </Link>
             )}
@@ -186,10 +165,10 @@ export default function DesktopNavbar() {
             {/* 오픈마켓 검색 */}
             <button
               onClick={() => setShowShoppingModal(true)}
-              className="flex items-center gap-1 text-gray-600 hover:text-gray-900 font-black-han-sans"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
             >
-              <Search className="w-4 h-4" />
-              <span>오픈마켓 검색</span>
+              <Search className="w-3.5 h-3.5" />
+              <span>오픈마켓</span>
             </button>
           </div>
 

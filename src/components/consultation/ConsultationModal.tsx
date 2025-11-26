@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ export default function ConsultationModal({
   onClose,
   preSelectedCategory,
 }: ConsultationModalProps) {
+  const router = useRouter();
   // 로그인 유저 정보
   const { user } = useAuth();
 
@@ -860,11 +862,17 @@ export default function ConsultationModal({
                 상담 신청이 완료되었습니다
               </h3>
               <p className="text-sm text-slate-500 mt-1">
-                빠른 시일 내에 연락드리겠습니다.
+                전문가 답변이 등록되면 알려드리겠습니다.
               </p>
             </div>
-            <Button onClick={onClose} className="w-full">
-              확인
+            <Button
+              onClick={() => {
+                onClose();
+                router.push('/mypage/consultations');
+              }}
+              className="w-full"
+            >
+              상담내역 확인하기
             </Button>
           </div>
         )}
