@@ -22,6 +22,11 @@ function LocalBusinessesContent() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
 
+  // 페이지 로드 시 스크롤 맨 위로
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // 상태 - 초기값을 빈 문자열로 설정 (사용자 지역 로드 전까지 대기)
   const [selectedProvince, setSelectedProvince] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<string>('all');
@@ -136,28 +141,29 @@ function LocalBusinessesContent() {
     }
   }, [selectedProvince, selectedCity, selectedCategory, searchQuery]);
 
-  // URL에서 지정된 업체로 스크롤 및 하이라이트
+  // URL에서 지정된 업체로 스크롤 및 하이라이트 (공유 링크로 접속한 경우만)
   useEffect(() => {
     const urlName = searchParams.get('name');
 
+    // name 파라미터가 없으면 스크롤 맨 위로 (일반 접속)
+    if (!urlName) {
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    // name 파라미터가 있으면 해당 업체로 스크롤 및 하이라이트
     if (urlName && businesses.length > 0 && !loading) {
-      // 검색어와 일치하는 업체 찾기
       const matchedBusiness = businesses.find(
         b => b.name.toLowerCase().includes(urlName.toLowerCase())
       );
 
       if (matchedBusiness) {
-        // 약간의 딜레이를 주어 DOM이 완전히 렌더링되도록 함
         setTimeout(() => {
           const element = document.getElementById(`business-${matchedBusiness.id}`);
           if (element) {
-            // 스크롤
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // 하이라이트 효과 추가
             element.classList.add('ring-4', 'ring-amber-400', 'ring-offset-2');
 
-            // 3초 후 하이라이트 제거
             setTimeout(() => {
               element.classList.remove('ring-4', 'ring-amber-400', 'ring-offset-2');
             }, 3000);
