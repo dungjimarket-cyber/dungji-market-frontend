@@ -64,6 +64,7 @@ export default function ConsultationModal({
   const [loading, setLoading] = useState(false);
   const [polishing, setPolishing] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   // 통합 카테고리 설정
   // 세무사 + 회계사 → 세무·회계, 변호사 + 법무사 → 법률 서비스, 청소 + 이사 → 청소·이사
@@ -281,6 +282,7 @@ export default function ConsultationModal({
       setAdditionalContent('');
       setFinalContent('');
       setAgreed(false);
+      setSubmitted(false);
       setUserInfoLoaded(false); // 다음 열릴 때 다시 자동 채우기 가능
     }
   }, [isOpen, preSelectedCategory]);
@@ -478,8 +480,7 @@ export default function ConsultationModal({
       });
 
       if (result.success) {
-        toast.success(result.message);
-        onClose();
+        setSubmitted(true);  // 완료 화면 표시
       } else {
         toast.error(result.message);
       }
@@ -509,30 +510,34 @@ export default function ConsultationModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg">
-            <span>💬</span>
-            <span>무료상담신청</span>
-            <span className="text-sm text-slate-500 font-normal ml-2">
-              {step}/3단계
-            </span>
-          </DialogTitle>
-        </DialogHeader>
+        {!submitted && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-lg">
+                <span>💬</span>
+                <span>무료상담신청</span>
+                <span className="text-sm text-slate-500 font-normal ml-2">
+                  {step}/3단계
+                </span>
+              </DialogTitle>
+            </DialogHeader>
 
-        {/* 진행 표시 */}
-        <div className="flex gap-1 mb-4">
-          {[1, 2, 3].map(s => (
-            <div
-              key={s}
-              className={`h-1 flex-1 rounded-full transition-colors ${
-                s <= step ? 'bg-dungji-primary' : 'bg-slate-200'
-              }`}
-            />
-          ))}
-        </div>
+            {/* 진행 표시 */}
+            <div className="flex gap-1 mb-4">
+              {[1, 2, 3].map(s => (
+                <div
+                  key={s}
+                  className={`h-1 flex-1 rounded-full transition-colors ${
+                    s <= step ? 'bg-dungji-primary' : 'bg-slate-200'
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Step 1: 기본 정보 */}
-        {step === 1 && (
+        {step === 1 && !submitted && (
           <div className="space-y-4">
             {/* 이름 */}
             <div>
@@ -607,7 +612,7 @@ export default function ConsultationModal({
         )}
 
         {/* Step 2: 탭 기반 상담 내용 선택 */}
-        {step === 2 && (
+        {step === 2 && !submitted && (
           <div className="space-y-4">
             {/* 선택된 업종 표시 */}
             {selectedCategory && (
@@ -760,7 +765,7 @@ export default function ConsultationModal({
         )}
 
         {/* Step 3: 확인 & 제출 */}
-        {step === 3 && (
+        {step === 3 && !submitted && (
           <div className="space-y-4">
             <div className="p-4 bg-slate-50 rounded-lg space-y-3">
               <h4 className="font-semibold text-slate-800">입력 내용 확인</h4>
@@ -829,6 +834,38 @@ export default function ConsultationModal({
                 {loading ? '신청 중...' : '상담 신청하기'}
               </Button>
             </div>
+          </div>
+        )}
+
+        {/* 완료 화면 */}
+        {submitted && (
+          <div className="py-8 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+              <svg
+                className="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800">
+                상담 신청이 완료되었습니다
+              </h3>
+              <p className="text-sm text-slate-500 mt-1">
+                빠른 시일 내에 연락드리겠습니다.
+              </p>
+            </div>
+            <Button onClick={onClose} className="w-full">
+              확인
+            </Button>
           </div>
         )}
       </DialogContent>
