@@ -264,15 +264,6 @@ export default function MyPageClient() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => router.push('/mypage/consultations')}
-            className="flex items-center"
-          >
-            <FileText className="w-4 h-4 mr-1" />
-            상담내역
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
             onClick={() => router.push('/group-purchases')}
             className="flex items-center"
           >
@@ -484,8 +475,17 @@ export default function MyPageClient() {
 
           </Accordion>
 
-          {/* 노쇼 관리 버튼 */}
-          <div className="mt-6 flex justify-end">
+          {/* 하단 버튼들 */}
+          <div className="mt-6 flex justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/mypage/consultations')}
+              className="flex items-center gap-1 text-blue-600 border-blue-300 hover:bg-blue-50 text-xs px-3 py-1.5"
+            >
+              <FileText className="w-3 h-3" />
+              상담내역 관리
+            </Button>
             <Button
               variant="outline"
               size="sm"

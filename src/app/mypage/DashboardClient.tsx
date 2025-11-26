@@ -12,7 +12,9 @@ import {
   Smartphone,
   ChevronRight,
   Settings,
-  User
+  User,
+  FileText,
+  MessageCircle
 } from 'lucide-react';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
@@ -117,15 +119,15 @@ export default function DashboardClient() {
       iconColor: 'text-purple-600',
       path: '/custom-deals/my'
     },
-    // {
-    //   id: 'groupbuy',
-    //   title: '견적 서비스 내역',
-    //   description: '통신상품 공동구매 서비스',
-    //   icon: ShoppingCart,
-    //   color: 'bg-blue-50 border-blue-200',
-    //   iconColor: 'text-blue-600',
-    //   path: isSeller ? '/mypage/seller/groupbuy' : '/mypage/groupbuy'
-    // },
+    {
+      id: 'consultation',
+      title: '상담내역 관리',
+      description: '',
+      icon: FileText,
+      color: 'bg-blue-50 border-blue-200',
+      iconColor: 'text-blue-600',
+      path: '/mypage/consultations'
+    },
     {
       id: 'used',
       title: '중고거래 내역',
@@ -235,28 +237,16 @@ export default function DashboardClient() {
               onClick={handleQuickMenuCreateDeal}
             >
               <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-              <span className="text-xs">공구 등록</span>
+              <span className="text-xs">커공/이벤트 등록</span>
             </Button>
-            {!isSeller && (
-              <Button
-                variant="outline"
-                className="h-auto flex items-center gap-1.5 px-3 py-2"
-                onClick={() => router.push('/group-purchases/create')}
-              >
-                <ShoppingCart className="w-3.5 h-3.5 text-blue-600" />
-                <span className="text-xs">견적요청</span>
-              </Button>
-            )}
-            {isSeller && (
-              <Button
-                variant="outline"
-                className="h-auto flex items-center gap-1.5 px-3 py-2"
-                onClick={handleQuickMenuBidHistory}
-              >
-                <User className="w-3.5 h-3.5 text-green-600" />
-                <span className="text-xs">견적내역</span>
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              className="h-auto flex items-center gap-1.5 px-3 py-2"
+              onClick={() => router.push('/local-businesses')}
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-blue-600" />
+              <span className="text-xs">상담신청</span>
+            </Button>
             <Button
               variant="outline"
               className="h-auto flex items-center gap-1.5 px-3 py-2"

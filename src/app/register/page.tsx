@@ -14,6 +14,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { WelcomeModal } from '@/components/auth/WelcomeModal';
 import { verifyBusinessNumberForRegistration, type BusinessVerificationRegistrationResult } from '@/lib/api/businessVerification';
 import { trackSignupConversion } from '@/lib/gtag';
+import { fetchCategories } from '@/lib/api/localBusiness';
+import { LocalBusinessCategory } from '@/types/localBusiness';
 
 // 회원가입 타입 정의
 type SignupType = 'email' | 'social';
@@ -33,8 +35,8 @@ function RegisterPageContent() {
   const socialId = searchParams.get('socialId');
   
   // URL 파라미터에서 memberType 가져오기
-  const memberTypeParam = searchParams.get('memberType') as 'buyer' | 'seller' | null;
-  const [memberType, setMemberType] = useState<'buyer' | 'seller' | null>(memberTypeParam);
+  const memberTypeParam = searchParams.get('memberType') as 'buyer' | 'seller' | 'expert' | null;
+  const [memberType, setMemberType] = useState<'buyer' | 'seller' | 'expert' | null>(memberTypeParam);
   const [signupType, setSignupType] = useState<SignupType | null>(socialProvider ? 'social' : null);
   
   // 이메일 도메인 추출
@@ -57,12 +59,12 @@ function RegisterPageContent() {
     phoneVerified: false,
     password: '',
     confirmPassword: '',
-    role: memberTypeParam || 'buyer', // 'buyer' or 'seller'
-    
+    role: memberTypeParam || 'buyer', // 'buyer' or 'seller' or 'expert'
+
     // 선택 필드
     region_province: '',
     region_city: '',
-    
+
     // 판매자 전용 필드
     business_name: '',
     business_reg_number: '',
@@ -71,6 +73,10 @@ function RegisterPageContent() {
     is_remote_sales: false,
     business_reg_image: null as File | null,
     referral_code: '', // 추천인 코드
+
+    // 전문가 전용 필드
+    expert_category_id: null as number | null, // 전문가 업종 ID
+    expert_is_business: false, // 전문가 사업자 여부
     
     // 약관 동의
     terms_agreed: false,
@@ -102,6 +108,22 @@ function RegisterPageContent() {
   const [referralCodeValid, setReferralCodeValid] = useState(false);
   const [referralCodeChecking, setReferralCodeChecking] = useState(false);
   const [referrerName, setReferrerName] = useState('');
+
+  // 전문가 업종 카테고리
+  const [expertCategories, setExpertCategories] = useState<LocalBusinessCategory[]>([]);
+
+  // 전문가 업종 카테고리 로드
+  useEffect(() => {
+    const loadExpertCategories = async () => {
+      try {
+        const data = await fetchCategories();
+        setExpertCategories(data);
+      } catch (err) {
+        console.error('전문가 업종 카테고리 로드 오류:', err);
+      }
+    };
+    loadExpertCategories();
+  }, []);
 
   // 카카오 정보 읽기
   useEffect(() => {
@@ -579,6 +601,24 @@ function RegisterPageContent() {
       }
     }
 
+    // 전문가인 경우 추가 검증
+    if (formData.role === 'expert') {
+      if (!formData.expert_category_id) {
+        setError('전문 분야를 선택해주세요.');
+        setIsLoading(false);
+        return;
+      }
+
+      // 전문가도 활동지역 필수
+      if (!formData.region_province || !formData.region_city) {
+        setError('활동 지역을 선택해주세요.');
+        setIsLoading(false);
+        const regionSection = document.querySelector('[data-region-dropdown]');
+        scrollToInputField(regionSection as HTMLElement);
+        return;
+      }
+    }
+
     try {
       // 카카오 가입인 경우 특별 처리
       if (kakaoInfo && formData.social_provider === 'kakao') {
@@ -644,12 +684,35 @@ function RegisterPageContent() {
                 representative_name: formData.representative_name,
               }),
             });
-            
+
             if (!sellerUpdateResponse.ok) {
               console.error('판매자 정보 업데이트 실패');
             }
           }
-          
+
+          // 전문가인 경우 전문가 프로필 생성
+          if (formData.role === 'expert' && formData.expert_category_id) {
+            const expertCreateResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/expert/register/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${kakaoData.jwt.access}`,
+              },
+              body: JSON.stringify({
+                category_id: formData.expert_category_id,
+                representative_name: formData.nickname,
+                is_business: formData.expert_is_business,
+                business_number: formData.expert_is_business ? formData.business_reg_number?.replace(/-/g, '') : undefined,
+                region_codes: formData.region_city ? [formData.region_city] : [],
+                contact_phone: formData.phone?.replace(/-/g, ''),
+              }),
+            });
+
+            if (!expertCreateResponse.ok) {
+              console.error('전문가 프로필 생성 실패');
+            }
+          }
+
           // 환영 모달 표시
           setShowWelcomeModal(true);
         }
@@ -776,7 +839,18 @@ function RegisterPageContent() {
           submitData.append('business_reg_image', formData.business_reg_image);
         }
       }
-      
+
+      // 전문가 전용 필드
+      if (formData.role === 'expert') {
+        if (formData.expert_category_id) {
+          submitData.append('expert_category_id', formData.expert_category_id.toString());
+        }
+        submitData.append('expert_is_business', formData.expert_is_business.toString());
+        if (formData.expert_is_business && formData.business_reg_number) {
+          submitData.append('business_reg_number', formData.business_reg_number);
+        }
+      }
+
       // API 호출
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register/`, {
         method: 'POST',
@@ -867,11 +941,11 @@ function RegisterPageContent() {
                     className="group relative p-5 sm:p-6 border-2 rounded-2xl text-center transition-all hover:shadow-lg border-gray-200 hover:border-blue-400 bg-gradient-to-br from-white to-gray-50"
                   >
                     <div className="font-bold text-sm sm:text-base mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">
-                      개인회원
+                      일반회원
                     </div>
                     <div className="text-[10px] sm:text-xs text-gray-500 space-y-1 leading-tight">
                       <div>공동구매 개설·참여</div>
-                      <div>견적요청·중고거래</div>
+                      <div>상담신청·중고거래</div>
                     </div>
                   </button>
 
@@ -884,17 +958,23 @@ function RegisterPageContent() {
                     className="group relative p-5 sm:p-6 border-2 rounded-2xl text-center transition-all hover:shadow-lg border-gray-200 hover:border-orange-400 bg-gradient-to-br from-white to-gray-50"
                   >
                     <div className="font-bold text-sm sm:text-base mb-2 text-sky-500 group-hover:text-sky-600 transition-colors">
-                      사업자회원
+                      일반사업자
                     </div>
                     <div className="text-[10px] sm:text-xs text-gray-500 space-y-1 leading-tight">
-                      <div>통신·렌탈 판매</div>
-                      <div>견적제안·중고거래</div>
+                      <div>온·오프라인 도소매 판매업</div>
                     </div>
                   </button>
                 </div>
 
-                {/* 전문가회원 안내 */}
-                <div className="p-4 sm:p-5 border-2 rounded-2xl border-gray-200 bg-gradient-to-br from-blue-50 to-white">
+                {/* 전문가회원 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMemberType('expert');
+                    setFormData(prev => ({ ...prev, role: 'expert' }));
+                  }}
+                  className="w-full p-4 sm:p-5 border-2 rounded-2xl border-gray-200 bg-gradient-to-br from-blue-50 to-white hover:border-blue-400 hover:shadow-lg transition-all text-left"
+                >
                   <div className="flex items-start gap-3 mb-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
                       <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -903,7 +983,7 @@ function RegisterPageContent() {
                     </div>
                     <div>
                       <div className="font-bold text-sm sm:text-base text-blue-700">전문가 회원</div>
-                      <div className="text-[10px] sm:text-xs text-gray-500">고객에게 상담 서비스를 제공하는 전문가</div>
+                      <div className="text-[10px] sm:text-xs text-gray-500">고객과 상담이 필요한 서비스 전문가</div>
                     </div>
                   </div>
 
@@ -951,10 +1031,10 @@ function RegisterPageContent() {
                     </div>
                   </div>
 
-                  <div className="text-[10px] text-gray-500 text-center">
-                    ※ 전문가 등록은 <span className="text-blue-600 font-medium">개인회원 가입 후</span> 마이페이지에서 가능합니다
+                  <div className="text-[10px] text-blue-600 text-center font-medium">
+                    클릭하여 전문가 회원가입 →
                   </div>
-                </div>
+                </button>
               </div>
             </div>
           )}
@@ -1659,6 +1739,96 @@ function RegisterPageContent() {
                   </div>
                 )}
 
+                {/* 전문가 전용 필드 */}
+                {formData.role === 'expert' && (
+                  <div className="space-y-4 pt-4 border-t">
+                    <h3 className="text-lg font-medium text-gray-900">전문가 정보</h3>
+
+                    {/* 업종 선택 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        전문 분야 <span className="text-red-500">*</span>
+                      </label>
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        {expertCategories.map((category) => (
+                          <button
+                            key={category.id}
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, expert_category_id: category.id }))}
+                            className={`p-2 border-2 rounded-xl text-center transition-all ${
+                              formData.expert_category_id === category.id
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-gray-200 hover:border-blue-300'
+                            }`}
+                          >
+                            <div className="text-xl mb-0.5">{category.icon}</div>
+                            <div className="font-medium text-gray-900 text-[10px]">{category.name}</div>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">상담 서비스를 제공할 전문 분야를 선택해주세요</p>
+                    </div>
+
+                    {/* 사업자 여부 */}
+                    <div className="flex items-center">
+                      <input
+                        id="expert_is_business"
+                        name="expert_is_business"
+                        type="checkbox"
+                        className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                        checked={formData.expert_is_business}
+                        onChange={handleChange}
+                      />
+                      <label htmlFor="expert_is_business" className="ml-2 text-sm text-gray-700">
+                        사업자입니다 <span className="text-gray-400">(선택)</span>
+                      </label>
+                    </div>
+
+                    {/* 사업자 정보 (사업자 체크 시) */}
+                    {formData.expert_is_business && (
+                      <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+                        <div>
+                          <label htmlFor="business_reg_number" className="block text-sm font-medium text-gray-700 mb-1">
+                            사업자등록번호
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              id="business_reg_number"
+                              name="business_reg_number"
+                              type="text"
+                              className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="000-00-00000"
+                              value={formData.business_reg_number}
+                              onChange={handleBusinessRegNumberChange}
+                              maxLength={12}
+                            />
+                            <button
+                              type="button"
+                              onClick={verifyBusinessNumber}
+                              disabled={businessVerificationLoading}
+                              className="px-3 py-2 border border-gray-300 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                            >
+                              {businessVerificationLoading ? '검증중...' : '유효성검사'}
+                            </button>
+                          </div>
+                          {businessVerificationResult && (
+                            <div className={`mt-2 p-2 rounded-md ${businessVerified ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                              <p className={`text-sm ${businessVerified ? 'text-green-700' : 'text-red-700'}`}>
+                                {businessVerified ? '✓ 인증완료' : '✗ 인증실패'}: {businessVerificationResult.message}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+                      <p>• 전문가 가입 후 해당 업종의 상담 요청을 받을 수 있습니다</p>
+                      <p>• 본인 업종 외 다른 업종에 상담 신청도 가능합니다</p>
+                    </div>
+                  </div>
+                )}
+
                 {/* 약관 동의 */}
                 <div id="terms-section" className="space-y-3 pt-4 border-t">
                   <h3 className="text-lg font-medium text-gray-900">약관 동의</h3>
@@ -1768,7 +1938,7 @@ function RegisterPageContent() {
       <WelcomeModal
         isOpen={showWelcomeModal}
         onClose={() => setShowWelcomeModal(false)}
-        userRole={formData.role as 'buyer' | 'seller'}
+        userRole={formData.role as 'buyer' | 'seller' | 'expert'}
       />
     </div>
   );

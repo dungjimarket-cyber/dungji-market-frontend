@@ -10,7 +10,7 @@ interface SocialLoginButtonsContentProps {
   requireTermsAgreement?: boolean;
   termsAgreed?: boolean;
   privacyAgreed?: boolean;
-  memberType?: 'buyer' | 'seller';
+  memberType?: 'buyer' | 'seller' | 'expert';
   buttonText?: string;
   isSignup?: boolean;
 }
@@ -158,7 +158,7 @@ interface SocialLoginButtonsProps {
   requireTermsAgreement?: boolean;
   termsAgreed?: boolean;
   privacyAgreed?: boolean;
-  memberType?: 'buyer' | 'seller';
+  memberType?: 'buyer' | 'seller' | 'expert';
   buttonText?: string;
   isSignup?: boolean;
 }

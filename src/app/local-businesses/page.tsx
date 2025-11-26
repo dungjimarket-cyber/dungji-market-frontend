@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search, Share2, MessageCircle } from 'lucide-react';
+import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search, Share2, MessageCircle, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import KakaoMap from '@/components/kakao/KakaoMap';
 import ConsultationModal from '@/components/consultation/ConsultationModal';
@@ -484,8 +484,8 @@ function LocalBusinessesContent() {
               <div className="flex-shrink-0 w-8 h-8 bg-slate-800 rounded-xl flex items-center justify-center">
                 <Building2 className="w-4 h-4 text-white" />
               </div>
-              <h1 className="text-lg font-bold text-slate-900">
-                우리동네 전문가를 만나보세요
+              <h1 className="text-base font-bold text-slate-900">
+                우리동네 전문가와 상담하기
               </h1>
             </div>
             <div className="flex items-center gap-1.5">
@@ -500,10 +500,10 @@ function LocalBusinessesContent() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleSharePage}
+                onClick={() => router.push('/mypage/consultations')}
                 className="flex items-center gap-1 text-xs whitespace-nowrap"
               >
-                <Share2 className="w-3 h-3" />
+                <FileText className="w-3 h-3" />
               </Button>
             </div>
           </div>
