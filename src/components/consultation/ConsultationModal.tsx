@@ -608,18 +608,17 @@ export default function ConsultationModal({
               </div>
             ) : currentFlow ? (
               <>
-                {/* 진행 상태 */}
-                <div className="flex items-center justify-between text-sm text-slate-500">
-                  <span>질문 {currentFlowStep + 1} / {flows.filter(f => shouldShowFlow(f)).length}</span>
-                  {selections.length > 0 && (
+                {/* 이전 질문 버튼 */}
+                {selections.length > 0 && (
+                  <div className="flex justify-end">
                     <button
                       onClick={moveToPrevFlow}
-                      className="text-dungji-primary hover:underline"
+                      className="text-sm text-dungji-primary hover:underline"
                     >
                       ← 이전 질문
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* 질문 */}
                 <div className="text-lg font-semibold text-slate-800">
