@@ -430,10 +430,21 @@ export default function ConsultationModal({
 
     setLoading(true);
     try {
+      // 청소·이사 카테고리: 1단계 선택에 따라 실제 카테고리 결정
+      let finalCategory: string | number | null = category;
+      if (category === 'cleaning_moving') {
+        const step1Selection = selections.find(s => s.step === 1);
+        if (step1Selection?.optionKey === 'moving') {
+          finalCategory = '이사 전문';  // 이사 선택 시
+        } else {
+          finalCategory = '청소 전문';  // 청소 선택 시 (기본값)
+        }
+      }
+
       // 카테고리가 문자열이면 숫자로 변환 시도, 아니면 그대로 사용
-      const categoryValue = typeof category === 'string' && !isNaN(Number(category))
-        ? Number(category)
-        : category;
+      const categoryValue = typeof finalCategory === 'string' && !isNaN(Number(finalCategory))
+        ? Number(finalCategory)
+        : finalCategory;
 
       const result = await createConsultationRequest({
         name,
