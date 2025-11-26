@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
@@ -22,6 +22,7 @@ import { SellerProfile } from '@/types/seller';
 export default function DesktopNavbar() {
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
@@ -119,44 +120,54 @@ export default function DesktopNavbar() {
           <div className="flex items-center space-x-2">
             <Link
               href="/custom-deals"
-              className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+              className={`px-4 py-2 rounded-full font-semibold text-base transition-colors ${
+                pathname?.startsWith('/custom-deals')
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              }`}
             >
               커공/이벤트
             </Link>
             <Link
               href="/local-businesses"
-              className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+              className={`px-4 py-2 rounded-full font-semibold text-base transition-colors ${
+                pathname?.startsWith('/local-businesses')
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              }`}
             >
               우리동네 전문가
             </Link>
             <Link
               href="/used"
-              className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+              className={`px-4 py-2 rounded-full font-semibold text-base transition-colors ${
+                pathname?.startsWith('/used')
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              }`}
             >
               중고거래
             </Link>
             <Link
               href="/events"
-              className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+              className={`px-4 py-2 rounded-full font-semibold text-base transition-colors ${
+                pathname?.startsWith('/events')
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              }`}
             >
               이벤트
             </Link>
-
-            {/* 비로그인 시 - 회원가입 */}
-            {!isAuthenticated && (
-              <Link
-                href="/register"
-                className="px-3 py-1.5 rounded-full bg-gray-800 text-white font-semibold text-sm hover:bg-gray-900 transition-colors"
-              >
-                회원가입
-              </Link>
-            )}
 
             {/* 로그인 시 - 마이페이지 */}
             {isAuthenticated && (
               <Link
                 href="/mypage"
-                className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+                className={`px-4 py-2 rounded-full font-semibold text-base transition-colors ${
+                  pathname?.startsWith('/mypage')
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                }`}
               >
                 마이페이지
               </Link>
@@ -165,9 +176,9 @@ export default function DesktopNavbar() {
             {/* 오픈마켓 검색 */}
             <button
               onClick={() => setShowShoppingModal(true)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm hover:bg-gray-200 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 text-gray-800 font-semibold text-base hover:bg-gray-200 transition-colors"
             >
-              <Search className="w-3.5 h-3.5" />
+              <Search className="w-4 h-4" />
               <span>오픈마켓</span>
             </button>
           </div>

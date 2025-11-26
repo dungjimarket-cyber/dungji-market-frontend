@@ -747,7 +747,7 @@ function LocalBusinessesContent() {
                     {business.editorial_summary && (
                       <div className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-md shadow-sm">
                         <p className="text-xs font-bold text-black italic underline decoration-slate-400 decoration-1 underline-offset-2 leading-relaxed line-clamp-2 break-words">
-                          "{business.editorial_summary}"
+                          "{business.editorial_summary.replace(/^["']+|["']+$/g, '')}"
                         </p>
                       </div>
                     )}
