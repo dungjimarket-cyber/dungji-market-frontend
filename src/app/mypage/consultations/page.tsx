@@ -310,13 +310,15 @@ function ConsultationCard({
       {isExpanded && (
         <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-3 text-sm text-gray-700">
           <div>
-            <p className="font-medium mb-1">상담 내용</p>
-            {consultation.answers && Object.entries(consultation.answers).map(([question, answer]) => (
-              <div key={question} className="flex gap-2">
-                <span className="text-gray-500">{question}:</span>
-                <span>{answer}</span>
-              </div>
-            ))}
+            <p className="font-medium mb-1">상담 유형</p>
+            <div className="flex flex-col gap-1">
+              {consultation.answers && Object.entries(consultation.answers).map(([question, answer]) => (
+                <div key={question} className="flex gap-2">
+                  <span className="font-semibold text-gray-800">{question}:</span>
+                  <span>{answer}</span>
+                </div>
+              ))}
+            </div>
           </div>
           {consultation.matches && consultation.matches.length > 0 && (
             <div className="space-y-3">
@@ -495,13 +497,15 @@ function ReceivedRequestCard({
       {isExpanded && (
         <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-3 text-sm text-gray-700">
           <div>
-            <p className="font-medium mb-1">상담 내용</p>
-            {request.answers && Object.entries(request.answers).map(([question, answer]) => (
-              <div key={question} className="flex gap-2">
-                <span className="text-gray-500">{question}:</span>
-                <span>{answer}</span>
-              </div>
-            ))}
+            <p className="font-medium mb-1">상담 유형</p>
+            <div className="flex flex-col gap-1">
+              {request.answers && Object.entries(request.answers).map(([question, answer]) => (
+                <div key={question} className="flex gap-2">
+                  <span className="font-semibold text-gray-800">{question}:</span>
+                  <span>{answer}</span>
+                </div>
+              ))}
+            </div>
           </div>
           <div>
             <p className="font-medium mb-1">내 답변 ({statusLabel})</p>

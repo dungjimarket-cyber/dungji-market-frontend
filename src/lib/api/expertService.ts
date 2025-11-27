@@ -99,6 +99,8 @@ export interface ConsultationForExpert {
   customer_name: string | null;
   customer_phone: string | null;
   match_status: 'pending' | 'replied' | 'connected' | 'completed' | null;
+   expert_message?: string;
+   available_time?: string;
   created_at: string;
 }
 
