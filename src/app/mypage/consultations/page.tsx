@@ -327,39 +327,62 @@ function ConsultationCard({
                 .filter(m => m.status === 'replied' || m.status === 'connected' || m.status === 'completed')
                 .map((match) => (
                   <div key={match.id} className="p-3 bg-white rounded border space-y-2">
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-                        {match.expert.profile_image ? (
-                          <img
-                            src={match.expert.profile_image}
-                            alt={match.expert.representative_name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <User className="w-6 h-6 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-semibold text-gray-900">{match.expert.representative_name}</p>
-                          <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs text-gray-700 border">
-                            {match.status === 'replied'
-                              ? '답변 완료'
-                              : match.status === 'connected'
-                                ? '연결됨'
-                                : '종료'}
-                          </span>
+                    {(() => {
+                      const expertImage = match.expert.user_profile_image || match.expert.profile_image || '';
+                      return (
+                        <div className="flex items-start gap-3">
+                          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                            {expertImage ? (
+                              <img
+                                src={expertImage}
+                                alt={match.expert.representative_name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <User className="w-6 h-6 text-gray-400" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-semibold text-gray-900">{match.expert.representative_name}</p>
+                              <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs text-gray-700 border">
+                                {match.status === 'replied'
+                                  ? '답변 완료'
+                                  : match.status === 'connected'
+                                    ? '연결됨'
+                                    : '종료'}
+                              </span>
+                            </div>
+                            {match.expert.tagline && (
+                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                {match.expert.tagline}
+                              </p>
+                            )}
+                            {match.available_time && (
+                              <p className="text-xs text-gray-500 mt-1">상담 가능일자: {match.available_time}</p>
+                            )}
+                            {match.expert.contact_phone && (
+                              <div className="flex items-center gap-3 mt-2 text-xs text-gray-600">
+                                <span>{match.expert.contact_phone}</span>
+                                <a
+                                  href={`tel:${match.expert.contact_phone}`}
+                                  className="px-2 py-1 rounded border text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100"
+                                >
+                                  전화
+                                </a>
+                                <a
+                                  href={`sms:${match.expert.contact_phone}`}
+                                  className="px-2 py-1 rounded border text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100"
+                                >
+                                  문자
+                                </a>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        {match.expert.tagline && (
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                            {match.expert.tagline}
-                          </p>
-                        )}
-                        {match.available_time && (
-                          <p className="text-xs text-gray-500 mt-1">상담 가능일자: {match.available_time}</p>
-                        )}
-                      </div>
-                    </div>
+                      );
+                    })()}
+
                     <div className="text-sm text-gray-800 whitespace-pre-line bg-gray-50 rounded p-2">
                       {match.expert_message || '답변 내용이 없습니다.'}
                     </div>
