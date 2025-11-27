@@ -32,6 +32,7 @@ export default function ExpertProfileCard({
   const [tagline, setTagline] = useState(profile.tagline || '');
   const [isSavingTagline, setIsSavingTagline] = useState(false);
   const [currentProfileImage, setCurrentProfileImage] = useState(profile.profile_image);
+  const [showImageGuide, setShowImageGuide] = useState(false);
 
   // 프로필 이미지 클릭 핸들러
   const handleImageClick = () => {
@@ -175,6 +176,29 @@ export default function ExpertProfileCard({
             onChange={handleImageUpload}
             className="hidden"
           />
+          <div className="mt-2 space-y-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                setShowImageGuide((prev) => !prev);
+                handleImageClick();
+              }}
+            >
+              이미지 수정
+            </Button>
+            {showImageGuide && (
+              <div className="text-[11px] leading-snug text-gray-500 bg-gray-50 border border-dashed border-gray-200 rounded-md p-2">
+                프로필 이미지 가이드
+                <ul className="list-disc list-inside space-y-1 mt-1">
+                  <li>정사각형 비율, JPG/PNG</li>
+                  <li>5MB 이하, 인물/로고가 잘 보이게</li>
+                  <li>업로드 후 카드에 즉시 반영됩니다</li>
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 프로필 정보 */}
