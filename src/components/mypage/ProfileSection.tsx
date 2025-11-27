@@ -88,6 +88,7 @@ export default function ProfileSection() {
   const { user: authUser, setUser, accessToken, isAuthenticated, isLoading, logout } = useAuth();
   // 확장된 타입으로 사용자 정보를 처리
   const user = authUser as unknown as ExtendedUser;
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState('');
   const [originalNickname, setOriginalNickname] = useState('');
@@ -636,41 +637,39 @@ export default function ProfileSection() {
         <div className="mb-6">
           <h3 className="text-base font-semibold mb-4">프로필 정보</h3>
 
-          {/* 로그인 방식 / 회원 구분 요약 */}
-          <div className="grid gap-2 sm:grid-cols-2 mb-4">
-            <div className="p-3 bg-gray-50 rounded-md border border-gray-100">
-              <p className="text-xs text-gray-500 mb-1">로그인 방식</p>
-              <p className="text-sm font-semibold text-gray-900">{getLoginProviderLabel(user)}</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-md border border-gray-100">
-              <p className="text-xs text-gray-500 mb-1">회원 구분</p>
-              <p className="text-sm font-semibold text-gray-900">
-                {role === 'expert'
-                  ? expertCategory
-                    ? `${expertCategory} 전문가`
-                    : '전문가'
-                  : role === 'seller'
-                    ? '판매자'
-                    : '구매자'}
-              </p>
-            </div>
+          {/* 회원 구분 요약 (전문가 업종 포함) */}
+          <div className="p-3 bg-gray-50 rounded-md border border-gray-100 mb-4">
+            <p className="text-xs text-gray-500 mb-1">회원 구분</p>
+            <p className="text-sm font-semibold text-gray-900">
+              {role === 'expert'
+                ? expertCategory
+                  ? `${expertCategory} 전문가`
+                  : '전문가'
+                : role === 'seller'
+                  ? '판매자'
+                  : '구매자'}
+            </p>
           </div>
 
           {/* 프로필 이미지 */}
           <div className="flex justify-center mb-6">
             <div className="relative">
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-              >
+              <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border cursor-pointer hover:opacity-90 transition-opacity">
                 {isUploadingImage ? (
                   <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
                 ) : profileImage ? (
-                  <img
-                    src={profileImage}
-                    alt="프로필 이미지"
-                    className="w-full h-full object-cover"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewOpen(true)}
+                    className="w-full h-full"
+                    aria-label="프로필 이미지 미리보기"
+                  >
+                    <img
+                      src={profileImage}
+                      alt="프로필 이미지"
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
                 ) : (
                   <User className="w-12 h-12 text-gray-400" />
                 )}
@@ -692,7 +691,26 @@ export default function ProfileSection() {
               />
             </div>
           </div>
-          <p className="text-xs text-gray-500 text-center mb-4">이미지를 클릭하여 프로필 사진 변경</p>
+          <p className="text-xs text-gray-500 text-center mb-4">이미지를 눌러 미리보기, 카메라 아이콘으로 변경</p>
+
+          {/* 프로필 이미지 미리보기 모달 */}
+          {isPreviewOpen && profileImage && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+              <div className="relative max-w-[90vw] max-h-[80vh]">
+                <button
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="absolute -top-10 right-0 text-white text-sm hover:text-gray-200"
+                >
+                  닫기
+                </button>
+                <img
+                  src={profileImage}
+                  alt="프로필 이미지 미리보기"
+                  className="max-w-full max-h-[80vh] rounded-lg shadow-2xl border border-white/20"
+                />
+              </div>
+            </div>
+          )}
 
           {/* 아이디 섹션 - 카카오 계정이 아닌 경우에만 표시 */}
           {user?.sns_type !== 'kakao' && (
