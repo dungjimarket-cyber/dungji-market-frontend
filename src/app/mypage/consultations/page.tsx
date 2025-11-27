@@ -23,6 +23,7 @@ import {
 import {
   fetchMyConsultations,
   fetchExpertRequests,
+  replyToRequest,
   ConsultationForCustomer,
   ConsultationForExpert,
 } from '@/lib/api/expertService';
@@ -44,6 +45,16 @@ function ConsultationsContent() {
 
   const isExpert = user?.role === 'expert';
 
+  const loadReceived = async () => {
+    if (!accessToken || !isExpert) return;
+    try {
+      const expertData = await fetchExpertRequests(accessToken);
+      setReceivedRequests(expertData.results || []);
+    } catch (err) {
+      console.error('전문가 상담 요청 로드 오류:', err);
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       if (!accessToken) return;
@@ -53,12 +64,7 @@ function ConsultationsContent() {
         setConsultations(myData.results || []);
 
         if (isExpert) {
-          try {
-            const expertData = await fetchExpertRequests(accessToken);
-            setReceivedRequests(expertData.results || []);
-          } catch (err) {
-            console.error('전문가 상담 요청 로드 오류:', err);
-          }
+          await loadReceived();
         }
       } catch (err) {
         console.error('상담 내역 로드 오류:', err);
@@ -196,6 +202,8 @@ function ConsultationsContent() {
                       request={request}
                       isExpanded={expandedReceivedId === request.id}
                       onToggle={() => toggleReceivedExpand(request.id)}
+                      accessToken={accessToken}
+                      onUpdated={loadReceived}
                     />
                   ))}
                 </div>
@@ -436,10 +444,14 @@ function ReceivedRequestCard({
   request,
   isExpanded,
   onToggle,
+  accessToken,
+  onUpdated,
 }: {
   request: ConsultationForExpert;
   isExpanded: boolean;
   onToggle: () => void;
+  accessToken: string | null;
+  onUpdated: () => Promise<void>;
 }) {
   const statusLabel =
     request.match_status === 'replied'
@@ -449,6 +461,33 @@ function ReceivedRequestCard({
         : request.match_status === 'completed'
           ? '종료'
           : '대기';
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempMessage, setTempMessage] = useState(request.expert_message || '');
+  const [tempAvailable, setTempAvailable] = useState(request.available_time || '');
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
+  const { accessToken: ctxToken } = useAuth();
+
+  const tokenToUse = accessToken || ctxToken;
+
+  const handleSave = async () => {
+    if (!tokenToUse) {
+      toast({ title: '로그인이 필요합니다.', variant: 'destructive' });
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await replyToRequest(request.id, { expert_message: tempMessage, available_time: tempAvailable }, tokenToUse);
+      await onUpdated();
+      setIsEditing(false);
+      toast({ title: '답변이 저장되었습니다.' });
+    } catch (err) {
+      console.error('답변 수정 오류:', err);
+      toast({ title: '오류', description: '답변 저장에 실패했습니다.', variant: 'destructive' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -535,6 +574,11 @@ function ReceivedRequestCard({
             <div className="p-3 bg-white rounded border text-sm text-gray-800 whitespace-pre-line">
               {request.expert_message || '답변을 작성하지 않았습니다.'}
             </div>
+            <div className="mt-2 flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
+                답변 수정
+              </Button>
+            </div>
           </div>
           {request.customer_name && (
             <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
@@ -549,6 +593,47 @@ function ReceivedRequestCard({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {isEditing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold">답변 수정</h3>
+              <button className="text-sm text-gray-500" onClick={() => setIsEditing(false)}>
+                닫기
+              </button>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">답변 내용</label>
+              <textarea
+                value={tempMessage}
+                onChange={(e) => setTempMessage(e.target.value)}
+                rows={5}
+                className="w-full mt-1 p-2 border rounded text-sm"
+                placeholder="답변을 입력해주세요"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">상담 가능일자</label>
+              <input
+                type="text"
+                value={tempAvailable}
+                onChange={(e) => setTempAvailable(e.target.value)}
+                className="w-full mt-1 p-2 border rounded text-sm"
+                placeholder="예: 6/10(월) 오후 가능"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+                취소
+              </Button>
+              <Button size="sm" onClick={handleSave} disabled={isSaving}>
+                {isSaving ? '저장 중...' : '저장'}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>
