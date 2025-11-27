@@ -318,12 +318,51 @@ function ConsultationCard({
               </div>
             ))}
           </div>
-          {replyMatch?.expert_message && (
-            <div>
+          {consultation.matches && consultation.matches.length > 0 && (
+            <div className="space-y-3">
               <p className="font-medium mb-1">전문가 답변</p>
-              <div className="p-3 bg-white rounded border text-sm text-gray-800 whitespace-pre-line">
-                {replyMatch.expert_message}
-              </div>
+              {consultation.matches
+                .filter(m => m.status === 'replied' || m.status === 'connected' || m.status === 'completed')
+                .map((match) => (
+                  <div key={match.id} className="p-3 bg-white rounded border space-y-2">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                        {match.expert.profile_image ? (
+                          <img
+                            src={match.expert.profile_image}
+                            alt={match.expert.representative_name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-6 h-6 text-gray-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-gray-900">{match.expert.representative_name}</p>
+                          <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs text-gray-700 border">
+                            {match.status === 'replied'
+                              ? '답변 완료'
+                              : match.status === 'connected'
+                                ? '연결됨'
+                                : '종료'}
+                          </span>
+                        </div>
+                        {match.expert.tagline && (
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                            {match.expert.tagline}
+                          </p>
+                        )}
+                        {match.available_time && (
+                          <p className="text-xs text-gray-500 mt-1">상담 가능일자: {match.available_time}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-800 whitespace-pre-line bg-gray-50 rounded p-2">
+                      {match.expert_message || '답변 내용이 없습니다.'}
+                    </div>
+                  </div>
+                ))}
             </div>
           )}
           {consultation.connected_expert && (
@@ -377,6 +416,15 @@ function ReceivedRequestCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const statusLabel =
+    request.match_status === 'replied'
+      ? '답변 완료'
+      : request.match_status === 'connected'
+        ? '연결됨'
+        : request.match_status === 'completed'
+          ? '종료'
+          : '대기';
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <button
@@ -454,6 +502,12 @@ function ReceivedRequestCard({
                 <span>{answer}</span>
               </div>
             ))}
+          </div>
+          <div>
+            <p className="font-medium mb-1">내 답변 ({statusLabel})</p>
+            <div className="p-3 bg-white rounded border text-sm text-gray-800 whitespace-pre-line">
+              {request.expert_message || '답변을 작성하지 않았습니다.'}
+            </div>
           </div>
           {request.customer_name && (
             <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
