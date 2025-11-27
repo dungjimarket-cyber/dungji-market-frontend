@@ -16,7 +16,8 @@ import {
   MessageCircle,
   Camera,
   Edit2,
-  CheckCircle
+  CheckCircle,
+  Loader2
 } from 'lucide-react';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
