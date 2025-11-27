@@ -238,6 +238,15 @@ function ConsultationCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const replyMatch = consultation.matches?.find((m) =>
+    m.status === 'replied' || m.status === 'connected' || m.status === 'completed'
+  );
+  const replyText = replyMatch?.expert_message || '';
+  const questionSnippet = consultation.answers && Object.entries(consultation.answers)[0]
+    ? `${Object.entries(consultation.answers)[0][0]}: ${Object.entries(consultation.answers)[0][1]}`
+    : '';
+  const summaryText = replyText || questionSnippet;
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <button
@@ -276,12 +285,9 @@ function ConsultationCard({
             )}
 
             <div className="text-sm text-gray-700 line-clamp-1">
-              {consultation.answers && Object.entries(consultation.answers)[0] && (
-                <>
-                  <span className="font-medium">{Object.entries(consultation.answers)[0][0]}:</span>{' '}
-                  {Object.entries(consultation.answers)[0][1]}
-                </>
-              )}
+              {summaryText
+                ? summaryText
+                : '상담 내용이 없습니다'}
             </div>
 
             <div className="flex items-center gap-1 text-xs text-gray-400 mt-2">
@@ -312,6 +318,14 @@ function ConsultationCard({
               </div>
             ))}
           </div>
+          {replyMatch?.expert_message && (
+            <div>
+              <p className="font-medium mb-1">전문가 답변</p>
+              <div className="p-3 bg-white rounded border text-sm text-gray-800 whitespace-pre-line">
+                {replyMatch.expert_message}
+              </div>
+            </div>
+          )}
           {consultation.connected_expert && (
             <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
               <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
