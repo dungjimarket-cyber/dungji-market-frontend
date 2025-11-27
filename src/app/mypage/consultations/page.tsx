@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,7 +28,7 @@ import {
 } from '@/lib/api/expertService';
 import { useToast } from '@/components/ui/use-toast';
 
-export default function MyConsultationsPage() {
+function ConsultationsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: authLoading, accessToken, user } = useAuth();
@@ -212,6 +212,20 @@ export default function MyConsultationsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MyConsultationsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      }
+    >
+      <ConsultationsContent />
+    </Suspense>
   );
 }
 
