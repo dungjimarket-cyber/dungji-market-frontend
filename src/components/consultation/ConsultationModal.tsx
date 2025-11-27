@@ -119,13 +119,13 @@ export default function ConsultationModal({
   // 로그인 유저 정보 자동 채우기
   useEffect(() => {
     if (isOpen && user && !userInfoLoaded) {
-      // 이름 (name 또는 username/nickname)
-      if (user.name) {
+      // 이름 (닉네임을 우선 기본값으로 사용)
+      if (user.nickname) {
+        setName(user.nickname);
+      } else if (user.name) {
         setName(user.name);
       } else if (user.username) {
         setName(user.username);
-      } else if (user.nickname) {
-        setName(user.nickname);
       }
 
       // 연락처
@@ -543,12 +543,12 @@ export default function ConsultationModal({
           <div className="space-y-4">
             {/* 이름 */}
             <div>
-              <Label htmlFor="name">이름 *</Label>
+              <Label htmlFor="name">신청자 *</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="홍길동"
+                placeholder="신청자 이름(닉네임) 입력"
                 maxLength={20}
               />
             </div>
