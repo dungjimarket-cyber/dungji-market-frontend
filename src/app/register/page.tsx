@@ -1300,13 +1300,13 @@ function RegisterPageContent() {
                         <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
                           아이디 <span className="text-red-500">*</span>
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 items-center">
                           <input
                             id="username"
                             name="username"
                             type="text"
                             required
-                            className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            className="flex-1 min-w-0 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                             placeholder="영문, 숫자 4-20자"
                             value={formData.username}
                             onChange={handleChange}
@@ -1314,7 +1314,7 @@ function RegisterPageContent() {
                           <button
                             type="button"
                             onClick={checkUsername}
-                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 whitespace-nowrap flex-shrink-0"
                           >
                             중복확인
                           </button>
@@ -1404,9 +1404,9 @@ function RegisterPageContent() {
                             <button
                               type="button"
                               onClick={checkEmail}
-                              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                              className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 whitespace-nowrap"
                             >
-                              이메일 중복확인
+                              중복확인
                             </button>
                           )}
                         </div>
@@ -1461,13 +1461,13 @@ function RegisterPageContent() {
                     <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1">
                       {formData.role === 'seller' ? '닉네임 또는 상호명' : '닉네임'} <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
                       <input
                         id="nickname"
                         name="nickname"
                         type="text"
                         required
-                        className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="flex-1 min-w-0 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                         placeholder={formData.role === 'seller' ? '상호명 (2-15자)' : '닉네임 (2-15자)'}
                         value={formData.nickname}
                         onChange={handleChange}
@@ -1476,7 +1476,7 @@ function RegisterPageContent() {
                       <button
                         type="button"
                         onClick={checkNickname}
-                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 whitespace-nowrap flex-shrink-0"
                       >
                         중복확인
                       </button>
@@ -1574,13 +1574,13 @@ function RegisterPageContent() {
                       <label htmlFor="business_reg_number" className="block text-sm font-medium text-gray-700 mb-1">
                         사업자등록번호 <span className="text-red-500">*</span>
                       </label>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 items-center">
                         <input
                           id="business_reg_number"
                           name="business_reg_number"
                           type="text"
                           required={formData.role === 'seller'}
-                          className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="flex-1 min-w-0 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
                           placeholder="000-00-00000"
                           value={formData.business_reg_number}
                           onChange={handleBusinessRegNumberChange}
@@ -1590,16 +1590,9 @@ function RegisterPageContent() {
                           type="button"
                           onClick={verifyBusinessNumber}
                           disabled={businessVerificationLoading}
-                          className="px-3 sm:px-4 py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                          className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0"
                         >
-                          {businessVerificationLoading ? (
-                            <span className="text-xs sm:text-sm">검증중...</span>
-                          ) : (
-                            <>
-                              <span className="sm:hidden">유효성검사</span>
-                              <span className="hidden sm:inline">유효성검사</span>
-                            </>
-                          )}
+                          {businessVerificationLoading ? '검증중...' : '유효성검사'}
                         </button>
                       </div>
                       {businessVerificationResult && (
