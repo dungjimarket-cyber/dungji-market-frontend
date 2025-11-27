@@ -228,7 +228,7 @@ export async function updateExpertProfile(
 ): Promise<{ success: boolean; message: string; profile?: ExpertProfile }> {
   try {
     const response = await fetch(`${API_URL}/expert/profile/`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
