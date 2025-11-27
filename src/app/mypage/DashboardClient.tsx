@@ -109,8 +109,9 @@ export default function DashboardClient() {
       if (!token) return;
       const result = await uploadExpertProfileImage(file, token);
       if (result.success && result.image_url) {
-        setCurrentProfileImage(result.image_url);
-        setExpertProfile((prev) => (prev ? { ...prev, profile_image: result.image_url } : prev));
+        const nextImage = result.image_url || currentProfileImage || '';
+        setCurrentProfileImage(nextImage);
+        setExpertProfile((prev) => (prev ? { ...prev, profile_image: nextImage } : prev));
       }
     } catch (error) {
       console.error('이미지 업로드 오류:', error);
