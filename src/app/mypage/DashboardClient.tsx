@@ -278,7 +278,7 @@ export default function DashboardClient() {
                 <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs text-gray-700 border">{roleBadge}</span>
                 {isExpert && expertCategoryLabel && (
                   <span className="px-2 py-0.5 rounded-full bg-blue-50 text-xs text-blue-700 border border-blue-200">
-                    업종: {expertCategoryLabel}
+                    {expertCategoryLabel}
                   </span>
                 )}
                 {/* 전문가 인증 배지는 추후 관리자 인증 제도 도입 시 재사용 예정 */}

@@ -637,17 +637,6 @@ export default function ProfileSection() {
         <div className="mb-6">
           <h3 className="text-base font-semibold mb-4">프로필 정보</h3>
 
-          {/* 회원 구분 요약 (전문가 업종 포함) */}
-          <div className="p-3 bg-gray-50 rounded-md border border-gray-100 mb-4">
-            <p className="text-xs text-gray-500 mb-1">회원 유형</p>
-            <p className="text-sm font-semibold text-gray-900">
-              {role === 'expert' ? '전문가' : role === 'seller' ? '판매자' : '구매자'}
-            </p>
-            {role === 'expert' && expertCategory && (
-              <p className="text-xs text-gray-600 mt-1">업종: {expertCategory}</p>
-            )}
-          </div>
-
           {/* 프로필 이미지 */}
           <div className="flex justify-center mb-6">
             <div className="relative">
@@ -1267,16 +1256,6 @@ export default function ProfileSection() {
         </div>
         
         {/* 회원 구분 */}
-        <div>
-          <p className="text-sm text-gray-500">회원 구분</p>
-          <p className="font-medium">
-            {role === 'seller' ? '판매회원' : '일반회원'}
-            {role === 'seller' && isBusinessVerified && (
-              <span className="ml-2 text-xs text-green-600">✓ 사업자 인증 완료</span>
-            )}
-          </p>
-        </div>
-        
         {/* 성공 메시지 */}
         {successMessage && (
           <div className="bg-green-50 border border-green-200 text-green-700 p-3 rounded text-sm mt-2">
@@ -1311,6 +1290,17 @@ export default function ProfileSection() {
             </svg>
             <span>{error}</span>
           </div>
+        )}
+      </div>
+
+      {/* 회원 유형 (하단 요약) */}
+      <div className="mt-6 p-3 bg-gray-50 rounded-md border border-gray-100">
+        <p className="text-sm text-gray-500">회원 유형</p>
+        <p className="font-medium">
+          {role === 'expert' ? '전문가' : role === 'seller' ? '판매자' : '구매자'}
+        </p>
+        {role === 'expert' && expertCategory && (
+          <p className="text-xs text-gray-600 mt-1">{expertCategory}</p>
         )}
       </div>
 
