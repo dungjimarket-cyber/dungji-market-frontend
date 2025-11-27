@@ -274,10 +274,10 @@ export default function ProfileSection() {
     setIsUploadingImage(true);
     try {
       const formData = new FormData();
-      formData.append('profile_image', file);
+      formData.append('image', file);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
-        method: 'PATCH',
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/image/`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
@@ -286,7 +286,8 @@ export default function ProfileSection() {
 
       if (response.ok) {
         const data = await response.json();
-        setProfileImage(data.profile?.profile_image || null);
+        const nextImage = data.image_url || null;
+        setProfileImage(nextImage);
         toast({
           title: '업로드 완료',
           description: '프로필 이미지가 변경되었습니다.',
@@ -296,7 +297,7 @@ export default function ProfileSection() {
         if (setUser && authUser) {
           const updatedUser = {
             ...authUser,
-            profile_image: data.profile?.profile_image,
+            profile_image: nextImage,
           };
           setUser(updatedUser as any);
           localStorage.setItem('user', JSON.stringify(updatedUser));

@@ -49,7 +49,9 @@ export default function DashboardClient() {
   const [showCustomProfileModal, setShowCustomProfileModal] = useState(false);
   const [customMissingFields, setCustomMissingFields] = useState<string[]>([]);
 
-  const [currentProfileImage, setCurrentProfileImage] = useState<string | null>(user?.image || null);
+  const [currentProfileImage, setCurrentProfileImage] = useState<string | null>(
+    (user as any)?.profile_image || user?.image || null
+  );
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [tagline, setTagline] = useState('');
   const [isEditingTagline, setIsEditingTagline] = useState(false);
@@ -80,14 +82,14 @@ export default function DashboardClient() {
         if (profile) {
           setExpertProfile(profile);
           setTagline(profile.tagline || '');
-          setCurrentProfileImage(profile.profile_image || user?.image || null);
+          setCurrentProfileImage(profile.profile_image || (user as any)?.profile_image || user?.image || null);
         }
       } catch (error) {
         console.error('전문가 프로필 로드 오류:', error);
       }
     };
     loadExpertProfile();
-  }, [isExpert, user?.image]);
+  }, [isExpert, user?.image, (user as any)?.profile_image]);
 
   const handleImageClick = () => {
     fileInputRef.current?.click();
