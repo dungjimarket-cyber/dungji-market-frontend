@@ -141,7 +141,7 @@ export default function ExpertManagePage() {
     );
   }
 
-  if (!isAuthenticated || !profile) {
+  if (!isAuthenticated || !profile || !accessToken) {
     return null;
   }
 
