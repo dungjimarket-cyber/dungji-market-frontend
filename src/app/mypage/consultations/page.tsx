@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -30,6 +30,7 @@ import { useToast } from '@/components/ui/use-toast';
 
 export default function MyConsultationsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: authLoading, accessToken, user } = useAuth();
   const { toast } = useToast();
 
@@ -38,7 +39,8 @@ export default function MyConsultationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [expandedReceivedId, setExpandedReceivedId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<'sent' | 'received'>('sent');
+  const initialTab = searchParams.get('tab') === 'received' ? 'received' : 'sent';
+  const [activeTab, setActiveTab] = useState<'sent' | 'received'>(initialTab);
 
   const isExpert = user?.role === 'expert';
 
