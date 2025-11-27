@@ -728,7 +728,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 sns_type: profileData.sns_type,
                 provider: profileData.sns_type,
                 token: access,
-                profile_image: profileData.profile_image,
                 penalty_info: profileData.penalty_info, // 패널티 정보 추가
                 penaltyInfo: profileData.penaltyInfo // camelCase 버전도 추가
               };
