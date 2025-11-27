@@ -225,10 +225,8 @@ export default function DashboardClient() {
   const displayRegion = isExpert
     ? (expertProfile?.regions || []).map((r) => r.name).join(', ') || user?.address_region?.full_name || '지역 미입력'
     : user?.address_region?.full_name || '지역 미입력';
-  const expertBadge = expertProfile?.category?.name
-    ? `${expertProfile.category.name} 전문가`
-    : '전문가';
-  const roleBadge = isSeller ? '판매자' : isExpert ? expertBadge : '구매자';
+  const expertCategoryLabel = expertProfile?.category?.name || '';
+  const roleBadge = isSeller ? '판매자' : isExpert ? '전문가' : '구매자';
 
   return (
     <div className="container mx-auto px-3 pt-3 pb-0 bg-white">
@@ -278,6 +276,11 @@ export default function DashboardClient() {
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-base font-semibold text-gray-900 truncate">{displayName}</p>
                 <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs text-gray-700 border">{roleBadge}</span>
+                {isExpert && expertCategoryLabel && (
+                  <span className="px-2 py-0.5 rounded-full bg-blue-50 text-xs text-blue-700 border border-blue-200">
+                    업종: {expertCategoryLabel}
+                  </span>
+                )}
                 {/* 전문가 인증 배지는 추후 관리자 인증 제도 도입 시 재사용 예정 */}
                 {/* {isExpert && expertProfile?.status === 'verified' && (
                   <span className="px-2 py-0.5 rounded-full bg-green-100 text-xs text-green-700 border border-green-200 flex items-center gap-1">

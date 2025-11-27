@@ -639,16 +639,13 @@ export default function ProfileSection() {
 
           {/* 회원 구분 요약 (전문가 업종 포함) */}
           <div className="p-3 bg-gray-50 rounded-md border border-gray-100 mb-4">
-            <p className="text-xs text-gray-500 mb-1">회원 구분</p>
+            <p className="text-xs text-gray-500 mb-1">회원 유형</p>
             <p className="text-sm font-semibold text-gray-900">
-              {role === 'expert'
-                ? expertCategory
-                  ? `${expertCategory} 전문가`
-                  : '전문가'
-                : role === 'seller'
-                  ? '판매자'
-                  : '구매자'}
+              {role === 'expert' ? '전문가' : role === 'seller' ? '판매자' : '구매자'}
             </p>
+            {role === 'expert' && expertCategory && (
+              <p className="text-xs text-gray-600 mt-1">업종: {expertCategory}</p>
+            )}
           </div>
 
           {/* 프로필 이미지 */}
