@@ -224,7 +224,10 @@ export default function DashboardClient() {
   const displayRegion = isExpert
     ? (expertProfile?.regions || []).map((r) => r.name).join(', ') || user?.address_region?.full_name || '지역 미입력'
     : user?.address_region?.full_name || '지역 미입력';
-  const roleBadge = isSeller ? '판매자' : isExpert ? '전문가' : '구매자';
+  const expertBadge = expertProfile?.category?.name
+    ? `${expertProfile.category.name} 전문가`
+    : '전문가';
+  const roleBadge = isSeller ? '판매자' : isExpert ? expertBadge : '구매자';
 
   return (
     <div className="container mx-auto px-3 pt-3 pb-0 bg-white">

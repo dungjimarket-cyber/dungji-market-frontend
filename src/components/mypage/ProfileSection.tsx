@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { fetchWithAuth } from '@/lib/api/fetch';
+import { fetchMyExpertProfile } from '@/lib/api/expertService';
 
 /**
  * 사용자 객체가 소셜 공급자 정보를 포함하는지 확인하는 타입 가드 함수
@@ -120,6 +121,7 @@ export default function ProfileSection() {
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
   const { toast } = useToast();
+  const [expertCategory, setExpertCategory] = useState<string | null>(null);
 
   // 푸시 알림 설정 상태
   const [pushNotificationSettings, setPushNotificationSettings] = useState({
@@ -196,6 +198,22 @@ export default function ProfileSection() {
       setUserType('일반');
     }
   }, [user?.user_type]);
+
+  // 전문가 카테고리 로드 (전문가 유형 노출용)
+  useEffect(() => {
+    const loadExpertCategory = async () => {
+      if (user?.role !== 'expert' || !accessToken) return;
+      try {
+        const profile = await fetchMyExpertProfile(accessToken);
+        if (profile?.category?.name) {
+          setExpertCategory(profile.category.name);
+        }
+      } catch (error) {
+        console.error('전문가 카테고리 로드 오류:', error);
+      }
+    };
+    loadExpertCategory();
+  }, [user?.role, accessToken]);
   
   // 지역 목록 가져오기 - 현재 사용하지 않지만 향후 사용 가능성을 위해 유지
   useEffect(() => {
@@ -617,6 +635,26 @@ export default function ProfileSection() {
       <div className="flex flex-col gap-4">
         <div className="mb-6">
           <h3 className="text-base font-semibold mb-4">프로필 정보</h3>
+
+          {/* 로그인 방식 / 회원 구분 요약 */}
+          <div className="grid gap-2 sm:grid-cols-2 mb-4">
+            <div className="p-3 bg-gray-50 rounded-md border border-gray-100">
+              <p className="text-xs text-gray-500 mb-1">로그인 방식</p>
+              <p className="text-sm font-semibold text-gray-900">{getLoginProviderLabel(user)}</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-md border border-gray-100">
+              <p className="text-xs text-gray-500 mb-1">회원 구분</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {role === 'expert'
+                  ? expertCategory
+                    ? `${expertCategory} 전문가`
+                    : '전문가'
+                  : role === 'seller'
+                    ? '판매자'
+                    : '구매자'}
+              </p>
+            </div>
+          </div>
 
           {/* 프로필 이미지 */}
           <div className="flex justify-center mb-6">
