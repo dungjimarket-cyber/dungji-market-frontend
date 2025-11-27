@@ -294,7 +294,7 @@ export default function ExpertProfileCard({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => router.push('/mypage/expert/settings')}
+          onClick={() => router.push('/mypage/settings')}
           className="flex-shrink-0"
         >
           <Settings className="w-4 h-4" />

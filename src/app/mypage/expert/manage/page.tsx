@@ -1,5 +1,7 @@
 'use client';
 
+'use client';
+
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -154,7 +156,7 @@ export default function ExpertManagePage() {
             <h1 className="text-2xl font-bold text-gray-900">요청·매칭 관리</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => router.push('/expert/settings')}>
+            <Button variant="outline" size="sm" onClick={() => router.push('/mypage/settings')}>
               프로필 설정
             </Button>
           </div>
