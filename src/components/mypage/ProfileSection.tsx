@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { LogOut, ArrowLeft, Bell } from 'lucide-react';
+import { LogOut, ArrowLeft, Bell, Camera, Loader2, User } from 'lucide-react';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
 import NicknameLimitModal from '@/components/ui/nickname-limit-modal';
@@ -127,6 +127,11 @@ export default function ProfileSection() {
     marketing_notifications: false,
   });
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+
+  // 프로필 이미지 상태
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // 컴포넌트 마운트시 AuthContext의 user 정보에서 프로필 데이터 설정
   useEffect(() => {
@@ -176,6 +181,9 @@ export default function ProfileSection() {
       setBirthDate(user.birth_date || '');
       setGender(user.gender || '');
       setFirstName(user.first_name || '');
+
+      // 프로필 이미지
+      setProfileImage((user as any).profile_image || null);
     }
   }, [user]); // user가 변경될 때만 업데이트
   
@@ -237,9 +245,86 @@ export default function ProfileSection() {
   }, [isAuthenticated]);
 
   /**
-   * 이메일 주소 업데이트 함수
-   * JWT 토큰을 활용하여 사용자 프로필 업데이트
+   * 프로필 이미지 업로드 함수
    */
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 크기 체크 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        variant: 'destructive',
+        title: '파일 크기 초과',
+        description: '이미지는 5MB 이하만 업로드 가능합니다.',
+      });
+      return;
+    }
+
+    // 이미지 타입 체크
+    if (!file.type.startsWith('image/')) {
+      toast({
+        variant: 'destructive',
+        title: '잘못된 파일 형식',
+        description: '이미지 파일만 업로드 가능합니다.',
+      });
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('profile_image', file);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProfileImage(data.profile?.profile_image || null);
+        toast({
+          title: '업로드 완료',
+          description: '프로필 이미지가 변경되었습니다.',
+        });
+
+        // AuthContext 및 로컬스토리지 동기화
+        if (setUser && authUser) {
+          const updatedUser = {
+            ...authUser,
+            profile_image: data.profile?.profile_image,
+          };
+          setUser(updatedUser as any);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          localStorage.setItem('auth.user', JSON.stringify(updatedUser));
+        }
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '업로드 실패',
+          description: '이미지 업로드에 실패했습니다.',
+        });
+      }
+    } catch (error) {
+      console.error('이미지 업로드 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '오류',
+        description: '이미지 업로드 중 오류가 발생했습니다.',
+      });
+    } finally {
+      setIsUploadingImage(false);
+      // 파일 입력 초기화
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   /**
    * 로그아웃 처리 함수
    */
@@ -531,7 +616,45 @@ export default function ProfileSection() {
       <div className="flex flex-col gap-4">
         <div className="mb-6">
           <h3 className="text-base font-semibold mb-4">프로필 정보</h3>
-          
+
+          {/* 프로필 이미지 */}
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+              >
+                {isUploadingImage ? (
+                  <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                ) : profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt="프로필 이미지"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-12 h-12 text-gray-400" />
+                )}
+              </div>
+              {/* 카메라 아이콘 오버레이 */}
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-600 transition-colors shadow-md"
+              >
+                <Camera className="w-4 h-4 text-white" />
+              </div>
+              {/* 숨겨진 파일 입력 */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 text-center mb-4">이미지를 클릭하여 프로필 사진 변경</p>
+
           {/* 아이디 섹션 - 카카오 계정이 아닌 경우에만 표시 */}
           {user?.sns_type !== 'kakao' && (
             <div className="mb-4">

@@ -21,6 +21,10 @@ export default function BuyerSettings() {
     if (!isLoading && user?.role === 'seller') {
       router.replace('/mypage/seller/settings');
     }
+    // 전문가 회원이 접근한 경우 전문가 설정 페이지로 리다이렉트
+    if (!isLoading && user?.role === 'expert') {
+      router.replace('/mypage/expert/settings');
+    }
   }, [user, isLoading, router]);
 
   if (isLoading) {
