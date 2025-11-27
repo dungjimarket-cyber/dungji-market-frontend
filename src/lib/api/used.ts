@@ -161,15 +161,22 @@ export const profileAPI = {
     return response.data;
   },
 
-  // 프로필 이미지 업로드
+  // 프로필 이미지 업로드 (공통 엔드포인트 사용)
   uploadProfileImage: async (file: File) => {
     const formData = new FormData();
     formData.append('image', file);
-    const response = await api.post('/mypage/profile/image/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+
+    const token = localStorage.getItem('accessToken');
+    const response = await axios.post(
+      `${API_URL.replace(/\/used$/, '')}/profile/image/`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      }
+    );
     return response.data;
   },
 
