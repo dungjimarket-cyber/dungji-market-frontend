@@ -53,6 +53,7 @@ export default function DashboardClient() {
     (user as any)?.profile_image || user?.image || null
   );
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [tagline, setTagline] = useState('');
   const [isEditingTagline, setIsEditingTagline] = useState(false);
   const [isSavingTagline, setIsSavingTagline] = useState(false);
@@ -241,7 +242,14 @@ export default function DashboardClient() {
                 {isUploadingImage ? (
                   <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
                 ) : currentProfileImage ? (
-                  <img src={currentProfileImage} alt={displayName} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewOpen(true)}
+                    className="w-full h-full"
+                    aria-label="프로필 이미지 미리보기"
+                  >
+                    <img src={currentProfileImage} alt={displayName} className="w-full h-full object-cover" />
+                  </button>
                 ) : (
                   <User className="w-6 h-6 text-gray-400" />
                 )}
@@ -347,6 +355,25 @@ export default function DashboardClient() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 프로필 이미지 미리보기 모달 */}
+      {isPreviewOpen && currentProfileImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="relative max-w-[90vw] max-h-[80vh]">
+            <button
+              onClick={() => setIsPreviewOpen(false)}
+              className="absolute -top-10 right-0 text-white text-sm hover:text-gray-200"
+            >
+              닫기
+            </button>
+            <img
+              src={currentProfileImage}
+              alt="프로필 이미지 미리보기"
+              className="max-w-full max-h-[80vh] rounded-lg shadow-2xl border border-white/20"
+            />
+          </div>
+        </div>
+      )}
 
       {/* 서비스 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mb-2.5">
