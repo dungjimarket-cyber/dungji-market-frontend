@@ -87,8 +87,6 @@ export interface ExpertProfilePublic {
   user_profile_image?: string;
   tagline: string;
   introduction: string;
-  contact_phone?: string;
-  contact_email?: string;
   // 연결 후에만 포함
   contact_phone?: string;
   contact_email?: string;
