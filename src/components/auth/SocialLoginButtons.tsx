@@ -117,12 +117,16 @@ function SocialLoginButtonsContent({ requireTermsAgreement, termsAgreed, privacy
       // 회원가입 페이지
       if (memberType === 'seller') {
         return '카카오로 가입하기(사업자회원)';
+      } else if (memberType === 'expert') {
+        return '카카오로 가입하기(전문가)';
       }
       return '카카오로 가입하기(개인회원)';
     } else {
       // 로그인 페이지
       if (memberType === 'seller') {
         return '카카오로 계속하기(사업자회원)';
+      } else if (memberType === 'expert') {
+        return '카카오로 계속하기(전문가)';
       }
       return '카카오로 계속하기(개인회원)';
     }

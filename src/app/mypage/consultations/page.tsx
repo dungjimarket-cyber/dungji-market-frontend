@@ -24,11 +24,14 @@ import { Button } from '@/components/ui/button';
 import {
   fetchMyConsultations,
   fetchExpertRequests,
+  fetchMyExpertProfile,
   replyToRequest,
   ConsultationForCustomer,
   ConsultationForExpert,
+  ExpertProfile,
 } from '@/lib/api/expertService';
 import { useToast } from '@/components/ui/use-toast';
+import ExpertProfileCheckModal from '@/components/expert/ExpertProfileCheckModal';
 
 function ConsultationsContent() {
   const router = useRouter();
@@ -43,6 +46,15 @@ function ConsultationsContent() {
   const [expandedReceivedId, setExpandedReceivedId] = useState<number | null>(null);
   const initialTab = searchParams.get('tab') === 'received' ? 'received' : 'sent';
   const [activeTab, setActiveTab] = useState<'sent' | 'received'>(initialTab);
+
+  // 전문가 프로필 체크 관련 상태
+  const [showProfileCheckModal, setShowProfileCheckModal] = useState(false);
+  const [expertProfile, setExpertProfile] = useState<ExpertProfile | null>(null);
+  const [missingFields, setMissingFields] = useState({
+    category: false,
+    contactPhone: false,
+    regions: false,
+  });
 
   const isExpert = user?.role === 'expert';
 
@@ -66,6 +78,34 @@ function ConsultationsContent() {
 
         if (isExpert) {
           await loadReceived();
+
+          // 전문가 프로필 체크
+          const profile = await fetchMyExpertProfile(accessToken);
+          setExpertProfile(profile);
+
+          if (profile) {
+            // 필수 정보 누락 체크
+            const missing = {
+              category: !profile.category || !profile.category.id,
+              contactPhone: !profile.contact_phone,
+              regions: !profile.regions || profile.regions.length === 0,
+            };
+
+            setMissingFields(missing);
+
+            // 하나라도 누락되면 모달 표시
+            if (missing.category || missing.contactPhone || missing.regions) {
+              setShowProfileCheckModal(true);
+            }
+          } else {
+            // 프로필 자체가 없는 경우
+            setMissingFields({
+              category: true,
+              contactPhone: true,
+              regions: true,
+            });
+            setShowProfileCheckModal(true);
+          }
         }
       } catch (err) {
         console.error('상담 내역 로드 오류:', err);
@@ -117,16 +157,24 @@ function ConsultationsContent() {
   const showReceived = isExpert && activeTab === 'received';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.back()}
-              className="p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+    <>
+      {/* 전문가 프로필 체크 모달 */}
+      <ExpertProfileCheckModal
+        isOpen={showProfileCheckModal}
+        onClose={() => setShowProfileCheckModal(false)}
+        missingFields={missingFields}
+      />
+
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b sticky top-0 z-10">
+          <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.back()}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
             <h1 className="text-lg font-bold">상담 내역</h1>
           </div>
           {isExpert && (
@@ -220,7 +268,8 @@ function ConsultationsContent() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
