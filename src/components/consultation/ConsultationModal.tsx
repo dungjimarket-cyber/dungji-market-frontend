@@ -36,7 +36,16 @@ export default function ConsultationModal({
 }: ConsultationModalProps) {
   const router = useRouter();
   // 로그인 유저 정보 및 토큰
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, isAuthenticated } = useAuth();
+
+  // 비로그인 상태에서 모달 열릴 때 로그인 페이지로 이동
+  useEffect(() => {
+    if (isOpen && !isAuthenticated) {
+      onClose();
+      toast.error('로그인이 필요한 서비스입니다.');
+      router.push('/login?redirect=/local-businesses');
+    }
+  }, [isOpen, isAuthenticated, onClose, router]);
 
   // 스텝 관리
   const [step, setStep] = useState(1);
