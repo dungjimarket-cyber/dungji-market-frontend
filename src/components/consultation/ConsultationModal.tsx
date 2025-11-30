@@ -26,6 +26,7 @@ import {
   createConsultationRequest,
   polishContent,
 } from '@/lib/api/consultationService';
+import { fetchMyExpertProfile, ExpertProfile } from '@/lib/api/expertService';
 import RegionDropdown from '@/components/address/RegionDropdown';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -77,6 +78,9 @@ export default function ConsultationModal({
   const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // 전문가 프로필 (본인 업종 필터링용)
+  const [expertProfile, setExpertProfile] = useState<ExpertProfile | null>(null);
+
   // 통합 카테고리 설정
   // 세무사 + 회계사 → 세무·회계, 변호사 + 법무사 → 법률 서비스, 청소 + 이사 → 청소·이사
   const MERGED_CATEGORIES: Record<string, { names: string[]; mergedName: string; icon: string; id: string }> = {
@@ -88,14 +92,23 @@ export default function ConsultationModal({
   // 카테고리 로드 및 통합 처리
   useEffect(() => {
     if (isOpen) {
-      fetchCategories().then(rawCategories => {
+      const loadData = async () => {
+        // 전문가인 경우 프로필 조회
+        let myExpertProfile: ExpertProfile | null = null;
+        if (user?.role === 'expert' && accessToken) {
+          myExpertProfile = await fetchMyExpertProfile(accessToken);
+          setExpertProfile(myExpertProfile);
+        }
+
+        const rawCategories = await fetchCategories();
+
         // 통합 대상 카테고리 이름들
         const mergedCategoryNames = new Set(
           Object.values(MERGED_CATEGORIES).flatMap(m => m.names)
         );
 
         // 통합 대상이 아닌 카테고리만 필터링
-        const filteredCategories = rawCategories.filter(
+        let filteredCategories = rawCategories.filter(
           cat => !mergedCategoryNames.has(cat.name)
         );
 
@@ -120,10 +133,25 @@ export default function ConsultationModal({
           }
         }
 
-        setCategories([...filteredCategories, ...mergedToAdd]);
-      });
+        let allCategories = [...filteredCategories, ...mergedToAdd];
+
+        // 전문가인 경우 본인 업종만 제외 (통합 카테고리는 그대로 표시)
+        if (myExpertProfile?.category) {
+          const expertCategoryId = myExpertProfile.category.id;
+
+          allCategories = allCategories.filter(cat => {
+            // 전문가 본인 카테고리만 제외
+            if (cat.id === expertCategoryId) return false;
+            return true;
+          });
+        }
+
+        setCategories(allCategories);
+      };
+
+      loadData();
     }
-  }, [isOpen]);
+  }, [isOpen, user?.role, accessToken]);
 
   // 로그인 유저 정보 자동 채우기
   useEffect(() => {
@@ -295,6 +323,7 @@ export default function ConsultationModal({
       setAgreed(false);
       setSubmitted(false);
       setUserInfoLoaded(false); // 다음 열릴 때 다시 자동 채우기 가능
+      setExpertProfile(null); // 전문가 프로필 초기화
     }
   }, [isOpen, preSelectedCategory]);
 
