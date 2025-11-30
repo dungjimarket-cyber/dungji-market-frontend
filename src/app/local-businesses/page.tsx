@@ -916,10 +916,10 @@ function LocalBusinessesContent() {
       {/* 플로팅 상담신청 버튼 - 말풍선 모양 */}
       <button
         onClick={() => setConsultModalOpen(true)}
-        className="fixed right-4 bottom-24 z-40 px-4 py-3 bg-dungji-primary hover:bg-dungji-primary/90 text-white rounded-[20px] rounded-br-sm shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95"
+        className="fixed right-4 bottom-24 z-40 px-5 py-4 bg-cyan-500 hover:bg-cyan-600 text-white rounded-[24px] rounded-br-sm shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95"
         aria-label="무료상담신청"
       >
-        <span className="text-sm font-semibold whitespace-nowrap">무료상담</span>
+        <span className="text-base font-black whitespace-nowrap tracking-tight" style={{ fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, sans-serif' }}>무료상담</span>
       </button>
 
       {/* 무료상담신청 모달 */}
