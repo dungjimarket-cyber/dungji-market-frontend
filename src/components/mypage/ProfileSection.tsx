@@ -393,8 +393,21 @@ export default function ProfileSection() {
     }
 
     try {
+      // 프로필 생성 시 필수 정보 포함 (기존 프로필 수정 시에는 category_id만 사용됨)
+      const profileData: any = {
+        category_id: selectedCategoryId,
+        // 프로필 생성 시 필요한 기본값들
+        representative_name: nickname || user?.nickname || user?.username || '미입력',
+        contact_phone: phoneNumber || user?.phone_number || '미입력',
+      };
+
+      // 지역 정보가 있으면 추가
+      if (addressRegion?.code) {
+        profileData.region_codes = [addressRegion.code];
+      }
+
       const result = await updateExpertProfile(
-        { category_id: selectedCategoryId },
+        profileData,
         accessToken
       );
 
