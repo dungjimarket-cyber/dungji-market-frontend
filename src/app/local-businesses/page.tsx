@@ -488,24 +488,15 @@ function LocalBusinessesContent() {
                 우리동네 전문가와 상담하기
               </h1>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Button
-                size="sm"
-                onClick={() => setConsultModalOpen(true)}
-                className="flex items-center gap-1 text-xs whitespace-nowrap bg-dungji-primary hover:bg-dungji-primary/90"
-              >
-                <MessageCircle className="w-3 h-3" />
-                <span>무료상담</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push('/mypage/consultations')}
-                className="flex items-center gap-1 text-xs whitespace-nowrap"
-              >
-                <FileText className="w-3 h-3" />
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/mypage/consultations')}
+              className="flex items-center gap-1 text-xs whitespace-nowrap"
+            >
+              <FileText className="w-3 h-3" />
+              <span>상담내역</span>
+            </Button>
           </div>
 
           {/* PC 헤더 - 중앙 정렬 */}
@@ -518,21 +509,12 @@ function LocalBusinessesContent() {
                 우리동네 전문가를 만나보세요
               </h1>
             </div>
-            <div className="absolute right-0 flex items-center gap-2">
-              <Button
-                onClick={() => setConsultModalOpen(true)}
-                className="bg-dungji-primary hover:bg-dungji-primary/90 text-white px-4 py-2 text-sm font-medium"
-              >
-                <MessageCircle className="w-4 h-4 mr-1.5" />
-                무료상담신청
-              </Button>
-              <Badge
-                onClick={() => router.push('/mypage/consultations')}
-                className="bg-slate-900 text-white hover:bg-slate-800 cursor-pointer px-4 py-2 text-sm font-medium"
-              >
-                상담내역
-              </Badge>
-            </div>
+            <Badge
+              onClick={() => router.push('/mypage/consultations')}
+              className="absolute right-0 bg-slate-900 text-white hover:bg-slate-800 cursor-pointer px-4 py-2 text-sm font-medium"
+            >
+              상담내역
+            </Badge>
           </div>
         </div>
 
@@ -930,6 +912,15 @@ function LocalBusinessesContent() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* 플로팅 상담신청 버튼 */}
+      <button
+        onClick={() => setConsultModalOpen(true)}
+        className="fixed right-4 bottom-24 z-40 w-14 h-14 bg-dungji-primary hover:bg-dungji-primary/90 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95"
+        aria-label="무료상담신청"
+      >
+        <MessageCircle className="w-6 h-6" />
+      </button>
 
       {/* 무료상담신청 모달 */}
       <ConsultationModal
