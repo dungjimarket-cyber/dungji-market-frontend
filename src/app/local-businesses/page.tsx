@@ -913,14 +913,13 @@ function LocalBusinessesContent() {
         </DialogContent>
       </Dialog>
 
-      {/* 플로팅 상담신청 버튼 */}
+      {/* 플로팅 상담신청 버튼 - 말풍선 모양 */}
       <button
         onClick={() => setConsultModalOpen(true)}
-        className="fixed right-4 bottom-24 z-40 px-4 h-12 bg-dungji-primary hover:bg-dungji-primary/90 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-1 hover:scale-105 active:scale-95 font-semibold text-sm"
+        className="fixed right-4 bottom-24 z-40 w-14 h-14 bg-dungji-primary hover:bg-dungji-primary/90 text-white rounded-[20px] rounded-br-sm shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95"
         aria-label="무료상담신청"
       >
-        <span role="img" aria-hidden="true">💬</span>
-        <span>무료상담</span>
+        <MessageCircle className="w-7 h-7" />
       </button>
 
       {/* 무료상담신청 모달 */}
