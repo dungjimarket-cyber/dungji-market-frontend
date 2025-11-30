@@ -85,10 +85,14 @@ function ConsultationsContent() {
 
           if (profile) {
             // 필수 정보 누락 체크
+            // regions: 전문가 프로필 regions 또는 일반 프로필 address_region 중 하나만 있으면 OK
+            const hasRegion = (profile.regions && profile.regions.length > 0) ||
+                              (user?.address_region && user.address_region.code);
+
             const missing = {
               category: !profile.category || !profile.category.id,
               contactPhone: !profile.contact_phone,
-              regions: !profile.regions || profile.regions.length === 0,
+              regions: !hasRegion,
             };
 
             setMissingFields(missing);
@@ -99,10 +103,13 @@ function ConsultationsContent() {
             }
           } else {
             // 프로필 자체가 없는 경우
+            // 일반 프로필 지역이 있으면 regions는 OK
+            const hasRegion = user?.address_region && user.address_region.code;
+
             setMissingFields({
               category: true,
               contactPhone: true,
-              regions: true,
+              regions: !hasRegion,
             });
             setShowProfileCheckModal(true);
           }
