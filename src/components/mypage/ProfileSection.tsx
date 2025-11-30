@@ -1458,7 +1458,7 @@ export default function ProfileSection() {
       <div className="mt-6 p-3 bg-gray-50 rounded-md border border-gray-100">
         <p className="text-sm text-gray-500">회원 유형</p>
         <p className="font-medium">
-          {role === 'expert' ? '전문가' : role === 'seller' ? '판매자' : '구매자'}
+          {role === 'expert' ? '전문가' : role === 'seller' ? '판매자' : '일반회원'}
         </p>
         {role === 'expert' && expertCategory && (
           <p className="text-xs text-gray-600 mt-1">{expertCategory}</p>

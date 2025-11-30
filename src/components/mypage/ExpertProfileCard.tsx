@@ -217,7 +217,7 @@ export default function ExpertProfileCard({
               </span>
             )}
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-700">
-              {isExpert ? '전문가' : isSeller ? '판매자' : '구매자'}
+              {isExpert ? '전문가' : isSeller ? '판매자' : '일반회원'}
             </span>
           </div>
 
