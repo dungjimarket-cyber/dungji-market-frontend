@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from 'next/font/google';
+import { Inter, Black_Han_Sans } from 'next/font/google';
 import "./globals.css";
 import Providers from './Providers';
 import { Toaster } from "@/components/ui/toaster";
@@ -14,9 +14,16 @@ import NotificationPermissionHandler from '@/components/notification/Notificatio
 import MaintenanceBanner from '@/components/common/MaintenanceBanner';
 import Script from 'next/script';
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
+});
+
+const blackHanSans = Black_Han_Sans({
+  weight: '400',
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-black-han-sans',
 });
 
 
@@ -121,7 +128,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
       </head>
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+      <body className={`${inter.className} ${blackHanSans.variable} min-h-screen flex flex-col`}>
         {/* Google AdSense Script */}
         <Script
           async
