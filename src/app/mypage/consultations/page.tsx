@@ -210,16 +210,16 @@ function ConsultationsContent() {
               <MessageSquare className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              상담 내역이 없습니다
+              상담 신청내역이 없습니다
             </h3>
             <p className="text-gray-500 mb-4">
-              새로운 상담을 요청해보세요.
+              전문가 상담을 신청해보세요.
             </p>
             <Link
               href="/local-businesses"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              상담 요청하기
+              상담 신청하기
             </Link>
           </div>
         ) : (
