@@ -190,13 +190,13 @@ function ConsultationsContent() {
                 onClick={() => setActiveTab('sent')}
                 className={`px-3 py-2 rounded-md border ${activeTab === 'sent' ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-transparent text-gray-600 hover:border-gray-200'}`}
               >
-                내가 요청한 상담
+                상담 신청내역
               </button>
               <button
                 onClick={() => setActiveTab('received')}
                 className={`px-3 py-2 rounded-md border ${activeTab === 'received' ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-transparent text-gray-600 hover:border-gray-200'}`}
               >
-                받은 상담(전문가)
+                문의 답변하기
               </button>
             </div>
           )}
@@ -228,7 +228,7 @@ function ConsultationsContent() {
               <section>
                 <div className="flex items-center gap-2 mb-4">
                   <Send className="w-5 h-5 text-blue-600" />
-                  <h2 className="text-base font-semibold text-gray-900">내가 요청한 상담</h2>
+                  <h2 className="text-base font-semibold text-gray-900">상담 신청내역</h2>
                   <span className="text-sm text-gray-500">({consultations.length}건)</span>
                 </div>
                 <div className="space-y-4">
@@ -248,7 +248,7 @@ function ConsultationsContent() {
               <section>
                 <div className="flex items-center gap-2 mb-4">
                   <Inbox className="w-5 h-5 text-green-600" />
-                  <h2 className="text-base font-semibold text-gray-900">받은 상담 요청</h2>
+                  <h2 className="text-base font-semibold text-gray-900">문의 답변하기</h2>
                   <span className="text-sm text-gray-500">({receivedRequests.length}건)</span>
                 </div>
                 <div className="space-y-4">
@@ -267,10 +267,10 @@ function ConsultationsContent() {
             )}
 
             {showSent && !hasMyConsultations && (
-              <div className="text-center text-sm text-gray-500">보낸 상담이 없습니다.</div>
+              <div className="text-center text-sm text-gray-500">신청한 상담이 없습니다.</div>
             )}
             {showReceived && isExpert && !hasReceivedRequests && (
-              <div className="text-center text-sm text-gray-500">받은 상담 요청이 없습니다.</div>
+              <div className="text-center text-sm text-gray-500">답변할 문의가 없습니다.</div>
             )}
           </div>
         )}
