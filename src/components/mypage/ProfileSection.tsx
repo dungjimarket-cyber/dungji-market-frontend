@@ -14,7 +14,9 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { fetchWithAuth } from '@/lib/api/fetch';
-import { fetchMyExpertProfile } from '@/lib/api/expertService';
+import { fetchMyExpertProfile, updateExpertProfile, ExpertProfile } from '@/lib/api/expertService';
+import { fetchCategories } from '@/lib/api/localBusiness';
+import { LocalBusinessCategory } from '@/types/localBusiness';
 
 /**
  * 사용자 객체가 소셜 공급자 정보를 포함하는지 확인하는 타입 가드 함수
@@ -123,6 +125,11 @@ export default function ProfileSection() {
   const router = useRouter();
   const { toast } = useToast();
   const [expertCategory, setExpertCategory] = useState<string | null>(null);
+  const [expertCategoryId, setExpertCategoryId] = useState<number | null>(null);
+  const [expertProfile, setExpertProfile] = useState<ExpertProfile | null>(null);
+  const [categories, setCategories] = useState<LocalBusinessCategory[]>([]);
+  const [isEditingCategory, setIsEditingCategory] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
   // 푸시 알림 설정 상태
   const [pushNotificationSettings, setPushNotificationSettings] = useState({
@@ -200,21 +207,40 @@ export default function ProfileSection() {
     }
   }, [user?.user_type]);
 
-  // 전문가 카테고리 로드 (전문가 유형 노출용)
+  // 전문가 프로필 및 카테고리 로드
   useEffect(() => {
-    const loadExpertCategory = async () => {
+    const loadExpertData = async () => {
       if (user?.role !== 'expert' || !accessToken) return;
       try {
         const profile = await fetchMyExpertProfile(accessToken);
-        if (profile?.category?.name) {
-          setExpertCategory(profile.category.name);
+        if (profile) {
+          setExpertProfile(profile);
+          if (profile.category?.name) {
+            setExpertCategory(profile.category.name);
+            setExpertCategoryId(profile.category.id);
+            setSelectedCategoryId(profile.category.id);
+          }
         }
       } catch (error) {
-        console.error('전문가 카테고리 로드 오류:', error);
+        console.error('전문가 프로필 로드 오류:', error);
       }
     };
-    loadExpertCategory();
+    loadExpertData();
   }, [user?.role, accessToken]);
+
+  // 카테고리 목록 로드 (전문가인 경우)
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (user?.role !== 'expert') return;
+      try {
+        const cats = await fetchCategories();
+        setCategories(cats);
+      } catch (error) {
+        console.error('카테고리 목록 로드 오류:', error);
+      }
+    };
+    loadCategories();
+  }, [user?.role]);
   
   // 지역 목록 가져오기 - 현재 사용하지 않지만 향후 사용 가능성을 위해 유지
   useEffect(() => {
@@ -351,6 +377,51 @@ export default function ProfileSection() {
   const handleLogout = () => {
     logout();
     router.push('/');
+  };
+
+  /**
+   * 전문가 업종 저장 함수
+   */
+  const handleCategorySave = async () => {
+    if (!accessToken || !selectedCategoryId) {
+      toast({
+        variant: 'destructive',
+        title: '오류',
+        description: '업종을 선택해주세요.',
+      });
+      return;
+    }
+
+    try {
+      const result = await updateExpertProfile(
+        { category_id: selectedCategoryId },
+        accessToken
+      );
+
+      if (result.success) {
+        const selectedCat = categories.find(c => c.id === selectedCategoryId);
+        setExpertCategory(selectedCat?.name || null);
+        setExpertCategoryId(selectedCategoryId);
+        setIsEditingCategory(false);
+        toast({
+          title: '저장 완료',
+          description: '전문 분야가 변경되었습니다.',
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: '저장 실패',
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      console.error('업종 저장 오류:', error);
+      toast({
+        variant: 'destructive',
+        title: '오류',
+        description: '업종 저장 중 오류가 발생했습니다.',
+      });
+    }
   };
 
   /**
@@ -1027,7 +1098,84 @@ export default function ProfileSection() {
               </>
             )}
           </div>
-          
+
+          {/* 전문가 업종 섹션 - 전문가 회원만 표시 */}
+          {role === 'expert' && (
+            <div className="mb-4">
+              <div className="flex justify-between items-start mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  전문 분야
+                  {!expertCategory && (
+                    <span className="text-orange-600 text-xs ml-2">
+                      필수 입력 항목입니다
+                    </span>
+                  )}
+                </label>
+                <button
+                  onClick={() => {
+                    setIsEditingCategory(true);
+                    setSelectedCategoryId(expertCategoryId);
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  수정
+                </button>
+              </div>
+
+              {isEditingCategory ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {categories.map((category) => (
+                      <button
+                        key={category.id}
+                        type="button"
+                        onClick={() => setSelectedCategoryId(category.id)}
+                        className={`p-2 border-2 rounded-lg text-center transition-all ${
+                          selectedCategoryId === category.id
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-blue-300'
+                        }`}
+                      >
+                        <div className="text-xl mb-0.5">{category.icon}</div>
+                        <div className="font-medium text-gray-900 text-xs">{category.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleCategorySave}
+                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    >
+                      저장
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingCategory(false);
+                        setSelectedCategoryId(expertCategoryId);
+                      }}
+                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+                    >
+                      취소
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-2 bg-gray-50 rounded-md">
+                  {expertCategory ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">
+                        {categories.find(c => c.id === expertCategoryId)?.icon || '📋'}
+                      </span>
+                      <span className="font-medium text-sm">{expertCategory}</span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-500 text-sm">전문 분야를 선택해주세요</span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 주소 섹션 - 모든 회원 공통 */}
             <div className="mb-4">
               <div className="flex justify-between items-start mb-2">
