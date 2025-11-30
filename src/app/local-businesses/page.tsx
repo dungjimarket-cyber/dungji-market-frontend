@@ -913,10 +913,12 @@ function LocalBusinessesContent() {
         </DialogContent>
       </Dialog>
 
-      {/* 플로팅 상담신청 버튼 - 말풍선 모양 */}
+      {/* 플로팅 상담신청 버튼 - 모바일: 오른쪽 하단, PC: 가운데 하단 */}
       <button
         onClick={() => setConsultModalOpen(true)}
-        className="fixed right-4 bottom-24 z-40 px-5 py-4 bg-cyan-500 hover:bg-cyan-600 text-white rounded-[24px] rounded-br-sm shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95"
+        className="fixed z-40 px-5 py-4 bg-cyan-500 hover:bg-cyan-600 text-white rounded-[24px] rounded-br-sm shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105 active:scale-95
+          right-4 bottom-24
+          sm:right-auto sm:left-1/2 sm:-translate-x-1/2 sm:bottom-8"
         aria-label="무료상담신청"
       >
         <span className="text-lg whitespace-nowrap font-[var(--font-black-han-sans)]" style={{ fontFamily: 'var(--font-black-han-sans)' }}>무료상담</span>
