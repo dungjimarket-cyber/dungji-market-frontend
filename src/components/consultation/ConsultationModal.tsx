@@ -48,6 +48,15 @@ export default function ConsultationModal({
     }
   }, [isOpen, isAuthenticated, onClose, router]);
 
+  // 연락처 미등록 시 프로필 설정으로 안내
+  useEffect(() => {
+    if (isOpen && isAuthenticated && user && !user.phone_number) {
+      onClose();
+      toast.error('상담 신청을 위해 연락처 등록이 필요합니다.');
+      router.push('/mypage/settings');
+    }
+  }, [isOpen, isAuthenticated, user, onClose, router]);
+
   // 스텝 관리
   const [step, setStep] = useState(1);
 
@@ -591,16 +600,17 @@ export default function ConsultationModal({
               />
             </div>
 
-            {/* 연락처 */}
+            {/* 연락처 - 읽기 전용 */}
             <div>
               <Label htmlFor="phone">연락처 *</Label>
               <Input
                 id="phone"
                 value={phone}
-                onChange={e => setPhone(formatPhone(e.target.value))}
-                placeholder="010-1234-5678"
-                maxLength={13}
+                readOnly
+                disabled
+                className="bg-slate-100 cursor-not-allowed"
               />
+
             </div>
 
             {/* 업종 선택 */}
