@@ -89,9 +89,11 @@ function ConsultationsContent() {
             const hasRegion = (profile.regions && profile.regions.length > 0) ||
                               (user?.address_region && user.address_region.code);
 
+            // 연락처: 전문가 프로필 contact_phone 또는 일반 프로필 phone_number 중 하나만 있으면 OK
+            const hasContactPhone = profile.contact_phone || user?.phone_number;
             const missing = {
               category: !profile.category || !profile.category.id,
-              contactPhone: !profile.contact_phone,
+              contactPhone: !hasContactPhone,
               regions: !hasRegion,
             };
 
@@ -105,10 +107,12 @@ function ConsultationsContent() {
             // 프로필 자체가 없는 경우
             // 일반 프로필 지역이 있으면 regions는 OK
             const hasRegion = user?.address_region && user.address_region.code;
+            // 일반 프로필 연락처가 있으면 contactPhone은 OK
+            const hasContactPhone = user?.phone_number;
 
             setMissingFields({
               category: true,
-              contactPhone: true,
+              contactPhone: !hasContactPhone,
               regions: !hasRegion,
             });
             setShowProfileCheckModal(true);
