@@ -223,13 +223,14 @@ export async function fetchMyExpertProfile(
 }
 
 /**
- * 전문가 프로필 수정
+ * 전문가 프로필 수정 (없으면 자동 생성)
  */
 export async function updateExpertProfile(
   data: Partial<ExpertProfileCreate>,
   token: string
 ): Promise<{ success: boolean; message: string; profile?: ExpertProfile }> {
   try {
+    // 먼저 PATCH 시도
     const response = await fetch(`${API_URL}/expert/profile/`, {
       method: 'PATCH',
       headers: {
@@ -238,6 +239,33 @@ export async function updateExpertProfile(
       },
       body: JSON.stringify(data),
     });
+
+    // 404면 프로필이 없으므로 POST로 생성
+    if (response.status === 404) {
+      const createResponse = await fetch(`${API_URL}/expert/profile/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const createResult = await createResponse.json();
+
+      if (!createResponse.ok) {
+        return {
+          success: false,
+          message: createResult.detail || '프로필 생성에 실패했습니다.',
+        };
+      }
+
+      return {
+        success: true,
+        message: '프로필이 생성되었습니다.',
+        profile: createResult,
+      };
+    }
 
     const result = await response.json();
 
