@@ -1,7 +1,7 @@
 {
-  "name": "둥지마켓 - 통신 및 인터넷 공동구매",
+  "name": "둥지마켓 - 우리동네 전문가 상담 & 공동구매",
   "short_name": "둥지마켓",
-  "description": "공동구매 비교견적과 중고거래를 한번에 제공하는 통합 플랫폼",
+  "description": "우리동네 전문가 상담과 공동구매, 중고거래를 한번에 제공하는 통합 플랫폼",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

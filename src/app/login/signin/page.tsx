@@ -166,7 +166,7 @@ function SignInForm() {
                   공동구매 개설·참여
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  공구견적받기 / 중고거래 이용
+                  전문가 상담 / 중고거래 이용
                 </p>
               </div>
               <button

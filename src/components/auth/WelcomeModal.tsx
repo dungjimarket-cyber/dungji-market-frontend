@@ -19,7 +19,7 @@ interface WelcomeModalProps {
 /**
  * 회원가입 완료 후 환영 모달
  * - 일반회원: 마이페이지로 이동
- * - 일반사업자: 견적이용권 10매 증정 안내 + 마이페이지로 이동
+ * - 일반사업자: 마이페이지로 이동
  * - 전문가: 간단한 환영 + 상담활동 가능 안내
  */
 export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
@@ -57,7 +57,7 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
   const getRoleMessage = () => {
     switch (userRole) {
       case 'seller':
-        return '공구에 견적을 제안하고 대량 판매 기회를 잡으세요!';
+        return '커스텀 공구와 중고거래를 이용해보세요!';
       case 'expert':
         return '지금 바로 고객의 상담 요청에 답변할 수 있습니다.';
       default:
@@ -129,14 +129,14 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
 
           {/* Content */}
           <div className="p-6">
-            {/* 판매자 전용: 견적이용권 안내 */}
+            {/* 판매자 전용: 환영 안내 */}
             {userRole === 'seller' && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">🎟️</span>
+                  <span className="text-2xl">🏪</span>
                   <div>
-                    <p className="font-bold text-gray-800">견적이용권 10매 지급!</p>
-                    <p className="text-sm text-gray-600">오픈기념 이벤트</p>
+                    <p className="font-bold text-gray-800">판매회원 가입 완료!</p>
+                    <p className="text-sm text-gray-600">커스텀 공구와 중고거래를 시작하세요</p>
                   </div>
                 </div>
               </div>

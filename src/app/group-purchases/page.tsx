@@ -791,12 +791,12 @@ function GroupPurchasesPageContent() {
         <div className="bg-white px-4 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">같이 견적받기</h1>
+              <h1 className="text-xl font-bold text-gray-900">공동구매</h1>
               <p className="text-xs text-gray-600 mt-0.5">통신상품 공동구매</p>
             </div>
             <div className="flex gap-2">
               {user?.role === 'seller' ? (
-                // 통신/렌탈 판매자: 견적내역
+                // 통신/렌탈 판매자: 내역
                 (sellerCategory === 'telecom' || sellerCategory === 'rental') ? (
                   <Button
                     size="sm"
@@ -804,35 +804,35 @@ function GroupPurchasesPageContent() {
                     onClick={() => router.push('/mypage/seller/bids')}
                     className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    견적내역
+                    내역보기
                   </Button>
                 ) : (
-                  // 기타 판매자: 견적 서비스 내역
+                  // 기타 판매자: 서비스 내역
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => router.push('/mypage/seller/groupbuy')}
                     className="text-xs sm:text-sm px-2 sm:px-3"
                   >
-                    견적 서비스 내역
+                    서비스 내역
                   </Button>
                 )
               ) : user ? (
-                // 일반 사용자: 견적요청
+                // 일반 사용자: 공구 등록
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => router.push('/group-purchases/create')}
                   className="text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  견적요청
+                  공구 등록
                 </Button>
               ) : null}
             </div>
           </div>
         </div>
 
-        {/* 공구·견적 페이지 공지사항 */}
+        {/* 공구 페이지 공지사항 */}
         <NoticeSection pageType="groupbuy" compact={true} />
       </div>
 
@@ -1037,7 +1037,7 @@ export default function GroupPurchasesPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white px-4 py-4 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">같이 견적받기</h1>
+          <h1 className="text-xl font-bold text-gray-900">공동구매</h1>
         </div>
         <div className="flex items-center justify-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>

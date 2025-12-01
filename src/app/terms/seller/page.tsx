@@ -42,19 +42,18 @@ export default function SellerTermsPage() {
             </li>
           </ul>
 
-          <h2 className="text-base font-semibold mb-2">제3조 (플랫폼 이용 및 견적제안 참여 방식)</h2>
+          <h2 className="text-base font-semibold mb-2">제3조 (플랫폼 이용 및 판매 활동)</h2>
           <ul className="list-disc pl-4 mb-3 space-y-1 text-xs">
-            <li>회사는 판매회원에게 공동구매 견적 제안 참여 기회를 제공하며, 판매회원은 제안 방식에 따라 자유롭게 참여할 수 있습니다.</li>
+            <li>회사는 판매회원에게 커스텀 공구 및 중고거래 판매 기회를 제공하며, 판매회원은 자유롭게 참여할 수 있습니다.</li>
             <li>회사는 플랫폼의 기술적 중개 역할만 수행하며, 판매회원은 최종 판매책임을 전적으로 부담합니다.</li>
-            <li>판매회원은 회사의 공구 등록, 견적제안, 최종선정 시스템에 따라 공정하고 신의성실한 거래를 수행해야 합니다.</li>
+            <li>판매회원은 회사의 시스템에 따라 공정하고 신의성실한 거래를 수행해야 합니다.</li>
           </ul>
 
-          <h2 className="text-base font-semibold mb-2">제4조 (견적이용권 제도)</h2>
+          <h2 className="text-base font-semibold mb-2">제4조 (서비스 이용)</h2>
           <ul className="list-disc pl-4 mb-3 space-y-1 text-xs">
-            <li>판매회원은 공구에 견적제안을 진행하기 위해 "견적이용권"을 사용해야 하며, 1개의 제안 당 1매의 견적이용권이 차감됩니다.</li>
-            <li>견적이용권은 유료로 구매할 수 있으며, 사용한 티켓은 반환되지 않습니다.</li>
-            <li>견적제안 후 최종선정이 되지 않더라도 티켓은 환불되지 않습니다.</li>
-            <li>시스템 오류 또는 사전 고지된 유지보수 등의 이유로 견적제안이 정상 처리되지 않은 경우, 회사는 견적이용권을 복구 또는 재지급할 수 있습니다.</li>
+            <li>판매회원은 커스텀 공구 개설 및 중고거래 판매 서비스를 이용할 수 있습니다.</li>
+            <li>거래 수수료는 무료이며, 별도 비용 발생 시 사전 고지합니다.</li>
+            <li>서비스 이용 중 발생하는 문제에 대해 회사는 중개자로서의 책임만 부담합니다.</li>
           </ul>
 
           <h2 className="text-base font-semibold mb-2">제5조 (최종선정 및 판매 확정 의무)</h2>
@@ -65,7 +64,7 @@ export default function SellerTermsPage() {
           </ul>
 
           <h2 className="text-base font-semibold mb-2">제6조 (이용 제한 및 자격 정지)</h2>
-          <p className="mb-2">회사는 아래의 사유가 발생할 경우 판매회원의 견적제안 권한을 일시 정지하거나, 판매회원 자격을 박탈할 수 있습니다.</p>
+          <p className="mb-2">회사는 아래의 사유가 발생할 경우 판매회원의 서비스 이용 권한을 일시 정지하거나, 판매회원 자격을 박탈할 수 있습니다.</p>
           
           <h3 className="text-lg font-semibold mb-2 mt-4">1. 자격 요건 관련</h3>
           <ul className="list-disc pl-4 mb-3 space-y-1 text-xs">
@@ -77,7 +76,7 @@ export default function SellerTermsPage() {
           <h3 className="text-lg font-semibold mb-2 mt-4">2. 서비스 이용 관련</h3>
           <ul className="list-disc pl-4 mb-3 space-y-1 text-xs">
             <li>판매 확정 후 판매 거부</li>
-            <li>반복적인 견적철회 기능 사용 또는 허위 금액 입력</li>
+            <li>허위 정보 입력 또는 허위 매물 등록</li>
             <li>어뷰징 또는 플랫폼 질서 위반 행위</li>
             <li>고객정보 오·남용, 비공식 거래 유도</li>
             <li>기타 회사 정책 위반 행위</li>
@@ -99,7 +98,7 @@ export default function SellerTermsPage() {
           <ul className="list-disc pl-4 mb-3 space-y-1 text-xs">
             <li><strong>필수 수집 항목:</strong> 이름, 생년월일, 성별, 휴대폰번호, 이메일, 사업자등록번호, 사업장 주소, 대표자명</li>
             <li><strong>선택 수집 항목:</strong> 사업자등록증 사본, 비대면 판매 가능 여부, 택배거래 기록 등</li>
-            <li><strong>수집 목적:</strong> 본인확인, 사업자 인증, 견적제안 자격 부여, 견적 선정 및 정산 안내, 고객 민원 대응, 법령상 고지</li>
+            <li><strong>수집 목적:</strong> 본인확인, 사업자 인증, 서비스 이용 자격 부여, 정산 안내, 고객 민원 대응, 법령상 고지</li>
           </ul>
           
           <h3 className="text-lg font-semibold mb-2 mt-4">보관 및 이용기간</h3>
@@ -154,7 +153,7 @@ export default function SellerTermsPage() {
           <h3 className="text-lg font-semibold mb-3">2. 수집 및 이용 목적</h3>
           <ul className="list-disc pl-4 mb-3 space-y-1 text-xs">
             <li>판매회원 자격 확인 및 입점 심사</li>
-            <li>공동구매 견적제안 참여 및 견적 선정 결과 안내</li>
+            <li>커스텀 공구 및 중고거래 서비스 이용</li>
             <li>고객 응대 및 민원 처리</li>
             <li>세금계산서 발행 등 정산 업무</li>
             <li>비대면 판매 인증 절차</li>
