@@ -69,12 +69,12 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
         />
         
         {/* 이미지 팝업 */}
-        <div 
+        <div
           className={`fixed z-[9999] bg-white rounded-lg shadow-2xl overflow-hidden ${getPositionStyles()}`}
           style={{
             width: 'auto',
-            maxWidth: `${Math.min(popup.width, window.innerWidth * 0.9)}px`,
-            maxHeight: `${window.innerHeight * 0.85}px`,
+            maxWidth: `${Math.min(popup.width, window.innerWidth * 0.96)}px`,
+            maxHeight: `${window.innerHeight * 0.92}px`,
           }}
         >
           {/* 닫기 버튼 */}
@@ -85,9 +85,9 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
           >
             <X className="w-5 h-5 text-white" />
           </button>
-          
+
           {/* 이미지 */}
-          <div 
+          <div
             className="relative cursor-pointer"
             onClick={handleContentClick}
           >
@@ -98,7 +98,7 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
               height={popup.height}
               className="w-auto h-auto max-w-full object-contain"
               style={{
-                maxHeight: `${Math.min(popup.height, window.innerHeight * 0.7)}px`
+                maxHeight: `${Math.min(popup.height, window.innerHeight * 0.85)}px`
               }}
               priority
             />
