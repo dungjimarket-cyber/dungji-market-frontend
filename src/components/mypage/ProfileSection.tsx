@@ -131,6 +131,15 @@ export default function ProfileSection() {
   const [isEditingCategory, setIsEditingCategory] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
+  // 지역 변경 제한 상태
+  const [regionChangeStatus, setRegionChangeStatus] = useState({
+    canChange: true,
+    daysRemaining: 0,
+    nextAvailableDate: null as string | null,
+    isFirstSetting: true,
+  });
+  const [showRegionLimitModal, setShowRegionLimitModal] = useState(false);
+
   // 푸시 알림 설정 상태
   const [pushNotificationSettings, setPushNotificationSettings] = useState({
     trade_notifications: true,
@@ -241,6 +250,32 @@ export default function ProfileSection() {
     };
     loadCategories();
   }, [user?.role]);
+
+  // 지역 변경 상태 확인 (90일 제한)
+  useEffect(() => {
+    const checkRegionChangeStatus = async () => {
+      if (!accessToken) return;
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/region-change-status/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setRegionChangeStatus({
+            canChange: data.can_change,
+            daysRemaining: data.days_remaining || 0,
+            nextAvailableDate: data.next_available_date,
+            isFirstSetting: data.is_first_setting || false,
+          });
+        }
+      } catch (error) {
+        console.error('지역 변경 상태 확인 오류:', error);
+      }
+    };
+    checkRegionChangeStatus();
+  }, [accessToken]);
   
   // 지역 목록 가져오기 - 현재 사용하지 않지만 향후 사용 가능성을 위해 유지
   useEffect(() => {
@@ -1203,16 +1238,26 @@ export default function ProfileSection() {
                     </span>
                   )}
                 </label>
-                <button
-                  onClick={() => {
-                    setIsEditingAddress(true);
-                    setIsEditing(true);
-                    setEditField('address');
-                  }}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  수정
-                </button>
+                {/* 지역 변경 가능 여부에 따라 버튼 표시 */}
+                {regionChangeStatus.canChange ? (
+                  <button
+                    onClick={() => {
+                      setIsEditingAddress(true);
+                      setIsEditing(true);
+                      setEditField('address');
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    {regionChangeStatus.isFirstSetting ? '설정' : '수정'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowRegionLimitModal(true)}
+                    className="text-xs text-gray-400 hover:text-gray-600"
+                  >
+                    {regionChangeStatus.daysRemaining}일 후 변경 가능
+                  </button>
+                )}
               </div>
               
               {isEditingAddress ? (
@@ -1445,6 +1490,46 @@ export default function ProfileSection() {
           nextAvailableDate={limitModalData.nextAvailableDate}
           canChange={limitModalData.canChange}
         />
+
+        {/* 지역 변경 제한 모달 */}
+        {showRegionLimitModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl">
+              <div className="text-center mb-4">
+                <div className="text-4xl mb-2">📍</div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  지역 변경 제한
+                </h3>
+              </div>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-orange-800 text-center">
+                  지역 변경은 <strong>90일에 1회</strong>만 가능합니다.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-3 mb-6">
+                <p className="text-sm text-gray-700 text-center">
+                  다음 변경 가능일까지<br/>
+                  <strong className="text-lg text-blue-600">{regionChangeStatus.daysRemaining}일</strong> 남았습니다.
+                </p>
+                {regionChangeStatus.nextAvailableDate && (
+                  <p className="text-xs text-gray-500 text-center mt-1">
+                    ({new Date(regionChangeStatus.nextAvailableDate).toLocaleDateString('ko-KR')} 이후 변경 가능)
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowRegionLimitModal(false)}
+                className="w-full py-2.5 px-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* 오류 메시지 */}
         {error && (
