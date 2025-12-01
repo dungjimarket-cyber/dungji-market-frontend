@@ -1526,24 +1526,20 @@ export default function ProfileSection() {
         {/* 지역 변경 제한 모달 */}
         {showRegionLimitModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl">
-              <div className="text-center mb-4">
-                <div className="text-4xl mb-2">📍</div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  지역 변경 제한
-                </h3>
-              </div>
+            <div className="bg-white rounded-xl max-w-xs w-full p-4 shadow-xl">
+              <h3 className="text-sm font-bold text-gray-900 text-center mb-3">
+                지역 변경 제한
+              </h3>
 
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
-                <p className="text-sm text-orange-800 text-center">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-2 mb-3">
+                <p className="text-xs text-orange-800 text-center">
                   지역 변경은 <strong>90일에 1회</strong>만 가능합니다.
                 </p>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-3 mb-6">
-                <p className="text-sm text-gray-700 text-center">
-                  다음 변경 가능일까지<br/>
-                  <strong className="text-lg text-blue-600">{regionChangeStatus.daysRemaining}일</strong> 남았습니다.
+              <div className="bg-gray-50 rounded-lg p-2 mb-4">
+                <p className="text-xs text-gray-700 text-center">
+                  다음 변경 가능일까지 <strong className="text-sm text-blue-600">{regionChangeStatus.daysRemaining}일</strong> 남았습니다.
                 </p>
                 {regionChangeStatus.nextAvailableDate && (
                   <p className="text-xs text-gray-500 text-center mt-1">
@@ -1555,7 +1551,7 @@ export default function ProfileSection() {
               <button
                 type="button"
                 onClick={() => setShowRegionLimitModal(false)}
-                className="w-full py-2.5 px-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600"
+                className="w-full py-2 px-3 bg-blue-500 text-white text-sm rounded-lg font-medium hover:bg-blue-600"
               >
                 확인
               </button>
