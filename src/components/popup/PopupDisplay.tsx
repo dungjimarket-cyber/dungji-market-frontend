@@ -15,6 +15,15 @@ interface PopupDisplayProps {
 export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
   const [dontShowToday, setDontShowToday] = useState(false);
   const [dontShowWeek, setDontShowWeek] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // 모바일 여부 체크 (768px 이하)
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     // 팝업 조회수 기록
@@ -71,7 +80,12 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
         {/* 이미지 팝업 */}
         <div
           className={`fixed z-[9999] bg-white rounded-lg shadow-2xl overflow-hidden ${getPositionStyles()}`}
-          style={{
+          style={isMobile ? {
+            // 모바일: 화면 비율 기준
+            width: `${window.innerWidth * 0.92}px`,
+            maxHeight: `${window.innerHeight * 0.85}px`,
+          } : {
+            // PC: 팝업 설정값 기준
             width: 'auto',
             maxWidth: `${Math.min(popup.width, window.innerWidth * 0.96)}px`,
             maxHeight: `${window.innerHeight * 0.92}px`,
@@ -96,8 +110,12 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
               alt={popup.title}
               width={popup.width}
               height={popup.height}
-              className="w-auto h-auto max-w-full object-contain"
-              style={{
+              className="w-full h-auto object-contain"
+              style={isMobile ? {
+                // 모바일: 컨테이너에 맞춤
+                maxHeight: `${window.innerHeight * 0.75}px`
+              } : {
+                // PC: 팝업 설정값 기준
                 maxHeight: `${Math.min(popup.height, window.innerHeight * 0.85)}px`
               }}
               priority
@@ -155,9 +173,14 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
         />
         
         {/* 텍스트 팝업 - 공지사항 스타일 */}
-        <div 
+        <div
           className={`fixed z-[9999] bg-white rounded-xl shadow-2xl ${getPositionStyles()}`}
-          style={{
+          style={isMobile ? {
+            // 모바일: 화면 비율 기준
+            width: `${window.innerWidth * 0.92}px`,
+            maxHeight: `${window.innerHeight * 0.8}px`,
+          } : {
+            // PC: 팝업 설정값 기준
             width: `${Math.min(popup.width || 400, window.innerWidth * 0.9)}px`,
             maxWidth: '500px',
             maxHeight: `${Math.min(popup.height || 500, window.innerHeight * 0.85)}px`,
@@ -262,9 +285,14 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
       />
       
       {/* 팝업 */}
-      <div 
+      <div
         className={`fixed z-[9999] bg-white rounded-lg shadow-2xl ${getPositionStyles()}`}
-        style={{
+        style={isMobile ? {
+          // 모바일: 화면 비율 기준
+          width: `${window.innerWidth * 0.92}px`,
+          maxHeight: `${window.innerHeight * 0.85}px`,
+        } : {
+          // PC: 팝업 설정값 기준
           width: `${Math.min(popup.width, window.innerWidth * 0.9)}px`,
           maxHeight: `${Math.min(popup.height, window.innerHeight * 0.85)}px`,
         }}
