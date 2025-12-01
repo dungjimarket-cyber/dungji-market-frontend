@@ -81,8 +81,8 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
         <div
           className={`fixed z-[9999] bg-white rounded-lg shadow-2xl overflow-hidden ${getPositionStyles()}`}
           style={isMobile ? {
-            // 모바일: 화면의 75% 고정
-            width: `${window.innerWidth * 0.75}px`,
+            // 모바일: 화면의 60% 고정
+            width: `${window.innerWidth * 0.6}px`,
             maxHeight: `${window.innerHeight * 0.85}px`,
           } : {
             // PC: 팝업 설정값 기준
@@ -172,8 +172,8 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
         <div
           className={`fixed z-[9999] bg-white rounded-xl shadow-2xl ${getPositionStyles()}`}
           style={isMobile ? {
-            // 모바일: 화면의 75% 고정
-            width: `${window.innerWidth * 0.75}px`,
+            // 모바일: 화면의 60% 고정
+            width: `${window.innerWidth * 0.6}px`,
             maxHeight: `${window.innerHeight * 0.8}px`,
           } : {
             // PC: 팝업 설정값 기준
@@ -284,8 +284,8 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
       <div
         className={`fixed z-[9999] bg-white rounded-lg shadow-2xl ${getPositionStyles()}`}
         style={isMobile ? {
-          // 모바일: 화면의 75% 고정
-          width: `${window.innerWidth * 0.75}px`,
+          // 모바일: 화면의 60% 고정
+          width: `${window.innerWidth * 0.6}px`,
           maxHeight: `${window.innerHeight * 0.85}px`,
         } : {
           // PC: 팝업 설정값 기준
