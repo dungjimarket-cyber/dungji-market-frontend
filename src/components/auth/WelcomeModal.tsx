@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Briefcase } from 'lucide-react';
 
 interface WelcomeModalProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ interface WelcomeModalProps {
  * 회원가입 완료 후 환영 모달
  * - 일반회원: 마이페이지로 이동
  * - 일반사업자: 견적이용권 10매 증정 안내 + 마이페이지로 이동
- * - 전문가: 마이페이지에서 프로필 설정 안내
+ * - 전문가: 간단한 환영 + 상담활동 가능 안내
  */
 export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
   const router = useRouter();
@@ -28,6 +28,11 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
   const handleGoToMyPage = () => {
     onClose();
     router.push('/mypage');
+  };
+
+  const handleStart = () => {
+    onClose();
+    router.push('/local-businesses');
   };
 
   // 역할별 타이틀
@@ -48,11 +53,55 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
       case 'seller':
         return '공구에 견적을 제안하고 대량 판매 기회를 잡으세요!';
       case 'expert':
-        return '마이페이지에서 프로필을 완성하면 상담 신청을 받을 수 있습니다.';
+        return '지금 바로 고객의 상담 요청에 답변할 수 있습니다.';
       default:
         return '공구 참여, 상담 신청, 중고거래를 이용해보세요!';
     }
   };
+
+  // 전문가용 깔끔한 모달
+  if (userRole === 'expert') {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-sm p-0 overflow-hidden border-0 shadow-lg">
+          <VisuallyHidden>
+            <DialogTitle>전문가 가입 완료</DialogTitle>
+          </VisuallyHidden>
+          <div className="bg-white rounded-xl">
+            {/* 상단 아이콘 영역 */}
+            <div className="pt-8 pb-4 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 mb-4">
+                <Briefcase className="w-8 h-8 text-blue-500" />
+              </div>
+              <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 rounded-full px-3 py-1 text-sm font-medium">
+                <CheckCircle className="w-4 h-4" />
+                가입 완료
+              </div>
+            </div>
+
+            {/* 메시지 영역 */}
+            <div className="px-6 pb-6 text-center">
+              <h2 className="text-lg font-bold text-gray-900 mb-2">
+                전문가 회원 가입이 완료되었습니다!
+              </h2>
+              <p className="text-sm text-gray-500 mb-6">
+                고객 상담이 등록되면<br />알림으로 안내해 드리겠습니다.
+              </p>
+
+              {/* 버튼 */}
+              <Button
+                onClick={handleStart}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                size="lg"
+              >
+                시작하기
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
