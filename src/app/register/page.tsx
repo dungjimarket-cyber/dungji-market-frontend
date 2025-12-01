@@ -112,11 +112,12 @@ function RegisterPageContent() {
   // 전문가 업종 카테고리
   const [expertCategories, setExpertCategories] = useState<LocalBusinessCategory[]>([]);
 
-  // 전문가 업종 카테고리 로드
+  // 전문가 업종 카테고리 로드 (원본 카테고리 10개)
   useEffect(() => {
     const loadExpertCategories = async () => {
       try {
-        const data = await fetchCategories();
+        // raw=true로 통합 없이 원본 카테고리 10개 가져오기
+        const data = await fetchCategories(true);
         setExpertCategories(data);
       } catch (err) {
         console.error('전문가 업종 카테고리 로드 오류:', err);

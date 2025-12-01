@@ -7,9 +7,13 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * 업종 카테고리 목록 조회
+ * @param raw - true이면 통합 없이 원본 카테고리 10개 반환 (전문가 회원가입용)
  */
-export async function fetchCategories(): Promise<LocalBusinessCategory[]> {
-  const response = await fetch(`${API_URL}/local-business-categories/`);
+export async function fetchCategories(raw: boolean = false): Promise<LocalBusinessCategory[]> {
+  const url = raw
+    ? `${API_URL}/local-business-categories/?raw=true`
+    : `${API_URL}/local-business-categories/`;
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error('카테고리 조회 실패');
