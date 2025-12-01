@@ -1526,14 +1526,14 @@ function RegisterPageContent() {
                   {/* 주요 활동지역 */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {formData.role === 'seller' ? '사업장 주소 / 영업활동지역' : '주요 활동지역'} {formData.role === 'seller' ? <span className="text-red-500">*</span> : '(선택)'}
+                      {formData.role === 'seller' ? '사업장 주소 / 영업활동지역' : formData.role === 'expert' ? '활동 지역' : '주요 활동지역'} {(formData.role === 'seller' || formData.role === 'expert') ? <span className="text-red-500">*</span> : '(선택)'}
                     </label>
                     <div data-region-dropdown>
                       <RegionDropdown
                         selectedProvince={formData.region_province}
                         selectedCity={formData.region_city}
                         onSelect={(province, city) => handleRegionSelect(province, city)}
-                        required={formData.role === 'seller'}
+                        required={formData.role === 'seller' || formData.role === 'expert'}
                       />
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
@@ -1761,59 +1761,6 @@ function RegisterPageContent() {
                       </div>
                       <p className="text-xs text-gray-500 mt-2">상담 서비스를 제공할 전문 분야를 선택해주세요</p>
                     </div>
-
-                    {/* 사업자 여부 */}
-                    <div className="flex items-center">
-                      <input
-                        id="expert_is_business"
-                        name="expert_is_business"
-                        type="checkbox"
-                        className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
-                        checked={formData.expert_is_business}
-                        onChange={handleChange}
-                      />
-                      <label htmlFor="expert_is_business" className="ml-2 text-sm text-gray-700">
-                        사업자입니다 <span className="text-gray-400">(선택)</span>
-                      </label>
-                    </div>
-
-                    {/* 사업자 정보 (사업자 체크 시) */}
-                    {formData.expert_is_business && (
-                      <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
-                        <div>
-                          <label htmlFor="business_reg_number" className="block text-sm font-medium text-gray-700 mb-1">
-                            사업자등록번호
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              id="business_reg_number"
-                              name="business_reg_number"
-                              type="text"
-                              className="flex-1 appearance-none rounded-md px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                              placeholder="000-00-00000"
-                              value={formData.business_reg_number}
-                              onChange={handleBusinessRegNumberChange}
-                              maxLength={12}
-                            />
-                            <button
-                              type="button"
-                              onClick={verifyBusinessNumber}
-                              disabled={businessVerificationLoading}
-                              className="px-3 py-2 border border-gray-300 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                            >
-                              {businessVerificationLoading ? '검증중...' : '유효성검사'}
-                            </button>
-                          </div>
-                          {businessVerificationResult && (
-                            <div className={`mt-2 p-2 rounded-md ${businessVerified ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                              <p className={`text-sm ${businessVerified ? 'text-green-700' : 'text-red-700'}`}>
-                                {businessVerified ? '✓ 인증완료' : '✗ 인증실패'}: {businessVerificationResult.message}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
 
                     <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
                       <p>• 전문가 가입 후 해당 업종의 상담 요청을 받을 수 있습니다</p>
