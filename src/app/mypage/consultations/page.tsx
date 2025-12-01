@@ -651,7 +651,7 @@ function ReceivedRequestCard({
             </div>
             <div className="mt-2 flex gap-2">
               <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
-                답변 수정
+                {request.expert_message ? '답변 수정' : '답변하기'}
               </Button>
             </div>
           </div>
@@ -675,7 +675,7 @@ function ReceivedRequestCard({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold">답변 수정</h3>
+              <h3 className="text-base font-semibold">{request.expert_message ? '답변 수정' : '답변하기'}</h3>
               <button className="text-sm text-gray-500" onClick={() => setIsEditing(false)}>
                 닫기
               </button>
@@ -684,11 +684,15 @@ function ReceivedRequestCard({
               <label className="text-sm font-medium text-gray-700">답변 내용</label>
               <textarea
                 value={tempMessage}
-                onChange={(e) => setTempMessage(e.target.value)}
+                onChange={(e) => setTempMessage(e.target.value.slice(0, 500))}
                 rows={5}
+                maxLength={500}
                 className="w-full mt-1 p-2 border rounded text-sm"
                 placeholder="답변을 입력해주세요"
               />
+              <div className="flex justify-end mt-1">
+                <span className="text-xs text-gray-400">{tempMessage.length}/500</span>
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700">상담 가능일자</label>
