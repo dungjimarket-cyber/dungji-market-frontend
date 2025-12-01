@@ -666,7 +666,9 @@ export default function ProfileSection() {
         return;
       }
 
-      console.log('프로필 업데이트 성공');
+      const patchResult = await response.json();
+      console.log('프로필 PATCH 응답:', patchResult);
+      console.log('region_last_changed_at:', patchResult.profile?.region_last_changed_at);
       setSuccessMessage('프로필이 성공적으로 업데이트되었습니다.');
 
       // 최신 프로필 정보 GET
@@ -733,6 +735,27 @@ export default function ProfileSection() {
           setTimeout(() => {
             window.location.reload();
           }, 500); // 성공 메시지를 잠시 보여준 후 새로고침
+        }
+
+        // 지역 변경 시 region-change-status 재확인
+        if (editField === 'address') {
+          try {
+            const statusRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/region-change-status/`, {
+              headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            if (statusRes.ok) {
+              const statusData = await statusRes.json();
+              console.log('[지역변경상태] 변경 후 재확인:', statusData);
+              setRegionChangeStatus({
+                canChange: statusData.can_change,
+                daysRemaining: statusData.days_remaining || 0,
+                nextAvailableDate: statusData.next_available_date,
+                isFirstSetting: statusData.is_first_setting || false,
+              });
+            }
+          } catch (e) {
+            console.error('[지역변경상태] 재확인 오류:', e);
+          }
         }
       }
       setIsEditing(false);
