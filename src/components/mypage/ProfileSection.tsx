@@ -228,12 +228,12 @@ export default function ProfileSection() {
     loadExpertData();
   }, [user?.role, accessToken]);
 
-  // 카테고리 목록 로드 (전문가인 경우)
+  // 카테고리 목록 로드 (전문가인 경우) - raw=true로 10개 카테고리 로드
   useEffect(() => {
     const loadCategories = async () => {
       if (user?.role !== 'expert') return;
       try {
-        const cats = await fetchCategories();
+        const cats = await fetchCategories(true); // 10개 원본 카테고리
         setCategories(cats);
       } catch (error) {
         console.error('카테고리 목록 로드 오류:', error);
@@ -1124,15 +1124,18 @@ export default function ProfileSection() {
                     </span>
                   )}
                 </label>
-                <button
-                  onClick={() => {
-                    setIsEditingCategory(true);
-                    setSelectedCategoryId(expertCategoryId);
-                  }}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  수정
-                </button>
+                {/* 카카오 가입자이면서 아직 업종 미설정인 경우에만 수정 가능 */}
+                {!expertCategory && user?.sns_type === 'kakao' && (
+                  <button
+                    onClick={() => {
+                      setIsEditingCategory(true);
+                      setSelectedCategoryId(expertCategoryId);
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    설정
+                  </button>
+                )}
               </div>
 
               {isEditingCategory ? (

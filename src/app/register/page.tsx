@@ -112,6 +112,10 @@ function RegisterPageContent() {
   // 전문가 업종 카테고리
   const [expertCategories, setExpertCategories] = useState<LocalBusinessCategory[]>([]);
 
+  // 전문가 업종 선택 확인 모달
+  const [showCategoryConfirmModal, setShowCategoryConfirmModal] = useState(false);
+  const [pendingCategoryId, setPendingCategoryId] = useState<number | null>(null);
+
   // 전문가 업종 카테고리 로드 (원본 카테고리 10개)
   useEffect(() => {
     const loadExpertCategories = async () => {
@@ -1741,7 +1745,11 @@ function RegisterPageContent() {
                           <button
                             key={category.id}
                             type="button"
-                            onClick={() => setFormData(prev => ({ ...prev, expert_category_id: category.id }))}
+                            onClick={() => {
+                              // 확인 모달 띄우기
+                              setPendingCategoryId(category.id);
+                              setShowCategoryConfirmModal(true);
+                            }}
                             className={`p-2 border-2 rounded-xl text-center transition-all ${
                               formData.expert_category_id === category.id
                                 ? 'border-blue-500 bg-blue-50'
@@ -1754,6 +1762,7 @@ function RegisterPageContent() {
                         ))}
                       </div>
                       <p className="text-xs text-gray-500 mt-2">상담 서비스를 제공할 전문 분야를 선택해주세요</p>
+                      <p className="text-xs text-orange-600 mt-1">⚠️ 전문 분야는 가입 후 변경할 수 없습니다. 신중하게 선택해주세요.</p>
                     </div>
 
                     <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
@@ -1874,6 +1883,59 @@ function RegisterPageContent() {
         onClose={() => setShowWelcomeModal(false)}
         userRole={formData.role as 'buyer' | 'seller' | 'expert'}
       />
+
+      {/* 전문가 업종 선택 확인 모달 */}
+      {showCategoryConfirmModal && pendingCategoryId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl">
+            <div className="text-center mb-4">
+              <div className="text-4xl mb-2">
+                {expertCategories.find(c => c.id === pendingCategoryId)?.icon}
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">
+                전문 분야 확인
+              </h3>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-blue-800 font-medium text-center">
+                "{expertCategories.find(c => c.id === pendingCategoryId)?.name}"
+              </p>
+            </div>
+
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-6">
+              <p className="text-xs text-orange-800">
+                ⚠️ <strong>주의:</strong> 전문 분야는 가입 후 변경할 수 없습니다.<br/>
+                선택한 분야가 맞는지 다시 한번 확인해주세요.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCategoryConfirmModal(false);
+                  setPendingCategoryId(null);
+                }}
+                className="flex-1 py-2.5 px-4 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
+              >
+                다시 선택
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData(prev => ({ ...prev, expert_category_id: pendingCategoryId }));
+                  setShowCategoryConfirmModal(false);
+                  setPendingCategoryId(null);
+                }}
+                className="flex-1 py-2.5 px-4 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
