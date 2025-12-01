@@ -35,6 +35,12 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
     router.push('/local-businesses');
   };
 
+  // 전문가 모달이 닫힐 때 (X 버튼, 외부 클릭 등)
+  const handleExpertModalClose = () => {
+    onClose();
+    router.push('/local-businesses');
+  };
+
   // 역할별 타이틀
   const getRoleTitle = () => {
     switch (userRole) {
@@ -62,7 +68,7 @@ export function WelcomeModal({ isOpen, onClose, userRole }: WelcomeModalProps) {
   // 전문가용 깔끔한 모달
   if (userRole === 'expert') {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={handleExpertModalClose}>
         <DialogContent className="sm:max-w-sm p-0 overflow-hidden border-0 shadow-lg">
           <VisuallyHidden>
             <DialogTitle>전문가 가입 완료</DialogTitle>

@@ -786,23 +786,25 @@ function RegisterPageContent() {
           if (!regionsResponse.ok) {
             throw new Error('지역 데이터 조회 실패');
           }
-          const regionsData = await regionsResponse.json();
-          
+          const regionsJson = await regionsResponse.json();
+          // API 응답이 paginated 형태일 수 있음 (results 배열 또는 직접 배열)
+          const regionsData = Array.isArray(regionsJson) ? regionsJson : (regionsJson.results || []);
+
           // 시/군/구 레벨에서 일치하는 지역 찾기
           let cityRegion;
-          
+
           if (formData.region_province === '세종특별자치시') {
             // 세종시는 특별한 처리 필요
-            cityRegion = regionsData.find((r: any) => 
-              r.level === 1 && 
+            cityRegion = regionsData.find((r: any) =>
+              r.level === 1 &&
               r.name === '세종특별자치시' &&
               r.full_name === '세종특별자치시'
             );
           } else {
             // 일반적인 시/도의 경우
-            cityRegion = regionsData.find((r: any) => 
-              (r.level === 1 || r.level === 2) && 
-              r.name === formData.region_city && 
+            cityRegion = regionsData.find((r: any) =>
+              (r.level === 1 || r.level === 2) &&
+              r.name === formData.region_city &&
               r.full_name.includes(formData.region_province)
             );
           }
