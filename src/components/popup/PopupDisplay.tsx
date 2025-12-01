@@ -81,8 +81,8 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
         <div
           className={`fixed z-[9999] bg-white rounded-lg shadow-2xl overflow-hidden ${getPositionStyles()}`}
           style={isMobile ? {
-            // 모바일: 화면 비율 기준
-            width: `${window.innerWidth * 0.92}px`,
+            // 모바일: popup.width 사용하되, 최소 화면의 75% 보장
+            width: `${Math.min(Math.max(popup.width, window.innerWidth * 0.75), window.innerWidth * 0.95)}px`,
             maxHeight: `${window.innerHeight * 0.85}px`,
           } : {
             // PC: 팝업 설정값 기준
@@ -111,11 +111,7 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
               width={popup.width}
               height={popup.height}
               className="w-full h-auto object-contain"
-              style={isMobile ? {
-                // 모바일: 컨테이너에 맞춤
-                maxHeight: `${window.innerHeight * 0.75}px`
-              } : {
-                // PC: 팝업 설정값 기준
+              style={{
                 maxHeight: `${Math.min(popup.height, window.innerHeight * 0.85)}px`
               }}
               priority
@@ -176,8 +172,8 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
         <div
           className={`fixed z-[9999] bg-white rounded-xl shadow-2xl ${getPositionStyles()}`}
           style={isMobile ? {
-            // 모바일: 화면 비율 기준
-            width: `${window.innerWidth * 0.92}px`,
+            // 모바일: popup.width 사용하되, 최소 화면의 75% 보장
+            width: `${Math.min(Math.max(popup.width || 400, window.innerWidth * 0.75), window.innerWidth * 0.95)}px`,
             maxHeight: `${window.innerHeight * 0.8}px`,
           } : {
             // PC: 팝업 설정값 기준
@@ -288,8 +284,8 @@ export function PopupDisplay({ popup, onClose }: PopupDisplayProps) {
       <div
         className={`fixed z-[9999] bg-white rounded-lg shadow-2xl ${getPositionStyles()}`}
         style={isMobile ? {
-          // 모바일: 화면 비율 기준
-          width: `${window.innerWidth * 0.92}px`,
+          // 모바일: popup.width 사용하되, 최소 화면의 75% 보장
+          width: `${Math.min(Math.max(popup.width, window.innerWidth * 0.75), window.innerWidth * 0.95)}px`,
           maxHeight: `${window.innerHeight * 0.85}px`,
         } : {
           // PC: 팝업 설정값 기준
