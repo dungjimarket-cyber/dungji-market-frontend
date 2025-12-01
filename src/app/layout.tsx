@@ -28,9 +28,9 @@ const blackHanSans = Black_Han_Sans({
 
 
 export const metadata: Metadata = {
-  title: "둥지마켓 - 세상에 없던 공동구매 플랫폼",
-  description: "우리동네 식당·학원·카페 모이면 할인받는 단체할인 공구!\n✓ 지역 맛집·카페·헬스장 그룹 할인 쿠폰\n✓ 온라인 쇼핑몰 공동구매 특가\n✓ 같이 견적받기 (통신·렌탈 비교견적)\n✓ 지역기반 중고직거래\n✓ 수수료 무료 / 판매자 직접 등록",
-  keywords: "둥지마켓, 단체할인, 우리동네 할인, 지역 공구, 동네 식당 할인, 학원 단체할인, 카페 공동구매, 헬스장 그룹할인, 온라인 공구, 오프라인 쿠폰, 맛집 할인, 커스텀 공구, N명 할인, 모이면 할인, 공동구매 플랫폼, 같이 견적받기, 통신 비교견적, 렌탈 견적, 휴대폰 공동구매, 인터넷 비교, 중고폰, 지역중고거래, 직거래",
+  title: "둥지마켓 - 우리동네 전문가 상담 & 공동구매 플랫폼",
+  description: "내 주변 검증된 전문가에게 무료 상담받고, 동네 할인 공구까지!\n✓ 세무사·회계사·변호사·법무사 무료 상담\n✓ 공인중개사·인테리어·이사·청소 무료 상담\n✓ 우리동네 맛집·카페·헬스장 단체할인\n✓ 지역기반 중고직거래",
+  keywords: "둥지마켓, 전문가 상담, 세무사 상담, 회계사 상담, 변호사 상담, 법무사 상담, 공인중개사 상담, 인테리어 상담, 이사 상담, 청소 상담, 우리동네 전문가, 무료 상담, 단체할인, 지역 공구, 동네 맛집 할인, 카페 공동구매, 커스텀 공구, 공동구매 플랫폼, 중고폰, 지역중고거래, 직거래",
   authors: [{ name: '둥지마켓' }],
   creator: '둥지마켓',
   publisher: '둥지마켓',
@@ -52,8 +52,8 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: "둥지마켓 - 세상에 없던 공동구매 플랫폼",
-    description: "🏪 우리동네 식당·학원·카페 모이면 할인!\n✓ 지역 단체할인 공구 (수수료 무료)\n✓ 온라인 쇼핑 공동구매\n✓ 같이 견적받기 (통신·렌탈)\n✓ 지역기반 중고직거래",
+    title: "둥지마켓 - 우리동네 전문가 상담 & 공동구매 플랫폼",
+    description: "내 주변 검증된 전문가 무료 상담!\n✓ 세무·회계·법률·부동산 전문가 상담\n✓ 인테리어·이사·청소 무료 상담\n✓ 우리동네 단체할인 공구\n✓ 지역기반 중고직거래",
     url: process.env.NEXTAUTH_URL || 'https://dungji-market.com',
     siteName: '둥지마켓',
     images: [
@@ -69,8 +69,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "둥지마켓 - 세상에 없던 공동구매 플랫폼",
-    description: "🏪 우리동네 식당·학원·카페 모이면 할인!\n✓ 지역 단체할인 공구 (수수료 무료)\n✓ 온라인 쇼핑 공동구매\n✓ 같이 견적받기 (통신·렌탈)\n✓ 지역기반 중고직거래",
+    title: "둥지마켓 - 우리동네 전문가 상담 & 공동구매 플랫폼",
+    description: "내 주변 검증된 전문가 무료 상담!\n✓ 세무·회계·법률·부동산 전문가 상담\n✓ 인테리어·이사·청소 무료 상담\n✓ 우리동네 단체할인 공구\n✓ 지역기반 중고직거래",
     images: ['https://www.dungjimarket.com/logos/dungji_logo.jpg'],
   },
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://dungji-market.com'),
