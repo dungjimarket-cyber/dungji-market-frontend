@@ -378,17 +378,24 @@ function ConsultationCard({
 
       {isExpanded && (
         <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-3 text-sm text-gray-700">
-          <div>
-            <p className="font-medium mb-1">상담 유형</p>
+          {/* 상담 유형 (첫 번째 답변) */}
+          {consultation.answers && Object.entries(consultation.answers)[0] && (
+            <div>
+              <p className="font-medium mb-1">상담 유형</p>
+              <p className="text-gray-800">{Object.entries(consultation.answers)[0][1]}</p>
+            </div>
+          )}
+          {/* 나머지 상담 내용 */}
+          {consultation.answers && Object.entries(consultation.answers).length > 1 && (
             <div className="flex flex-col gap-1">
-              {consultation.answers && Object.entries(consultation.answers).map(([question, answer]) => (
+              {Object.entries(consultation.answers).slice(1).map(([question, answer]) => (
                 <div key={question} className="flex gap-2">
                   <span className="font-semibold text-gray-800">{question}:</span>
                   <span>{answer}</span>
                 </div>
               ))}
             </div>
-          </div>
+          )}
           {consultation.matches && consultation.matches.length > 0 && (
             <div className="space-y-3">
               <p className="font-medium mb-1">전문가 답변</p>
@@ -619,17 +626,24 @@ function ReceivedRequestCard({
 
       {isExpanded && (
         <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-3 text-sm text-gray-700">
-          <div>
-            <p className="font-medium mb-1">상담 유형</p>
+          {/* 상담 유형 (첫 번째 답변) */}
+          {request.answers && Object.entries(request.answers)[0] && (
+            <div>
+              <p className="font-medium mb-1">상담 유형</p>
+              <p className="text-gray-800">{Object.entries(request.answers)[0][1]}</p>
+            </div>
+          )}
+          {/* 나머지 상담 내용 */}
+          {request.answers && Object.entries(request.answers).length > 1 && (
             <div className="flex flex-col gap-1">
-              {request.answers && Object.entries(request.answers).map(([question, answer]) => (
+              {Object.entries(request.answers).slice(1).map(([question, answer]) => (
                 <div key={question} className="flex gap-2">
                   <span className="font-semibold text-gray-800">{question}:</span>
                   <span>{answer}</span>
                 </div>
               ))}
             </div>
-          </div>
+          )}
           <div>
             <p className="font-medium mb-1">내 답변 ({statusLabel})</p>
             <div className="p-3 bg-white rounded border text-sm text-gray-800 whitespace-pre-line">
