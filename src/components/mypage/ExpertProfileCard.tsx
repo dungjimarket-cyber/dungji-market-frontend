@@ -103,15 +103,6 @@ export default function ExpertProfileCard({
   };
 
   const handleSaveTagline = async () => {
-    if (isExpert && !tagline.trim()) {
-      toast({
-        variant: 'destructive',
-        title: '한줄소개는 필수입니다',
-        description: '전문가 노출을 위해 한줄소개를 입력해주세요.',
-      });
-      return;
-    }
-
     setIsSavingTagline(true);
     try {
       const result = await updateExpertProfile({ tagline }, accessToken);
@@ -237,24 +228,21 @@ export default function ExpertProfileCard({
                 심사 중
               </span>
             )}
-            {isExpert && !profile.tagline && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                한줄소개 필요
-              </span>
-            )}
           </div>
 
           {/* 한줄소개 */}
           {isEditingTagline ? (
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Input
                 value={tagline}
                 onChange={(e) => setTagline(e.target.value)}
-                placeholder={isExpert ? '전문가 한줄소개를 입력해주세요 (필수)' : '한줄소개를 입력해주세요'}
-                maxLength={50}
+                placeholder="한줄소개를 입력해주세요"
+                maxLength={100}
                 className="text-sm"
               />
-              <div className="flex gap-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-400">{tagline.length}/100</span>
+                <div className="flex gap-2">
                 <Button
                   size="sm"
                   onClick={handleSaveTagline}
@@ -275,12 +263,13 @@ export default function ExpertProfileCard({
                 >
                   취소
                 </Button>
+                </div>
               </div>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <p className="text-sm text-gray-600 truncate">
-                {profile.tagline || (isExpert ? '전문가 노출을 위해 한줄소개를 입력해주세요' : '한줄소개를 입력해주세요')}
+                {profile.tagline || '한줄소개를 입력해주세요'}
               </p>
               <button
                 onClick={() => setIsEditingTagline(true)}

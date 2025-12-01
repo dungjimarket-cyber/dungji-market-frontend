@@ -159,6 +159,15 @@ export default function DesktopNavbar() {
               이벤트
             </Link>
 
+            {/* 오픈마켓 검색 */}
+            <button
+              onClick={() => setShowShoppingModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 text-gray-800 font-semibold text-base hover:bg-gray-200 transition-colors"
+            >
+              <Search className="w-4 h-4" />
+              <span>오픈마켓</span>
+            </button>
+
             {/* 로그인 시 - 마이페이지 */}
             {isAuthenticated && (
               <Link
@@ -172,15 +181,6 @@ export default function DesktopNavbar() {
                 마이페이지
               </Link>
             )}
-
-            {/* 오픈마켓 검색 */}
-            <button
-              onClick={() => setShowShoppingModal(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 text-gray-800 font-semibold text-base hover:bg-gray-200 transition-colors"
-            >
-              <Search className="w-4 h-4" />
-              <span>오픈마켓</span>
-            </button>
           </div>
 
           <div className="flex items-center space-x-4 flex-shrink-0">
