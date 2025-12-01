@@ -254,24 +254,33 @@ export default function ProfileSection() {
   // 지역 변경 상태 확인 (90일 제한)
   useEffect(() => {
     const checkRegionChangeStatus = async () => {
-      if (!accessToken) return;
+      if (!accessToken) {
+        console.log('[지역변경상태] accessToken 없음');
+        return;
+      }
       try {
+        console.log('[지역변경상태] API 호출 시작');
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/region-change-status/`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`
           }
         });
+        console.log('[지역변경상태] 응답 상태:', response.status);
         if (response.ok) {
           const data = await response.json();
+          console.log('[지역변경상태] API 응답:', data);
           setRegionChangeStatus({
             canChange: data.can_change,
             daysRemaining: data.days_remaining || 0,
             nextAvailableDate: data.next_available_date,
             isFirstSetting: data.is_first_setting || false,
           });
+        } else {
+          const errorText = await response.text();
+          console.error('[지역변경상태] API 실패:', response.status, errorText);
         }
       } catch (error) {
-        console.error('지역 변경 상태 확인 오류:', error);
+        console.error('[지역변경상태] 오류:', error);
       }
     };
     checkRegionChangeStatus();
