@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { scrollToInputField } from '@/hooks/useMobileKeyboard';
 import { Loader2, Mail } from 'lucide-react';
 import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
-import RegionDropdownWithCode from '@/components/address/RegionDropdownWithCode';
+import RegionDropdown from '@/components/address/RegionDropdown';
 import { signIn } from 'next-auth/react';
 import Image from 'next/image';
 import { PhoneVerification } from '@/components/auth/PhoneVerification';
@@ -64,7 +64,6 @@ function RegisterPageContent() {
     // 선택 필드
     region_province: '',
     region_city: '',
-    region_city_code: '', // 지역 코드 (API에서 직접 반환)
 
     // 판매자 전용 필드
     business_name: '',
@@ -465,13 +464,12 @@ function RegisterPageContent() {
   // const requestPhoneVerification = async () => { ... };
   // const verifyPhone = async () => { ... };
 
-  // 지역 선택 핸들러 (코드 포함)
-  const handleRegionSelect = (province: string, city: string, cityCode: string) => {
+  // 지역 선택 핸들러
+  const handleRegionSelect = (province: string, city: string) => {
       setFormData(prev => ({
         ...prev,
         region_province: province,
         region_city: city,
-        region_city_code: cityCode,
       }));
   };
 
@@ -776,16 +774,45 @@ function RegisterPageContent() {
       }
       
       // 선택 필드 - address_region_id 처리 (일반회원도 지역 선택 시 저장됨)
-      // RegionDropdownWithCode에서 이미 코드를 받아왔으므로 바로 사용
-      if (formData.region_city_code) {
-        submitData.append('address_region_id', formData.region_city_code);
-        console.log('지역 정보 저장됨:', {
-          code: formData.region_city_code,
-          province: formData.region_province,
-          city: formData.region_city
-        });
-      } else if (formData.region_province && formData.region_city) {
-        console.warn('지역 코드가 없음:', { province: formData.region_province, city: formData.region_city });
+      // 세팅페이지와 동일한 방식: 이름으로 API에서 지역 코드 검색
+      if (formData.region_province && formData.region_city) {
+        try {
+          const regionsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/?limit=1000`);
+          const regionsJson = await regionsResponse.json();
+          const regionsData = regionsJson?.results || regionsJson;
+
+          // 시/군/구 레벨에서 일치하는 지역 찾기
+          let cityRegion;
+
+          if (formData.region_province === '세종특별자치시') {
+            // 세종시는 특별한 처리 필요
+            cityRegion = regionsData.find((r: any) =>
+              r.level === 1 &&
+              r.name === '세종특별자치시' &&
+              r.full_name === '세종특별자치시'
+            );
+          } else {
+            // 일반적인 시/도의 경우
+            cityRegion = regionsData.find((r: any) =>
+              (r.level === 1 || r.level === 2) &&
+              r.name === formData.region_city &&
+              r.full_name.includes(formData.region_province)
+            );
+          }
+
+          if (cityRegion) {
+            submitData.append('address_region_id', cityRegion.code);
+            console.log('지역 정보 저장됨:', {
+              code: cityRegion.code,
+              province: formData.region_province,
+              city: formData.region_city
+            });
+          } else {
+            console.warn('지역을 찾을 수 없음:', { province: formData.region_province, city: formData.region_city });
+          }
+        } catch (error) {
+          console.error('지역 정보 검색 오류:', error);
+        }
       }
       
       // 판매자 전용 필드
@@ -1496,10 +1523,9 @@ function RegisterPageContent() {
                       {formData.role === 'seller' ? '사업장 주소 / 영업활동지역' : formData.role === 'expert' ? '활동 지역' : '주요 활동지역'} {(formData.role === 'seller' || formData.role === 'expert') ? <span className="text-red-500">*</span> : '(선택)'}
                     </label>
                     <div data-region-dropdown>
-                      <RegionDropdownWithCode
+                      <RegionDropdown
                         selectedProvince={formData.region_province}
                         selectedCity={formData.region_city}
-                        selectedCityCode={formData.region_city_code}
                         onSelect={handleRegionSelect}
                         required={formData.role === 'seller' || formData.role === 'expert'}
                       />
