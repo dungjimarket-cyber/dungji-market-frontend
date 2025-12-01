@@ -84,10 +84,10 @@ export default function RegionDropdownWithCode({
     }
   }, [selectedProvince, selectedCity, selectedCityCode, provinces.length]);
 
-  // 지역 데이터 로드 (캐싱 적용)
+  // 지역 데이터 로드 (캐싱 적용, 페이지네이션 처리)
   const loadRegions = async () => {
     const now = Date.now();
-    
+
     // 캐시가 유효한 경우 캐시된 데이터 사용
     if (cachedRegions && (now - cacheTimestamp < CACHE_DURATION)) {
       return cachedRegions;
@@ -95,13 +95,12 @@ export default function RegionDropdownWithCode({
 
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/`);
+      // limit=1000으로 모든 지역 데이터 한번에 가져오기
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/regions/?limit=1000`);
       if (response.ok) {
         const data = await response.json();
-        console.log('RegionDropdown API Response:', typeof data, Array.isArray(data), data);
-        // data가 배열이 아니라 객체일 수도 있음
+        // data가 배열이 아니라 객체일 수도 있음 (페이지네이션 응답)
         const regions = Array.isArray(data) ? data : data.results || [];
-        console.log('RegionDropdown Processed regions:', regions);
         cachedRegions = regions;
         cacheTimestamp = now;
         return regions;
