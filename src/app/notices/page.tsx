@@ -120,7 +120,7 @@ export default function NoticesPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-6">
           <TabsTrigger value="all">전체</TabsTrigger>
-          <TabsTrigger value="groupbuy">공구·견적</TabsTrigger>
+          <TabsTrigger value="groupbuy">전문가 상담</TabsTrigger>
           <TabsTrigger value="custom">커스텀공구</TabsTrigger>
           <TabsTrigger value="used">중고거래</TabsTrigger>
         </TabsList>
@@ -143,7 +143,7 @@ export default function NoticesPage() {
             <Card>
               <CardContent className="py-8">
                 <p className="text-center text-gray-500">
-                  {activeTab === 'groupbuy' ? '공구·견적 공지사항이 없습니다.' :
+                  {activeTab === 'groupbuy' ? '전문가 상담 공지사항이 없습니다.' :
                    activeTab === 'custom' ? '커스텀공구 공지사항이 없습니다.' :
                    activeTab === 'used' ? '중고거래 공지사항이 없습니다.' :
                    '공지사항이 없습니다.'}
