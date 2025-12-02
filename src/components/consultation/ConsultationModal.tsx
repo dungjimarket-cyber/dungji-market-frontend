@@ -493,10 +493,11 @@ export default function ConsultationModal({
 
   // 상담 신청 제출
   const handleSubmit = async () => {
-    if (!agreed) {
-      toast.error('개인정보 수집에 동의해주세요.');
-      return;
-    }
+    // 개인정보 동의 체크 - 현재 사용 안 함 (연락처 공개 기능 비활성화)
+    // if (!agreed) {
+    //   toast.error('개인정보 수집에 동의해주세요.');
+    //   return;
+    // }
 
     setLoading(true);
     try {
