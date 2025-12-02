@@ -402,66 +402,93 @@ function ConsultationCard({
               {consultation.matches
                 .filter(m => m.status === 'replied' || m.status === 'connected' || m.status === 'completed')
                 .map((match) => (
-                  <div key={match.id} className="p-3 bg-white rounded border space-y-2">
+                  <div key={match.id} className="bg-white rounded-lg border shadow-sm overflow-hidden">
+                    {/* 전문가 정보 헤더 */}
                     {(() => {
                       const expertImage = match.expert.user_profile_image || match.expert.profile_image || '';
                       return (
-                        <div className="flex items-start gap-3">
-                          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-                            {expertImage ? (
-                              <img
-                                src={expertImage}
-                                alt={match.expert.representative_name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <User className="w-6 h-6 text-gray-400" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-semibold text-gray-900">{match.expert.representative_name}</p>
-                              <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs text-gray-700 border">
-                                {match.status === 'replied'
-                                  ? '답변 완료'
-                                  : match.status === 'connected'
-                                    ? '연결됨'
-                                    : '종료'}
-                              </span>
+                        <div className="p-4 border-b border-gray-100">
+                          <div className="flex items-start gap-3">
+                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden ring-2 ring-gray-200">
+                              {expertImage ? (
+                                <img
+                                  src={expertImage}
+                                  alt={match.expert.representative_name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <User className="w-6 h-6 text-gray-400" />
+                              )}
                             </div>
-                            {match.expert.tagline && (
-                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                                {match.expert.tagline}
-                              </p>
-                            )}
-                            {match.available_time && (
-                              <p className="text-xs text-gray-500 mt-1">상담 가능일자: {match.available_time}</p>
-                            )}
-                            {match.expert.contact_phone && (
-                              <div className="flex items-center gap-3 mt-2 text-xs text-gray-600">
-                                <span>{match.expert.contact_phone}</span>
-                                <a
-                                  href={`tel:${match.expert.contact_phone}`}
-                                  className="px-2 py-1 rounded border text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100"
-                                >
-                                  전화
-                                </a>
-                                <a
-                                  href={`sms:${match.expert.contact_phone}`}
-                                  className="px-2 py-1 rounded border text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100"
-                                >
-                                  문자
-                                </a>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-bold text-gray-900">{match.expert.representative_name}</p>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  match.status === 'replied'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : match.status === 'connected'
+                                      ? 'bg-green-100 text-green-700'
+                                      : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {match.status === 'replied'
+                                    ? '답변 완료'
+                                    : match.status === 'connected'
+                                      ? '연결됨'
+                                      : '종료'}
+                                </span>
                               </div>
-                            )}
+                              {match.expert.tagline && (
+                                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                  {match.expert.tagline}
+                                </p>
+                              )}
+                              {match.available_time && (
+                                <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  상담 가능: {match.available_time}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         </div>
                       );
                     })()}
 
-                    <div className="text-sm text-gray-800 whitespace-pre-line bg-gray-50 rounded p-2">
-                      {match.expert_message || '답변 내용이 없습니다.'}
+                    {/* 답변 내용 */}
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-white border-l-4 border-blue-400">
+                      <p className="text-xs text-blue-600 font-medium mb-2 flex items-center gap-1">
+                        <MessageSquare className="w-3 h-3" />
+                        답변 내용
+                      </p>
+                      <p className="text-sm text-gray-800 whitespace-pre-line leading-relaxed">
+                        {match.expert_message || '답변 내용이 없습니다.'}
+                      </p>
                     </div>
+
+                    {/* 연락처 영역 */}
+                    {match.expert.contact_phone && (
+                      <div className="p-4 bg-gray-50 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">{match.expert.contact_phone}</span>
+                          <div className="flex gap-2">
+                            <a
+                              href={`tel:${match.expert.contact_phone}`}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+                            >
+                              <Phone className="w-4 h-4" />
+                              전화
+                            </a>
+                            <a
+                              href={`sms:${match.expert.contact_phone}`}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-blue-600 bg-blue-100 hover:bg-blue-200 transition-colors"
+                            >
+                              <MessageSquare className="w-4 h-4" />
+                              문자
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
             </div>
