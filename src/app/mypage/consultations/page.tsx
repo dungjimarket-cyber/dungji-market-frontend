@@ -377,28 +377,26 @@ function ConsultationCard({
       </button>
 
       {isExpanded && (
-        <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-3 text-sm text-gray-700">
-          {/* 상담 유형 (첫 번째 답변) */}
-          {consultation.answers && Object.entries(consultation.answers)[0] && (
-            <div>
-              <p className="font-medium mb-1">상담 유형</p>
-              <p className="text-gray-800">{Object.entries(consultation.answers)[0][1]}</p>
+        <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-4 text-sm text-gray-700">
+          {/* 상담 내용 */}
+          {consultation.answers && Object.keys(consultation.answers).length > 0 && (
+            <div className="space-y-2">
+              <p className="font-semibold text-gray-900">상담 내용</p>
+              <div className="bg-white rounded-lg border p-3 space-y-2">
+                {Object.entries(consultation.answers).map(([question, answer]) => (
+                  <div key={question} className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">{question}</span>
+                    <span className="text-gray-800">{answer}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-          {/* 나머지 상담 내용 */}
-          {consultation.answers && Object.entries(consultation.answers).length > 1 && (
-            <div className="flex flex-col gap-1">
-              {Object.entries(consultation.answers).slice(1).map(([question, answer]) => (
-                <div key={question} className="flex gap-2">
-                  <span className="font-semibold text-gray-800">{question}:</span>
-                  <span>{answer}</span>
-                </div>
-              ))}
-            </div>
-          )}
+
+          {/* 전문가 답변 */}
           {consultation.matches && consultation.matches.length > 0 && (
             <div className="space-y-3">
-              <p className="font-medium mb-1">전문가 답변</p>
+              <p className="font-semibold text-gray-900">전문가 답변</p>
               {consultation.matches
                 .filter(m => m.status === 'replied' || m.status === 'connected' || m.status === 'completed')
                 .map((match) => (
@@ -441,10 +439,22 @@ function ConsultationCard({
 
                     {/* 답변 내용 */}
                     <div className="p-4 bg-gradient-to-r from-blue-50 to-white border-l-4 border-blue-400">
-                      <p className="text-xs text-blue-600 font-medium mb-2 flex items-center gap-1">
-                        <MessageSquare className="w-3 h-3" />
-                        답변 내용
-                      </p>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs text-blue-600 font-medium flex items-center gap-1">
+                          <MessageSquare className="w-3 h-3" />
+                          답변 내용
+                        </p>
+                        {match.replied_at && (
+                          <p className="text-xs text-gray-400">
+                            {new Date(match.replied_at).toLocaleDateString('ko-KR', {
+                              month: 'long',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </p>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-800 whitespace-pre-line leading-relaxed">
                         {match.expert_message || '답변 내용이 없습니다.'}
                       </p>
@@ -646,27 +656,25 @@ function ReceivedRequestCard({
       </button>
 
       {isExpanded && (
-        <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-3 text-sm text-gray-700">
-          {/* 상담 유형 (첫 번째 답변) */}
-          {request.answers && Object.entries(request.answers)[0] && (
-            <div>
-              <p className="font-medium mb-1">상담 유형</p>
-              <p className="text-gray-800">{Object.entries(request.answers)[0][1]}</p>
+        <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-4 text-sm text-gray-700">
+          {/* 상담 내용 */}
+          {request.answers && Object.keys(request.answers).length > 0 && (
+            <div className="space-y-2">
+              <p className="font-semibold text-gray-900">상담 내용</p>
+              <div className="bg-white rounded-lg border p-3 space-y-2">
+                {Object.entries(request.answers).map(([question, answer]) => (
+                  <div key={question} className="flex flex-col gap-0.5">
+                    <span className="text-xs text-gray-500">{question}</span>
+                    <span className="text-gray-800">{answer}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-          {/* 나머지 상담 내용 */}
-          {request.answers && Object.entries(request.answers).length > 1 && (
-            <div className="flex flex-col gap-1">
-              {Object.entries(request.answers).slice(1).map(([question, answer]) => (
-                <div key={question} className="flex gap-2">
-                  <span className="font-semibold text-gray-800">{question}:</span>
-                  <span>{answer}</span>
-                </div>
-              ))}
-            </div>
-          )}
-          <div>
-            <p className="font-medium mb-1">내 답변 ({statusLabel})</p>
+
+          {/* 내 답변 */}
+          <div className="space-y-2">
+            <p className="font-semibold text-gray-900">내 답변 ({statusLabel})</p>
             <div className="p-3 bg-white rounded border text-sm text-gray-800 whitespace-pre-line">
               {request.expert_message || '답변을 작성하지 않았습니다.'}
             </div>
