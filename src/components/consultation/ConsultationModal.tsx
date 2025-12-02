@@ -558,7 +558,10 @@ export default function ConsultationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
+      <DialogContent
+        className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         {!submitted && (
           <>
             <DialogHeader>
