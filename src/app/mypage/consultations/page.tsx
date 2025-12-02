@@ -307,14 +307,11 @@ function ConsultationCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
-  const replyMatch = consultation.matches?.find((m) =>
-    m.status === 'replied' || m.status === 'connected' || m.status === 'completed'
-  );
-  const replyText = replyMatch?.expert_message || '';
+  // 카드 접힌 상태에서 보여줄 요약 (질문 내용 우선)
   const questionSnippet = consultation.answers && Object.entries(consultation.answers)[0]
-    ? `${Object.entries(consultation.answers)[0][0]}: ${Object.entries(consultation.answers)[0][1]}`
+    ? Object.entries(consultation.answers)[0][1]
     : '';
-  const summaryText = replyText || questionSnippet;
+  const summaryText = questionSnippet || '상담 내용을 확인하세요';
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -353,10 +350,8 @@ function ConsultationCard({
               </div>
             )}
 
-            <div className="text-sm text-gray-700 line-clamp-1">
-              {summaryText
-                ? summaryText
-                : '상담 내용이 없습니다'}
+            <div className="text-sm text-gray-700 line-clamp-2">
+              {summaryText}
             </div>
 
             <div className="flex items-center gap-1 text-xs text-gray-400 mt-2">
