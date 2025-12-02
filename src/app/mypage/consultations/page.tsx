@@ -421,22 +421,7 @@ function ConsultationCard({
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-bold text-gray-900">{match.expert.representative_name}</p>
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  match.status === 'replied'
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : match.status === 'connected'
-                                      ? 'bg-green-100 text-green-700'
-                                      : 'bg-gray-100 text-gray-600'
-                                }`}>
-                                  {match.status === 'replied'
-                                    ? '답변 완료'
-                                    : match.status === 'connected'
-                                      ? '연결됨'
-                                      : '종료'}
-                                </span>
-                              </div>
+                              <p className="font-bold text-gray-900">{match.expert.representative_name}</p>
                               {match.expert.tagline && (
                                 <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                                   {match.expert.tagline}
