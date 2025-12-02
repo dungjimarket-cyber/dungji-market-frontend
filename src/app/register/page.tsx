@@ -1545,10 +1545,10 @@ function RegisterPageContent() {
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="text-lg font-medium text-gray-900">사업자 정보</h3>
                     
-                    {/* 판매회원 구분 */}
+                    {/* 사업자유형 */}
                     <div>
                       <label htmlFor="seller_category" className="block text-sm font-medium text-gray-700 mb-1">
-                        판매회원 구분 <span className="text-red-500">*</span>
+                        사업자유형 <span className="text-red-500">*</span>
                       </label>
                       <select
                         id="seller_category"
@@ -1558,13 +1558,10 @@ function RegisterPageContent() {
                         value={formData.seller_category}
                         onChange={handleChange}
                       >
-                        <option value="">판매 유형을 선택해주세요</option>
-                        <option value="general">일반사업자(온·오프라인 도소매,요식업 등)</option>
-                        <option value="telecom">통신상품판매(휴대폰,인터넷,TV개통 등)</option>
-                        <option value="rental">렌탈서비스판매(정수기,비데,매트리스 등)</option>
-                        <option value="electronics">가전제품판매(냉장고,세탁기,컴퓨터 등)</option>
+                        <option value="">사업자 유형을 선택해주세요</option>
+                        <option value="individual">개인사업자</option>
+                        <option value="corporate">법인사업자</option>
                       </select>
-                      <p className="text-xs text-gray-500 mt-1">주요 판매 상품 유형을 선택해주세요</p>
                     </div>
                     
                     {/* 사업자등록번호 */}

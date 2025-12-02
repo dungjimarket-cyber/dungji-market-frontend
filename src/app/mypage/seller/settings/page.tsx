@@ -97,7 +97,7 @@ export default function SellerSettings() {
   const [isEditingRepresentativeName, setIsEditingRepresentativeName] = useState(false);
   const [isEditingSellerCategory, setIsEditingSellerCategory] = useState(false);
 
-  // 판매유형 모달 상태
+  // 사업자유형 모달 상태
   const [showSellerCategoryWarningModal, setShowSellerCategoryWarningModal] = useState(false);
   const [showSellerCategoryLockedModal, setShowSellerCategoryLockedModal] = useState(false);
 
@@ -678,7 +678,7 @@ export default function SellerSettings() {
       if (result) {
         toast({
           title: '저장 완료',
-          description: '판매유형이 설정되었습니다.'
+          description: '사업자유형이 설정되었습니다.'
         });
         const updatedData = await getSellerProfile();
         setProfile(updatedData);
@@ -686,11 +686,11 @@ export default function SellerSettings() {
         setShowSellerCategoryWarningModal(false);
       }
     } catch (error) {
-      console.error('판매유형 저장 오류:', error);
+      console.error('사업자유형 저장 오류:', error);
       toast({
         variant: 'destructive',
         title: '저장 실패',
-        description: '판매유형 저장 중 오류가 발생했습니다.'
+        description: '사업자유형 저장 중 오류가 발생했습니다.'
       });
     } finally {
       setSaving(false);
@@ -1299,15 +1299,19 @@ export default function SellerSettings() {
                 <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
                   <h3 className="text-sm font-semibold">사업자 정보</h3>
 
-                  {/* 판매유형 필드 */}
+                  {/* 사업자유형 필드 */}
                   <div className="space-y-2">
                     <Label htmlFor="sellerCategory">
-                      판매유형
+                      사업자유형
                     </Label>
                     <div className="flex gap-2 items-start">
                       {!isEditingSellerCategory && profile?.sellerCategory ? (
                         <Input
                           value={
+                            // 기존 값 표시 (호환성 유지)
+                            profile.sellerCategory === 'individual' ? '개인사업자' :
+                            profile.sellerCategory === 'corporate' ? '법인사업자' :
+                            // 레거시 값들 (기존 가입자용)
                             profile.sellerCategory === 'general' ? '일반사업자(온·오프라인 도소매,요식업 등)' :
                             profile.sellerCategory === 'telecom' ? '통신상품판매(휴대폰,인터넷,TV개통 등)' :
                             profile.sellerCategory === 'rental' ? '렌탈서비스판매(정수기,비데,매트리스 등)' :
@@ -1326,11 +1330,9 @@ export default function SellerSettings() {
                             onChange={(e) => setFormData(prev => ({ ...prev, sellerCategory: e.target.value }))}
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
                           >
-                            <option value="">판매 유형을 선택해주세요</option>
-                            <option value="general">일반사업자(온·오프라인 도소매,요식업 등)</option>
-                            <option value="telecom">통신상품판매(휴대폰,인터넷,TV개통 등)</option>
-                            <option value="rental">렌탈서비스판매(정수기,비데,매트리스 등)</option>
-                            <option value="electronics">가전제품판매(냉장고,세탁기,컴퓨터 등)</option>
+                            <option value="">사업자 유형을 선택해주세요</option>
+                            <option value="individual">개인사업자</option>
+                            <option value="corporate">법인사업자</option>
                           </select>
                           <Button
                             type="button"
@@ -1357,7 +1359,7 @@ export default function SellerSettings() {
                         </>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500">판매하시는 상품/서비스 유형을 선택해주세요</p>
+                    <p className="text-xs text-gray-500">개인사업자 또는 법인사업자를 선택해주세요</p>
                   </div>
 
                   <div className="space-y-2">
@@ -2164,24 +2166,24 @@ export default function SellerSettings() {
             </DialogContent>
           </Dialog>
 
-          {/* 판매유형 최초 설정 확인 모달 */}
+          {/* 사업자유형 최초 설정 확인 모달 */}
           <Dialog open={showSellerCategoryWarningModal} onOpenChange={setShowSellerCategoryWarningModal}>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <div className="flex justify-center mb-3">
                   <AlertCircle className="h-12 w-12 text-amber-500" />
                 </div>
-                <DialogTitle className="text-center text-lg">판매유형 설정 확인</DialogTitle>
+                <DialogTitle className="text-center text-lg">사업자유형 설정 확인</DialogTitle>
                 <DialogDescription className="text-center text-sm space-y-2">
                   <p className="font-medium text-gray-900">
-                    판매유형은 한 번 설정하면 변경할 수 없습니다.
+                    사업자유형은 한 번 설정하면 변경할 수 없습니다.
                   </p>
                   <p className="text-gray-600">
                     변경이 필요한 경우 고객센터에 문의하거나<br/>
                     탈퇴 후 재가입해주세요.
                   </p>
                   <p className="text-amber-600 font-medium mt-3">
-                    정말 이 판매유형으로 설정하시겠습니까?
+                    정말 이 사업자유형으로 설정하시겠습니까?
                   </p>
                 </DialogDescription>
               </DialogHeader>
@@ -2210,20 +2212,20 @@ export default function SellerSettings() {
             </DialogContent>
           </Dialog>
 
-          {/* 판매유형 변경 불가 안내 모달 */}
+          {/* 사업자유형 변경 불가 안내 모달 */}
           <Dialog open={showSellerCategoryLockedModal} onOpenChange={setShowSellerCategoryLockedModal}>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <div className="flex justify-center mb-3">
                   <AlertCircle className="h-12 w-12 text-red-500" />
                 </div>
-                <DialogTitle className="text-center text-lg">판매유형 변경 불가</DialogTitle>
+                <DialogTitle className="text-center text-lg">사업자유형 변경 불가</DialogTitle>
                 <DialogDescription className="text-center text-sm space-y-2">
                   <p className="font-medium text-gray-900">
-                    판매유형은 변경할 수 없습니다.
+                    사업자유형은 변경할 수 없습니다.
                   </p>
                   <p className="text-gray-600 mt-3">
-                    판매유형 변경이 필요한 경우<br/>
+                    사업자유형 변경이 필요한 경우<br/>
                     고객센터에 문의하거나 탈퇴 후 재가입해주세요.
                   </p>
                 </DialogDescription>
