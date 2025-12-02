@@ -493,12 +493,21 @@ function ConsultationCard({
                 )}
               </div>
               {consultation.connected_expert.contact_phone && (
-                <a
-                  href={`tel:${consultation.connected_expert.contact_phone}`}
-                  className="text-xs text-blue-600 underline"
-                >
-                  {consultation.connected_expert.contact_phone}
-                </a>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-gray-600">{consultation.connected_expert.contact_phone}</span>
+                  <a
+                    href={`tel:${consultation.connected_expert.contact_phone}`}
+                    className="px-2 py-1 rounded border text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100"
+                  >
+                    전화
+                  </a>
+                  <a
+                    href={`sms:${consultation.connected_expert.contact_phone}`}
+                    className="px-2 py-1 rounded border text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100"
+                  >
+                    문자
+                  </a>
+                </div>
               )}
             </div>
           )}

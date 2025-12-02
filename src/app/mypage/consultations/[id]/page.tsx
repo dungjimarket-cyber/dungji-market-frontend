@@ -288,13 +288,24 @@ export default function ConsultationDetailPage() {
             {/* 연락처 */}
             <div className="mt-4 pt-3 border-t border-green-200 space-y-2">
               {consultation.connected_expert.contact_phone && (
-                <a
-                  href={`tel:${consultation.connected_expert.contact_phone}`}
-                  className="flex items-center gap-2 text-green-700 font-medium hover:text-green-800"
-                >
-                  <Phone className="w-4 h-4" />
-                  {consultation.connected_expert.contact_phone}
-                </a>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-2 text-green-700 font-medium">
+                    <Phone className="w-4 h-4" />
+                    {consultation.connected_expert.contact_phone}
+                  </span>
+                  <a
+                    href={`tel:${consultation.connected_expert.contact_phone}`}
+                    className="px-2 py-1 rounded border text-xs text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100"
+                  >
+                    전화
+                  </a>
+                  <a
+                    href={`sms:${consultation.connected_expert.contact_phone}`}
+                    className="px-2 py-1 rounded border text-xs text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100"
+                  >
+                    문자
+                  </a>
+                </div>
               )}
               {consultation.connected_expert.contact_email && (
                 <a
