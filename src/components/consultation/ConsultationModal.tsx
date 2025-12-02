@@ -603,7 +603,7 @@ export default function ConsultationModal({
               />
             </div>
 
-            {/* 연락처 - 읽기 전용 */}
+            {/* 연락처 - 현재 사용 안 함 (연락처 공개 기능 비활성화)
             <div>
               <Label htmlFor="phone">연락처 *</Label>
               <Input
@@ -613,8 +613,8 @@ export default function ConsultationModal({
                 disabled
                 className="bg-slate-100 cursor-not-allowed"
               />
-
             </div>
+            */}
 
             {/* 업종 선택 */}
             <div>
@@ -826,8 +826,10 @@ export default function ConsultationModal({
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="text-slate-500">이름</div>
                 <div>{name}</div>
+                {/* 연락처 - 현재 사용 안 함 (연락처 공개 기능 비활성화)
                 <div className="text-slate-500">연락처</div>
                 <div>{phone}</div>
+                */}
                 <div className="text-slate-500">업종</div>
                 <div>{selectedCategory?.icon} {selectedCategory?.name}</div>
                 <div className="text-slate-500">지역</div>
@@ -862,7 +864,7 @@ export default function ConsultationModal({
               </Button>
             </div>
 
-            {/* 개인정보 동의 */}
+            {/* 개인정보 동의 - 현재 사용 안 함 (연락처 공개 기능 비활성화)
             <div className="flex items-start gap-2 p-3 bg-slate-50 rounded-lg">
               <Checkbox
                 id="agree"
@@ -874,6 +876,7 @@ export default function ConsultationModal({
                 (이름, 연락처, 이메일은 상담 연락 목적으로만 사용됩니다.)
               </label>
             </div>
+            */}
 
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
@@ -881,7 +884,7 @@ export default function ConsultationModal({
               </Button>
               <Button
                 onClick={handleSubmit}
-                disabled={!agreed || loading}
+                disabled={loading}
                 className="flex-1"
               >
                 {loading ? '신청 중...' : '상담 신청하기'}
