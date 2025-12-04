@@ -223,7 +223,7 @@ function LoginForm() {
                 <div><strong>개인회원:</strong></div>
                 <div className="pl-2 space-y-0.5">
                   <div className="whitespace-nowrap">1. <span className="font-semibold">커스텀 공구 개설·참여</span></div>
-                  <div className="whitespace-nowrap">2. 전문가 상담 신청</div>
+                  <div className="whitespace-nowrap">2. <span className="font-semibold text-orange-600">전문가 상담 신청</span></div>
                   <div className="whitespace-nowrap">3. <strong>중고거래</strong></div>
                 </div>
               </div>

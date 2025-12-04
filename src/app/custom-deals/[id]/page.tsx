@@ -981,11 +981,16 @@ export default function CustomDealDetailPage() {
           <div className="space-y-4">
             {/* Title & Status */}
             <div className="bg-white rounded-lg border border-slate-200 p-5">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <Badge className="bg-slate-100 text-slate-700 border-0 text-xs">
                   {deal.type === 'offline' ? '오프라인매장' : '온라인'}
                 </Badge>
                 {getStatusBadge()}
+                {deal.categories.map((category) => (
+                  <Badge key={category} variant="secondary" className="text-xs">
+                    {getCategoryLabel(category)}
+                  </Badge>
+                ))}
               </div>
               <h1 className="text-2xl font-bold text-slate-900 leading-tight mb-3">{deal.title}</h1>
 
@@ -1203,20 +1208,6 @@ export default function CustomDealDetailPage() {
                 </CardContent>
               </Card>
             )}
-
-            {/* Categories */}
-            <Card className="border-slate-200">
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-slate-900 mb-2 text-sm">카테고리</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {deal.categories.map((category) => (
-                    <Badge key={category} variant="secondary" className="text-xs">
-                      {getCategoryLabel(category)}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Stats */}
             <div className="text-xs text-slate-500 flex items-center gap-3">
