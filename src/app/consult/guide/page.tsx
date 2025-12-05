@@ -50,16 +50,16 @@ export default function ConsultGuidePage() {
             </p>
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-blue-50 rounded-lg p-2.5 text-center">
-                <p className="text-xs font-medium text-blue-800">빠르고 간편한 신청</p>
+                <p className="text-xs font-medium text-blue-800">빠르고 간편한 상담 신청</p>
               </div>
               <div className="bg-blue-50 rounded-lg p-2.5 text-center">
-                <p className="text-xs font-medium text-blue-800">AI 자동 정리</p>
+                <p className="text-xs font-medium text-blue-800">AI 자동 정리 기능</p>
               </div>
               <div className="bg-blue-50 rounded-lg p-2.5 text-center">
                 <p className="text-xs font-medium text-blue-800">지역 맞춤 매칭</p>
               </div>
               <div className="bg-blue-50 rounded-lg p-2.5 text-center">
-                <p className="text-xs font-medium text-blue-800">신청/답변 무료</p>
+                <p className="text-xs font-medium text-blue-800">상담자 익명 보장</p>
               </div>
             </div>
           </div>
