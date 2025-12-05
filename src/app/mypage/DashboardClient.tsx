@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -479,19 +480,21 @@ export default function DashboardClient() {
         </CardContent>
       </Card>
 
-      {/* 하단 배너 */}
-      <div className="mb-0 flex justify-center">
-        <div className="relative w-full md:w-[70%] rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-          <Image
-            src="https://dungjimarket.s3.ap-northeast-2.amazonaws.com/banners/4e9bc98db30c4100878e3f669820130d_20250924083943.png"
-            alt="둥지마켓 배너"
-            width={1200}
-            height={300}
-            className="w-full h-auto object-cover"
-            priority
-          />
+      {/* 하단 배너 - 전문가 상담 */}
+      <Link href="/local-businesses" className="block mb-0">
+        <div className="flex justify-center">
+          <div className="relative w-full md:w-[70%] rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+            <Image
+              src="/images/전문가전용배너.png"
+              alt="전문가 상담 - 무료 상담 신청하기"
+              width={1200}
+              height={400}
+              className="w-full h-auto object-cover"
+              priority
+            />
+          </div>
         </div>
-      </div>
+      </Link>
 
       {/* 모달들 */}
       <ProfileCheckModal
