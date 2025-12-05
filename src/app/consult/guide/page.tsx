@@ -99,19 +99,18 @@ export default function ConsultGuidePage() {
             <Users className="w-4 h-4 text-purple-600" />
             상담 가능 업종
           </h2>
-          <div className="bg-white rounded-lg p-3 border">
-            <div className="grid grid-cols-5 gap-1">
+          <div className="bg-white rounded-lg p-2 border">
+            <div className="grid grid-cols-5 gap-0">
               {categories.map((cat) => (
-                <div key={cat.name} className="flex flex-col items-center">
-                  <div className="w-16 h-16 relative">
-                    <Image
-                      src={cat.image}
-                      alt={cat.name}
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                  <span className="text-xs text-gray-700 text-center leading-tight">{cat.name}</span>
+                <div key={cat.name} className="flex flex-col items-center p-1">
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    width={80}
+                    height={80}
+                    className="object-contain"
+                  />
+                  <span className="text-xs text-gray-700 text-center">{cat.name}</span>
                 </div>
               ))}
             </div>
