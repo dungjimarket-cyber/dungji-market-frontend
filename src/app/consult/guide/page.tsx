@@ -99,11 +99,11 @@ export default function ConsultGuidePage() {
             <Users className="w-4 h-4 text-purple-600" />
             상담 가능 업종
           </h2>
-          <div className="bg-white rounded-lg p-4 border">
-            <div className="grid grid-cols-5 gap-2">
+          <div className="bg-white rounded-lg p-3 border">
+            <div className="grid grid-cols-5 gap-1">
               {categories.map((cat) => (
                 <div key={cat.name} className="flex flex-col items-center">
-                  <div className="w-14 h-14 relative">
+                  <div className="w-16 h-16 relative">
                     <Image
                       src={cat.image}
                       alt={cat.name}
@@ -111,7 +111,7 @@ export default function ConsultGuidePage() {
                       className="object-contain"
                     />
                   </div>
-                  <span className="text-xs text-gray-700 text-center">{cat.name}</span>
+                  <span className="text-xs text-gray-700 text-center leading-tight">{cat.name}</span>
                 </div>
               ))}
             </div>
@@ -162,9 +162,9 @@ export default function ConsultGuidePage() {
               </p>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900 mb-1">Q. 여러 전문가와 연결할 수 있나요?</h3>
+              <h3 className="font-medium text-gray-900 mb-1">Q. 전문가와 추가 상담도 가능한가요?</h3>
               <p className="text-sm text-gray-600">
-                네, 여러 전문가의 답변을 받고 원하는 전문가와 연결할 수 있습니다.
+                네, 여러 전문가의 답변을 받고 원하는 전문가와 추가 상담을 진행해 보세요.
               </p>
             </div>
           </div>
