@@ -1,8 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, MessageSquare, Users, Phone, Shield, CheckCircle, HelpCircle } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, MessageSquare, Users, Shield, CheckCircle, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+const categories = [
+  { name: '변호사', image: '/images/변호사.png' },
+  { name: '법무사', image: '/images/법무사.png' },
+  { name: '세무사', image: '/images/세무사.png' },
+  { name: '회계사', image: '/images/회계사.png' },
+  { name: '공인중개사', image: '/images/공인중개사.png' },
+  { name: '인테리어', image: '/images/인테리어.png' },
+  { name: '자동차정비', image: '/images/자동차정비.png' },
+  { name: '휴대폰대리점', image: '/images/휴대폰대리점.png' },
+  { name: '청소', image: '/images/청소.png' },
+  { name: '이사', image: '/images/이사.png' },
+];
 
 export default function ConsultGuidePage() {
   return (
@@ -72,7 +86,7 @@ export default function ConsultGuidePage() {
                 3
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">전문가 선택 및 연결</h3>
+                <h3 className="font-medium text-gray-900">연락처를 통해 추가 상담</h3>
                 <p className="text-sm text-gray-600">원하는 전문가와 직접 상담을 진행하세요</p>
               </div>
             </div>
@@ -86,14 +100,19 @@ export default function ConsultGuidePage() {
             상담 가능 업종
           </h2>
           <div className="bg-white rounded-lg p-4 border">
-            <div className="flex flex-wrap gap-2">
-              {['세무/회계', '법률', '부동산', '인테리어', '이사/청소', '휴대폰', '자동차정비', '보험', '금융'].map((category) => (
-                <span
-                  key={category}
-                  className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm"
-                >
-                  {category}
-                </span>
+            <div className="grid grid-cols-5 gap-2">
+              {categories.map((cat) => (
+                <div key={cat.name} className="flex flex-col items-center">
+                  <div className="w-12 h-12 relative mb-1">
+                    <Image
+                      src={cat.image}
+                      alt={cat.name}
+                      fill
+                      className="object-contain rounded-lg"
+                    />
+                  </div>
+                  <span className="text-xs text-gray-700 text-center">{cat.name}</span>
+                </div>
               ))}
             </div>
           </div>
@@ -110,7 +129,7 @@ export default function ConsultGuidePage() {
               <h3 className="font-medium mb-2 text-green-800">고객님 (상담 신청자)</h3>
               <ul className="space-y-1 text-gray-600 text-sm">
                 <li>• 전문가 정보를 <strong>미리 확인</strong>할 수 있습니다</li>
-                <li>• 답변 후 전문가 연락처(전화, 이메일) 확인 가능</li>
+                <li>• 답변 후 전문가 연락처 확인 가능</li>
               </ul>
             </div>
             <div className="border-t pt-3">
