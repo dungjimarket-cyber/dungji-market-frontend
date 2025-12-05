@@ -13,7 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search, Share2, MessageCircle, FileText } from 'lucide-react';
+import { Building2, MapPin, Star, Phone, ExternalLink, Copy, Map, Search, Share2, MessageCircle, FileText, HelpCircle } from 'lucide-react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import KakaoMap from '@/components/kakao/KakaoMap';
 import ConsultationModal from '@/components/consultation/ConsultationModal';
@@ -488,19 +489,41 @@ function LocalBusinessesContent() {
                 우리동네 전문가와 상담하기
               </h1>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push('/mypage/consultations')}
-              className="flex items-center gap-1 text-xs whitespace-nowrap"
-            >
-              <FileText className="w-3 h-3" />
-              <span>상담내역</span>
-            </Button>
+            <div className="flex items-center gap-1">
+              <Link href="/consult/guide">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1 text-xs text-gray-600"
+                >
+                  <HelpCircle className="w-3 h-3" />
+                  <span>가이드</span>
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push('/mypage/consultations')}
+                className="flex items-center gap-1 text-xs whitespace-nowrap"
+              >
+                <FileText className="w-3 h-3" />
+                <span>상담내역</span>
+              </Button>
+            </div>
           </div>
 
           {/* PC 헤더 - 중앙 정렬 */}
           <div className="hidden sm:flex sm:items-center sm:justify-center sm:relative mb-3">
+            <Link href="/consult/guide" className="absolute left-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
+              >
+                <HelpCircle className="w-4 h-4" />
+                <span>이용가이드</span>
+              </Button>
+            </Link>
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-white" />
