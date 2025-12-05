@@ -123,21 +123,11 @@ export default function ConsultGuidePage() {
             <Shield className="w-4 h-4 text-amber-600" />
             연락처 공개 정책
           </h2>
-          <div className="bg-white rounded-lg p-4 border space-y-3">
-            <div>
-              <h3 className="font-medium mb-2 text-green-800">고객님 (상담 신청자)</h3>
-              <ul className="space-y-1 text-gray-600 text-sm">
-                <li>• 전문가 정보를 <strong>미리 확인</strong>할 수 있습니다</li>
-                <li>• 답변 후 전문가 연락처 확인 가능</li>
-              </ul>
-            </div>
-            <div className="border-t pt-3">
-              <h3 className="font-medium mb-2 text-blue-800">전문가</h3>
-              <ul className="space-y-1 text-gray-600 text-sm">
-                <li>• 고객 연락처는 <strong>연결 확정 후</strong>에만 공개됩니다</li>
-                <li>• 답변 단계에서는 상담 내용만 확인 가능</li>
-              </ul>
-            </div>
+          <div className="bg-white rounded-lg p-4 border">
+            <ul className="space-y-1 text-gray-600 text-sm">
+              <li>• 전문가 정보를 <strong>미리 확인</strong>할 수 있습니다</li>
+              <li>• 답변 후 전문가 연락처 확인 가능</li>
+            </ul>
           </div>
         </section>
 
