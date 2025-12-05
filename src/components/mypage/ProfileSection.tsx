@@ -130,6 +130,7 @@ export default function ProfileSection() {
   const [categories, setCategories] = useState<LocalBusinessCategory[]>([]);
   const [isEditingCategory, setIsEditingCategory] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [showCategoryConfirmModal, setShowCategoryConfirmModal] = useState(false);
 
   // 지역 변경 제한 상태
   const [regionChangeStatus, setRegionChangeStatus] = useState({
@@ -1226,10 +1227,20 @@ export default function ProfileSection() {
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={handleCategorySave}
+                      onClick={() => {
+                        if (!selectedCategoryId) {
+                          toast({
+                            variant: 'destructive',
+                            title: '오류',
+                            description: '전문 분야를 선택해주세요.',
+                          });
+                          return;
+                        }
+                        setShowCategoryConfirmModal(true);
+                      }}
                       className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                     >
-                      저장
+                      {expertCategory ? '저장' : '등록'}
                     </button>
                     <button
                       onClick={() => {
@@ -1522,6 +1533,57 @@ export default function ProfileSection() {
           nextAvailableDate={limitModalData.nextAvailableDate}
           canChange={limitModalData.canChange}
         />
+
+        {/* 전문 분야 등록 확인 모달 */}
+        {showCategoryConfirmModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-sm w-full p-5 shadow-xl">
+              <h3 className="text-base font-bold text-gray-900 text-center mb-3">
+                전문 분야 {expertCategory ? '변경' : '등록'} 확인
+              </h3>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-2xl">
+                    {categories.find(c => c.id === selectedCategoryId)?.icon || '📋'}
+                  </span>
+                  <span className="font-semibold text-gray-900">
+                    {categories.find(c => c.id === selectedCategoryId)?.name || ''}
+                  </span>
+                </div>
+                <p className="text-xs text-blue-700 text-center">
+                  위 전문 분야로 {expertCategory ? '변경' : '등록'}하시겠습니까?
+                </p>
+              </div>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                <p className="text-xs text-orange-800 text-center">
+                  ⚠️ 전문 분야는 등록 후 변경이 어려우니 신중하게 선택해주세요.
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCategoryConfirmModal(false)}
+                  className="flex-1 py-2 px-3 bg-gray-100 text-gray-700 text-sm rounded-lg font-medium hover:bg-gray-200"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCategoryConfirmModal(false);
+                    handleCategorySave();
+                  }}
+                  className="flex-1 py-2 px-3 bg-blue-500 text-white text-sm rounded-lg font-medium hover:bg-blue-600"
+                >
+                  {expertCategory ? '변경' : '등록'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 지역 변경 제한 모달 */}
         {showRegionLimitModal && (

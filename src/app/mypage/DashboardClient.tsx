@@ -20,6 +20,7 @@ import {
   Loader2
 } from 'lucide-react';
 import ProfileCheckModal from '@/components/common/ProfileCheckModal';
+import ExpertProfileCheckModal from '@/components/expert/ExpertProfileCheckModal';
 import PenaltyModal from '@/components/penalty/PenaltyModal';
 import { getSellerProfile } from '@/lib/api/sellerService';
 import { SellerProfile } from '@/types/seller';
@@ -48,6 +49,14 @@ export default function DashboardClient() {
   const [showCustomPenaltyModal, setShowCustomPenaltyModal] = useState(false);
   const [showCustomProfileModal, setShowCustomProfileModal] = useState(false);
   const [customMissingFields, setCustomMissingFields] = useState<string[]>([]);
+
+  // 전문가 프로필 체크 상태
+  const [showExpertProfileModal, setShowExpertProfileModal] = useState(false);
+  const [expertMissingFields, setExpertMissingFields] = useState({
+    category: false,
+    contactPhone: false,
+    regions: false,
+  });
 
   const [currentProfileImage, setCurrentProfileImage] = useState<string | null>(
     (user as any)?.profile_image || user?.image || null
@@ -84,6 +93,27 @@ export default function DashboardClient() {
           setExpertProfile(profile);
           setTagline(profile.tagline || '');
           setCurrentProfileImage(profile.profile_image || (user as any)?.profile_image || user?.image || null);
+
+          // 전문가 프로필 필수 항목 체크
+          const missing = {
+            category: !profile.category,
+            contactPhone: !profile.contact_phone || profile.contact_phone === '미입력',
+            regions: !profile.regions || profile.regions.length === 0,
+          };
+
+          // 하나라도 누락되면 모달 표시
+          if (missing.category || missing.contactPhone || missing.regions) {
+            setExpertMissingFields(missing);
+            setShowExpertProfileModal(true);
+          }
+        } else {
+          // 프로필이 없는 경우 (신규 전문가)
+          setExpertMissingFields({
+            category: true,
+            contactPhone: true,
+            regions: true,
+          });
+          setShowExpertProfileModal(true);
         }
       } catch (error) {
         console.error('전문가 프로필 로드 오류:', error);
@@ -493,6 +523,13 @@ export default function DashboardClient() {
           setShowCustomProfileModal(false);
           router.push('/mypage');
         }}
+      />
+
+      {/* 전문가 프로필 체크 모달 */}
+      <ExpertProfileCheckModal
+        isOpen={showExpertProfileModal}
+        onClose={() => setShowExpertProfileModal(false)}
+        missingFields={expertMissingFields}
       />
     </div>
   );
