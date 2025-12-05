@@ -95,10 +95,11 @@ export default function DashboardClient() {
           setCurrentProfileImage(profile.profile_image || (user as any)?.profile_image || user?.image || null);
 
           // 전문가 프로필 필수 항목 체크
+          // 지역은 전문가 프로필이 아닌 기본 프로필(user.address_region) 기준
           const missing = {
             category: !profile.category,
             contactPhone: !profile.contact_phone || profile.contact_phone === '미입력',
-            regions: !profile.regions || profile.regions.length === 0,
+            regions: !(user as any)?.address_region,
           };
 
           // 하나라도 누락되면 모달 표시
@@ -110,8 +111,8 @@ export default function DashboardClient() {
           // 프로필이 없는 경우 (신규 전문가)
           setExpertMissingFields({
             category: true,
-            contactPhone: true,
-            regions: true,
+            contactPhone: !(user as any)?.phone_number,
+            regions: !(user as any)?.address_region,
           });
           setShowExpertProfileModal(true);
         }
