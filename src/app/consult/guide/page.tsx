@@ -48,10 +48,23 @@ export default function ConsultGuidePage() {
               전문가 상담은 <strong>세무, 법률, 부동산, 인테리어</strong> 등 다양한 분야의
               전문가와 연결해드리는 서비스입니다.
             </p>
-            <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-              <p className="text-sm text-blue-800 font-medium">
-                상담 신청 및 전문가 답변 확인까지 무료!
-              </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <p className="text-lg mb-1">⚡</p>
+                <p className="text-xs font-medium text-gray-800">빠르고 간편한 신청</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <p className="text-lg mb-1">🤖</p>
+                <p className="text-xs font-medium text-gray-800">AI 자동 정리</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <p className="text-lg mb-1">🎯</p>
+                <p className="text-xs font-medium text-gray-800">지역 맞춤 매칭</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <p className="text-lg mb-1">💰</p>
+                <p className="text-xs font-medium text-gray-800">신청/답변 무료</p>
+              </div>
             </div>
           </div>
         </section>
