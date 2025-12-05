@@ -86,7 +86,7 @@ export default function ConsultGuidePage() {
                 3
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">연락처를 통해 추가 상담</h3>
+                <h3 className="font-medium text-gray-900">추가 상담 진행</h3>
                 <p className="text-sm text-gray-600">원하는 전문가와 직접 상담을 진행하세요</p>
               </div>
             </div>
@@ -103,12 +103,12 @@ export default function ConsultGuidePage() {
             <div className="grid grid-cols-5 gap-2">
               {categories.map((cat) => (
                 <div key={cat.name} className="flex flex-col items-center">
-                  <div className="w-12 h-12 relative mb-1">
+                  <div className="w-14 h-14 relative">
                     <Image
                       src={cat.image}
                       alt={cat.name}
                       fill
-                      className="object-contain rounded-lg"
+                      className="object-contain"
                     />
                   </div>
                   <span className="text-xs text-gray-700 text-center">{cat.name}</span>
