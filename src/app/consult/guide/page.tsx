@@ -49,21 +49,17 @@ export default function ConsultGuidePage() {
               전문가와 연결해드리는 서비스입니다.
             </p>
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg mb-1">⚡</p>
-                <p className="text-xs font-medium text-gray-800">빠르고 간편한 신청</p>
+              <div className="bg-blue-50 rounded-lg p-2.5 text-center">
+                <p className="text-xs font-medium text-blue-800">빠르고 간편한 신청</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg mb-1">🤖</p>
-                <p className="text-xs font-medium text-gray-800">AI 자동 정리</p>
+              <div className="bg-blue-50 rounded-lg p-2.5 text-center">
+                <p className="text-xs font-medium text-blue-800">AI 자동 정리</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg mb-1">🎯</p>
-                <p className="text-xs font-medium text-gray-800">지역 맞춤 매칭</p>
+              <div className="bg-blue-50 rounded-lg p-2.5 text-center">
+                <p className="text-xs font-medium text-blue-800">지역 맞춤 매칭</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3 text-center">
-                <p className="text-lg mb-1">💰</p>
-                <p className="text-xs font-medium text-gray-800">신청/답변 무료</p>
+              <div className="bg-blue-50 rounded-lg p-2.5 text-center">
+                <p className="text-xs font-medium text-blue-800">신청/답변 무료</p>
               </div>
             </div>
           </div>
